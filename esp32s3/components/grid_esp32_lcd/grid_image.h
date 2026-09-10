@@ -15,4 +15,6 @@ enum grid_image_id_t {
 
 int grid_image_draw(struct grid_gui_model* gui, uint8_t image_id, uint16_t x, uint16_t y);
 
+int grid_image_draw_from_file(struct grid_gui_model* gui, const char* path, uint16_t x, uint16_t y);
+
 #endif /* GRID_IMAGE_H */

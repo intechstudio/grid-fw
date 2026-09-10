@@ -460,6 +460,13 @@ void grid_esp32_lcd_task(void* arg) {
 
   uint8_t counter = 0;
 
+  // Tracks the worst (lowest) stack headroom this task has ever hit, so the
+  // right stack size (currently 4x set in grid_esp32s3.c) can be picked from
+  // measurement instead of guesswork. uxTaskGetStackHighWaterMark() is
+  // itself already a running minimum, so only log when it drops further —
+  // one line per new worst case, no steady-state spam.
+  UBaseType_t stack_headroom_min = (UBaseType_t)-1;
+
   // Wait for another task to mark the LCD state as ready
   while (!grid_esp32_lcd_get_ready()) {
     vTaskDelay(1);
@@ -491,6 +498,18 @@ void grid_esp32_lcd_task(void* arg) {
     }
 
     ++counter;
+
+    // uxTaskGetStackHighWaterMark reports how close the stack has ever come
+    // to overflowing (the canary pattern it scans stays overwritten once a
+    // deep call touches it), so sampling every 256 iterations still catches
+    // the true worst case without checking on every single loop pass.
+    if (counter == 0) {
+      UBaseType_t stack_headroom = uxTaskGetStackHighWaterMark(NULL);
+      if (stack_headroom < stack_headroom_min) {
+        stack_headroom_min = stack_headroom;
+        grid_platform_printf("lcd task stack headroom: %u bytes free (new worst case)\n", (unsigned int)(stack_headroom * sizeof(StackType_t)));
+      }
+    }
 
     grid_esp32_module_vsn_lcd_refresh(lcds, guis, LCD_LINES, LCD_COLUMNS, lcd_tx_lines, LCD_LINES / 16, xferbuf);
 

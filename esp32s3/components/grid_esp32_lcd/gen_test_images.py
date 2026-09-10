@@ -1,6 +1,6 @@
 import os
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 W, H = 320, 240
 
@@ -38,9 +38,40 @@ for cx in range(0, W, cell):
 # 1px border so cropping/off-by-one errors during blit are obvious.
 draw.rectangle([0, 0, W - 1, H - 1], outline=(255, 255, 0))
 
+try:
+    font = ImageFont.load_default(size=28)
+except TypeError:
+    # Pillow < 10.1 doesn't accept a size for the built-in bitmap font.
+    font = ImageFont.load_default()
+
 os.makedirs(OUT_DIR, exist_ok=True)
-img.save(os.path.join(OUT_DIR, "test.bmp"), format="BMP")
-img.save(os.path.join(OUT_DIR, "test.png"), format="PNG")
-img.save(os.path.join(OUT_DIR, "test.jpg"), format="JPEG", quality=90)
+
+# Each embedded test image is otherwise pixel-identical (same base pattern,
+# only the container format differs), so a center label naming the format is
+# the only way to tell at a glance which one actually got decoded and drawn.
+variants = [
+    ("BMP", "test.bmp", {"format": "BMP"}),
+    ("PNG", "test.png", {"format": "PNG"}),
+    ("JPG", "test.jpg", {"format": "JPEG", "quality": 90}),
+]
+for label, filename, save_kwargs in variants:
+    variant = img.copy()
+    vdraw = ImageDraw.Draw(variant)
+
+    # Center on the actually-rendered ink pixels rather than the font's
+    # reported textbbox metrics: Pillow's built-in load_default(size=N) font
+    # has been inconsistent between the two (bbox doesn't match where the
+    # glyphs land), which showed up as the label sitting low in its box.
+    scratch = Image.new("L", (W, H))
+    ImageDraw.Draw(scratch).text((0, 0), label, fill=255, font=font)
+    left, top, right, bottom = scratch.getbbox()
+    tw, th = right - left, bottom - top
+    tx, ty = (W - tw) // 2 - left, (H - th) // 2 - top
+
+    pad = 8
+    vdraw.rectangle([tx - pad, ty - pad, tx + tw + pad, ty + th + pad], fill=(0, 0, 0))
+    vdraw.text((tx, ty), label, fill=(255, 255, 255), font=font)
+
+    variant.save(os.path.join(OUT_DIR, filename), **save_kwargs)
 
 print("wrote test.bmp, test.png, test.jpg (%dx%d RGB) to %s" % (W, H, OUT_DIR))

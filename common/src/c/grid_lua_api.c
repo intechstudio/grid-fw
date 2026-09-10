@@ -198,6 +198,69 @@ int l_grid_cat(lua_State* L) {
 
 #endif
 
+// Reflected CRC-32 (IEEE 802.3), computed bit-by-bit rather than via a
+// 1KB lookup table to keep flash footprint down for what is only a
+// debug/verification utility.
+static uint32_t grid_crc32(const uint8_t* data, size_t length) {
+
+  uint32_t crc = 0xffffffff;
+
+  for (size_t i = 0; i < length; ++i) {
+    crc ^= data[i];
+    for (int bit = 0; bit < 8; ++bit) {
+      crc = (crc >> 1) ^ (0xedb88320u & (~(crc & 1) + 1));
+    }
+  }
+
+  return ~crc;
+}
+
+int l_grid_file_crc32(lua_State* L) {
+
+  const char* path = luaL_checkstring(L, 1);
+
+  void* statbuf;
+  if (grid_platform_stat(path, &statbuf) != 0) {
+    lua_pushnil(L);
+    lua_pushfstring(L, "failed to stat file: %s", path);
+    return 2;
+  }
+
+  size_t size = grid_platform_file_info_size(statbuf);
+
+  uint8_t* buf = malloc(size > 0 ? size : 1);
+  if (buf == NULL) {
+    lua_pushnil(L);
+    lua_pushstring(L, "out of memory");
+    return 2;
+  }
+
+  void* file = grid_platform_fopen(path, "r");
+  if (file == NULL) {
+    free(buf);
+    lua_pushnil(L);
+    lua_pushfstring(L, "failed to open file: %s", path);
+    return 2;
+  }
+
+  bool ok = size == 0 || grid_platform_fread(buf, size, 1, file) == 1;
+
+  grid_platform_fclose(file);
+
+  if (!ok) {
+    free(buf);
+    lua_pushnil(L);
+    lua_pushfstring(L, "failed to read file: %s", path);
+    return 2;
+  }
+
+  uint32_t crc = grid_crc32(buf, size);
+  free(buf);
+
+  lua_pushinteger(L, (lua_Integer)crc);
+  return 1;
+}
+
 /*static*/ int l_grid_websocket_send(lua_State* L) {
 
   char message[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
@@ -2277,6 +2340,7 @@ GRID_LUA_FNC_META_DEFI(ggen, l_grid_elementname_get)
 
     {GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_short, GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_fnptr},
     {GRID_LUA_FNC_G_FILESYSTEM_CAT_short, GRID_LUA_FNC_G_FILESYSTEM_CAT_fnptr},
+    {GRID_LUA_FNC_G_FILESYSTEM_CRC32_short, GRID_LUA_FNC_G_FILESYSTEM_CRC32_fnptr},
     {"print", l_my_print},
 
     {"gtv", l_grid_template_variable},

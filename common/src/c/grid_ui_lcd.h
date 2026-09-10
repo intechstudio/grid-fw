@@ -66,7 +66,8 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 
 #define GRID_LUA_FNC_L_DRAW_IMAGE_short "ldim"
 #define GRID_LUA_FNC_L_DRAW_IMAGE_human "draw_image"
-#define GRID_LUA_FNC_L_DRAW_IMAGE_usage "lcd:draw_image(image_id, x, y) Decodes the embedded image with the given id and draws it with its top-left corner at (x, y)."
+#define GRID_LUA_FNC_L_DRAW_IMAGE_usage                                                                                                                                                                \
+  "lcd:draw_image(image_id_or_path, x, y) Decodes an embedded image (numeric id) or a LittleFS image file (string path) and draws it with its top-left corner at (x, y)."
 
 #define GRID_LUA_FNC_L_DRAW_DEMO_short "ldd"
 #define GRID_LUA_FNC_L_DRAW_DEMO_human "draw_demo"

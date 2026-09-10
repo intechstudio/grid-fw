@@ -412,7 +412,21 @@ void app_main(void) {
 
     TaskHandle_t lcd_task_hdl;
 
-    xTaskCreatePinnedToCore(grid_esp32_lcd_task, "lcd", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &lcd_task_hdl, 0);
+    // 16K, not 4K: stb_image's PNG/zlib decode (grid_image_draw/grid_image_draw_from_file)
+    // puts a ~4KB stbi__zbuf (two ~2KB Huffman tables) on the stack by itself, several
+    // frames deep in the decode call chain — 4K total overflowed on the first real PNG
+    // decode (double-exception panic, unrelated-looking crash from corrupted stack memory).
+    //
+    // Measured via the high-water-mark logging in grid_esp32_lcd_task (grid_esp32_lcd.c):
+    // worst case seen was ~9.7KB used (boot + text/graphics primitives + a PNG decode),
+    // leaving ~6.7KB (~41%) margin at 16K. PNG cost is dominated by stbi__zbuf's fixed
+    // size, not image dimensions (a 120x89 custom PNG used almost exactly as much stack
+    // as the embedded 320x240 one) — so this margin should hold for other PNG sizes too.
+    // BMP decode is shallow (no measurable stack increase). JPEG's own worst case wasn't
+    // isolated by this measurement (its cost stayed below the pre-existing text/graphics
+    // baseline) - if that matters later, measure it first thing on a fresh boot, before
+    // any other drawing sets a lower high-water mark to hide behind.
+    xTaskCreatePinnedToCore(grid_esp32_lcd_task, "lcd", 1024 * 16, NULL, MODULE_TASK_PRIORITY, &lcd_task_hdl, 0);
 
     log_checkpoint("LCD TASK DONE");
   }

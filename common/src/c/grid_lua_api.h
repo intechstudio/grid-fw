@@ -16,6 +16,8 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 
 /*static*/ int l_grid_list_dir(lua_State* L);
 
+int l_grid_file_crc32(lua_State* L);
+
 /*static*/ int l_grid_websocket_send(lua_State* L);
 /*static*/ int l_grid_package_send(lua_State* L);
 /*static*/ int l_grid_immediate_send(lua_State* L);

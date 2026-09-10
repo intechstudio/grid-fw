@@ -669,6 +669,40 @@ void ggdim_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
   grid_image_draw(gui, image_id, x, y);
 }
 
+size_t ggdimf_size(size_t length) { return GRID_GUI_CALL_HEADER_SIZE + sizeof(size_t) + sizeof(char) * length + sizeof(uint16_t) * 2; }
+
+void ggdimf_formatter(struct grid_swsr_t* swsr, bool dir, size_t length, char* path, uint16_t* x, uint16_t* y) {
+
+  void (*access)(struct grid_swsr_t*, void*, int) = dir ? grid_swsr_write : grid_swsr_read;
+
+  if (dir) {
+    access(swsr, &length, sizeof(size_t));
+  }
+
+  access(swsr, path, sizeof(char) * length);
+
+  access(swsr, x, sizeof(uint16_t));
+  access(swsr, y, sizeof(uint16_t));
+}
+
+void ggdimf_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
+
+  size_t length;
+
+  grid_swsr_read(swsr, &length, sizeof(size_t));
+
+  char path[length + 1];
+  uint16_t x, y;
+
+  ggdimf_formatter(swsr, FORMATTER_READ, length, path, &x, &y);
+
+  path[length] = '\0';
+
+  grid_image_draw_from_file(gui, path, x, y);
+}
+
+// gui_draw_image(screen_index, image_id_or_path, x, y): a string second argument
+// is a LittleFS path, a number is a predefined embedded image id.
 int l_grid_gui_draw_image(lua_State* L) {
 
   int screen_index = luaL_checknumber(L, 1);
@@ -677,6 +711,24 @@ int l_grid_gui_draw_image(lua_State* L) {
   }
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
+
+  if (lua_type(L, 2) == LUA_TSTRING) {
+
+    const char* path = lua_tostring(L, 2);
+    size_t length = strlen(path);
+
+    uint16_t x = luaL_checknumber(L, 3);
+    uint16_t y = luaL_checknumber(L, 4);
+
+    size_t bytes = ggdimf_size(length);
+    if (grid_gui_queue_push(gui, ggdimf_handler, bytes) != 0) {
+      return 1;
+    }
+
+    ggdimf_formatter(&gui->swsr, FORMATTER_WRITE, length, (char*)path, &x, &y);
+
+    return 0;
+  }
 
   uint8_t image_id = luaL_checknumber(L, 2);
   uint16_t x = luaL_checknumber(L, 3);

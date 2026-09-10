@@ -432,6 +432,11 @@
 #define GRID_LUA_FNC_G_FILESYSTEM_CAT_human "readfile"
 #define GRID_LUA_FNC_G_FILESYSTEM_CAT_fnptr l_grid_cat
 
+#define GRID_LUA_FNC_G_FILESYSTEM_CRC32_short "gfcrc"
+#define GRID_LUA_FNC_G_FILESYSTEM_CRC32_human "file_crc32"
+#define GRID_LUA_FNC_G_FILESYSTEM_CRC32_fnptr l_grid_file_crc32
+#define GRID_LUA_FNC_G_FILESYSTEM_CRC32_usage "file_crc32(path) Returns the CRC-32 (IEEE 802.3) of the file at the given LittleFS path, or nil plus an error message."
+
 #define GRID_LUA_FNC_G_ELEMENT_COUNT_short "gec"
 #define GRID_LUA_FNC_G_ELEMENT_COUNT_human "element_count"
 #define GRID_LUA_FNC_G_ELEMENT_COUNT_fnptr l_grid_element_count
@@ -542,7 +547,8 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_IMAGE_short "ggdim"
 #define GRID_LUA_FNC_G_GUI_DRAW_IMAGE_human "gui_draw_image"
 #define GRID_LUA_FNC_G_GUI_DRAW_IMAGE_fnptr l_grid_gui_draw_image
-#define GRID_LUA_FNC_G_GUI_DRAW_IMAGE_usage "gui_draw_image(screen_index, image_id, x, y) Decodes the embedded image with the given id and draws it with its top-left corner at (x, y)."
+#define GRID_LUA_FNC_G_GUI_DRAW_IMAGE_usage                                                                                                                                                            \
+  "gui_draw_image(screen_index, image_id_or_path, x, y) Decodes an embedded image (numeric id) or a LittleFS image file (string path) and draws it with its top-left corner at (x, y)."
 
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_short "ggdd"
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_human "gui_draw_demo"

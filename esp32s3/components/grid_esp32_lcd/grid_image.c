@@ -2,6 +2,7 @@
 
 #ifndef __EMSCRIPTEN__
 #include "esp_heap_caps.h"
+#include "grid_platform.h"
 #define STBI_MALLOC(sz) heap_caps_malloc(sz, MALLOC_CAP_SPIRAM)
 #define STBI_REALLOC(p, newsz) heap_caps_realloc(p, newsz, MALLOC_CAP_SPIRAM)
 #define STBI_FREE(p) heap_caps_free(p)
@@ -41,16 +42,10 @@ static struct grid_image_table_entry grid_image_table[GRID_IMAGE_COUNT] = {
     {.data = generated_images_test_jpg, .size = &generated_images_test_jpg_len},
 };
 
-int grid_image_draw(struct grid_gui_model* gui, uint8_t image_id, uint16_t x, uint16_t y) {
-
-  if (gui == NULL || image_id >= GRID_IMAGE_COUNT) {
-    return 1;
-  }
-
-  struct grid_image_table_entry* entry = &grid_image_table[image_id];
+static int grid_image_blit(struct grid_gui_model* gui, const unsigned char* data, int size, uint16_t x, uint16_t y) {
 
   int w, h, channels;
-  unsigned char* pixels = stbi_load_from_memory(entry->data, (int)*entry->size, &w, &h, &channels, STBI_rgb);
+  unsigned char* pixels = stbi_load_from_memory(data, size, &w, &h, &channels, STBI_rgb);
 
   if (pixels == NULL) {
     return 1;
@@ -88,3 +83,70 @@ int grid_image_draw(struct grid_gui_model* gui, uint8_t image_id, uint16_t x, ui
 
   return 0;
 }
+
+int grid_image_draw(struct grid_gui_model* gui, uint8_t image_id, uint16_t x, uint16_t y) {
+
+  if (gui == NULL || image_id >= GRID_IMAGE_COUNT) {
+    return 1;
+  }
+
+  struct grid_image_table_entry* entry = &grid_image_table[image_id];
+
+  return grid_image_blit(gui, entry->data, (int)*entry->size, x, y);
+}
+
+#ifndef __EMSCRIPTEN__
+int grid_image_draw_from_file(struct grid_gui_model* gui, const char* path, uint16_t x, uint16_t y) {
+
+  if (gui == NULL || path == NULL) {
+    return 1;
+  }
+
+  void* statbuf;
+  if (grid_platform_stat(path, &statbuf) != 0) {
+    grid_platform_printf("grid_image_draw_from_file: stat failed for \"%s\"\n", path);
+    return 1;
+  }
+
+  size_t size = grid_platform_file_info_size(statbuf);
+  if (size == 0) {
+    grid_platform_printf("grid_image_draw_from_file: \"%s\" is empty\n", path);
+    return 1;
+  }
+
+  unsigned char* data = malloc(size);
+  if (data == NULL) {
+    grid_platform_printf("grid_image_draw_from_file: malloc(%u) failed for \"%s\"\n", (unsigned int)size, path);
+    return 1;
+  }
+
+  void* file = grid_platform_fopen(path, "r");
+  if (file == NULL) {
+    grid_platform_printf("grid_image_draw_from_file: fopen failed for \"%s\"\n", path);
+    free(data);
+    return 1;
+  }
+
+  int result = 1;
+  if (grid_platform_fread(data, size, 1, file) == 1) {
+    result = grid_image_blit(gui, data, (int)size, x, y);
+    if (result != 0) {
+      // stbi_failure_reason() isn't always set: some stb_image bail-out
+      // paths (e.g. an invalid DEFLATE block type) return a bare failure
+      // with no message, so this can legitimately print an empty reason.
+      const char* reason = stbi_failure_reason();
+      grid_platform_printf("grid_image_draw_from_file: decode failed for \"%s\" (%u bytes): %s\n", path, (unsigned int)size, reason ? reason : "");
+    }
+  } else {
+    grid_platform_printf("grid_image_draw_from_file: fread failed for \"%s\"\n", path);
+  }
+
+  grid_platform_fclose(file);
+  free(data);
+
+  return result;
+}
+#else
+// No LittleFS in the wasm simulator — file-path draws are a no-op there.
+int grid_image_draw_from_file(struct grid_gui_model* gui, const char* path, uint16_t x, uint16_t y) { return 1; }
+#endif
