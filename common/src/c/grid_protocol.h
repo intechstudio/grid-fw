@@ -550,6 +550,29 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_IMAGE_usage                                                                                                                                                            \
   "gui_draw_image(screen_index, image_id_or_path, x, y) Decodes an embedded image (numeric id) or a LittleFS image file (string path) and draws it with its top-left corner at (x, y)."
 
+#define GRID_LUA_FNC_G_LOAD_FILE_short "gflf"
+#define GRID_LUA_FNC_G_LOAD_FILE_human "load_file"
+#define GRID_LUA_FNC_G_LOAD_FILE_fnptr l_grid_load_file
+#define GRID_LUA_FNC_G_LOAD_FILE_usage "load_file(path) Reads a LittleFS file into a PSRAM-backed handle. Returns the handle, or nil plus an error message."
+
+#define GRID_LUA_FNC_G_DECODE_IMAGE_FROM_FILE_short "gdif"
+#define GRID_LUA_FNC_G_DECODE_IMAGE_FROM_FILE_human "decode_image_from_file"
+#define GRID_LUA_FNC_G_DECODE_IMAGE_FROM_FILE_fnptr l_grid_decode_image_from_file
+#define GRID_LUA_FNC_G_DECODE_IMAGE_FROM_FILE_usage                                                                                                                                                    \
+  "decode_image_from_file(file_handle) Decodes a handle returned by load_file into a decoded-pixel handle. Returns the handle, or nil plus an error message."
+
+#define GRID_LUA_FNC_G_GUI_DRAW_DECODE_IMAGE_short "ggddi"
+#define GRID_LUA_FNC_G_GUI_DRAW_DECODE_IMAGE_human "gui_draw_decode_image"
+#define GRID_LUA_FNC_G_GUI_DRAW_DECODE_IMAGE_fnptr l_grid_gui_draw_decode_image
+#define GRID_LUA_FNC_G_GUI_DRAW_DECODE_IMAGE_usage                                                                                                                                                     \
+  "gui_draw_decode_image(screen_index, file_handle, x, y) Decodes a load_file handle and draws it at (x, y), without re-reading it from LittleFS. Returns true, or nil plus an error message."
+
+#define GRID_LUA_FNC_G_GUI_DRAW_BLIT_IMAGE_short "ggdbi"
+#define GRID_LUA_FNC_G_GUI_DRAW_BLIT_IMAGE_human "gui_draw_blit_image"
+#define GRID_LUA_FNC_G_GUI_DRAW_BLIT_IMAGE_fnptr l_grid_gui_draw_blit_image
+#define GRID_LUA_FNC_G_GUI_DRAW_BLIT_IMAGE_usage                                                                                                                                                       \
+  "gui_draw_blit_image(screen_index, image_handle, x, y) Draws an already-decoded decode_image_from_file handle at (x, y), without decoding again. Returns true, or nil plus an error message."
+
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_short "ggdd"
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_human "gui_draw_demo"
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr l_grid_gui_draw_demo

@@ -69,6 +69,16 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 #define GRID_LUA_FNC_L_DRAW_IMAGE_usage                                                                                                                                                                \
   "lcd:draw_image(image_id_or_path, x, y) Decodes an embedded image (numeric id) or a LittleFS image file (string path) and draws it with its top-left corner at (x, y)."
 
+#define GRID_LUA_FNC_L_DRAW_DECODE_IMAGE_short "lddi"
+#define GRID_LUA_FNC_L_DRAW_DECODE_IMAGE_human "draw_decode_image"
+#define GRID_LUA_FNC_L_DRAW_DECODE_IMAGE_usage                                                                                                                                                         \
+  "lcd:draw_decode_image(file_handle, x, y) Decodes a load_file handle and draws it at (x, y), without re-reading it from LittleFS. Returns true, or nil plus an error message."
+
+#define GRID_LUA_FNC_L_DRAW_BLIT_IMAGE_short "ldbi"
+#define GRID_LUA_FNC_L_DRAW_BLIT_IMAGE_human "draw_blit_image"
+#define GRID_LUA_FNC_L_DRAW_BLIT_IMAGE_usage                                                                                                                                                           \
+  "lcd:draw_blit_image(image_handle, x, y) Draws an already-decoded decode_image_from_file handle at (x, y), without decoding again. Returns true, or nil plus an error message."
+
 #define GRID_LUA_FNC_L_DRAW_DEMO_short "ldd"
 #define GRID_LUA_FNC_L_DRAW_DEMO_human "draw_demo"
 #define GRID_LUA_FNC_L_DRAW_DEMO_usage "lcd:draw_demo(n) Draws the n-th iteration of the demo."

@@ -32,6 +32,10 @@ int l_grid_gui_draw_text_fast(lua_State* L);
 int l_grid_gui_draw_text(lua_State* L);
 int l_grid_gui_draw_area_filled(lua_State* L);
 int l_grid_gui_draw_image(lua_State* L);
+int l_grid_load_file(lua_State* L);
+int l_grid_decode_image_from_file(lua_State* L);
+int l_grid_gui_draw_decode_image(lua_State* L);
+int l_grid_gui_draw_blit_image(lua_State* L);
 int l_grid_gui_draw_demo(lua_State* L);
 int l_grid_gui_get_render_time(lua_State* L);
 

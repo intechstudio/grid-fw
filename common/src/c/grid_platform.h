@@ -8,6 +8,15 @@
 
 extern void grid_platform_set_lfs(void* lfs);
 
+// LittleFS has no locking in this build (LFS_THREADSAFE is never defined,
+// and no lock/unlock callbacks are wired into struct lfs_config anywhere in
+// this tree) - grid_platform_fopen/fread/fwrite/fclose/stat and friends
+// below are NOT safe to call concurrently from more than one task. By
+// convention, only the task that runs Lua (script/config persistence in
+// grid_ui.c, and any image/file loading triggered from Lua, e.g. load_file
+// in grid_lua_api_gui.c) may call these. Do not add a second caller on a
+// different task without adding real locking first - the LCD render task
+// briefly did exactly that (a since-fixed bug) before this comment existed.
 extern void* grid_platform_fopen(const char* pathname, const char* mode);
 
 extern int grid_platform_fclose(void* stream);

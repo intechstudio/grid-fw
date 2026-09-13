@@ -382,7 +382,18 @@ void app_main(void) {
 
   TaskHandle_t port_task_hdl;
 
-  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 1024 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
+  // Was 10240: this task runs grid_decode_immediate_to_ui -> grid_lua_dostring,
+  // i.e. any immediate-exec Lua call (including decode_image_from_file's
+  // synchronous stb_image decode, grid_lua_api_gui.c) executes on this stack,
+  // inline in grid_esp32_port_task's own loop (grid_esp32_port.c) - not on
+  // "main" as originally assumed. 10240 overflowed on the very first
+  // decode_image_from_file call, on top of this task's own substantial
+  // pre-existing baseline (SPI slave, USB, MIDI, transport routing across 6
+  // ports, Lua GC stepping, UI event dispatch). Raised generously here so a
+  // real high-water-mark measurement (see grid_esp32_port_task) can actually
+  // be taken instead of crashing before one is captured - right-size once
+  // that data exists, same as was done for the lcd task's 16K.
+  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 1024 * 24, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
 
   log_checkpoint("MODULE INIT");
 
@@ -464,7 +475,33 @@ void app_main(void) {
 
   log_checkpoint("MAIN LOOP");
 
+  // Temporary measurement, not a permanent fixture: decode_image_from_file
+  // (grid_lua_api_gui.c) runs stb_image's PNG/zlib decode synchronously on
+  // whatever task calls it, i.e. this one - the same ~7-10KB worst case that
+  // required growing the lcd task's stack to 16K (grid_esp32_lcd.c).
+  // CONFIG_ESP_MAIN_TASK_STACK_SIZE was originally 8192 (never sized with
+  // this in mind) and overflowed on the very first decode_image_from_file
+  // call - collateral damage landed on an unrelated neighboring task
+  // ("port"), not a clean canary hit on main itself, which is why this
+  // instrumentation matters: log only on a new worst case, exercise
+  // decode_image_from_file plus normal main-task load, then confirm real
+  // margin at the now-bumped 16384 (sdkconfig) instead of assuming it's
+  // enough. Remove once that's confirmed (or once log_checkpoint's own
+  // <512-byte warning gives enough ongoing coverage - it currently only
+  // checkpoints before this loop starts, never inside it).
+  UBaseType_t main_stack_headroom_min = (UBaseType_t)-1;
+  uint32_t main_loop_counter = 0;
+
   while (1) {
+
+    ++main_loop_counter;
+    if ((main_loop_counter & 0xff) == 0) {
+      UBaseType_t headroom = uxTaskGetStackHighWaterMark(NULL);
+      if (headroom < main_stack_headroom_min) {
+        main_stack_headroom_min = headroom;
+        grid_platform_printf("main task stack headroom: %u bytes free (new worst case)\n", (unsigned int)(headroom * sizeof(StackType_t)));
+      }
+    }
 
     // Flush the profiler output if it becomes full
     if (!vmp_flushed && vmp.size == vmp.capacity) {

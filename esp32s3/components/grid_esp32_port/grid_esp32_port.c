@@ -13,6 +13,7 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "freertos/task.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -431,7 +432,30 @@ void grid_esp32_port_task(void* arg) {
 
   struct grid_transport* xport = &grid_transport_state;
 
+  // Temporary measurement, same approach used for the lcd and main tasks:
+  // this task runs incoming immediate-exec Lua calls inline (see
+  // grid_decode_immediate_to_ui -> grid_lua_dostring, reached from
+  // grid_transport_rx_broadcast_tx below), so anything a script does -
+  // including decode_image_from_file's synchronous stb_image decode,
+  // grid_lua_api_gui.c - runs on this stack, on top of this task's own
+  // substantial baseline (SPI slave, USB, MIDI, transport routing, Lua GC
+  // stepping, UI event dispatch). The stack was already raised from 10240 to
+  // 24576 (grid_esp32s3.c) to survive long enough to capture a real number;
+  // log only on a new worst case, then right-size from the data instead of
+  // guessing.
+  UBaseType_t port_stack_headroom_min = (UBaseType_t)-1;
+  uint32_t port_loop_counter = 0;
+
   while (1) {
+
+    ++port_loop_counter;
+    if ((port_loop_counter & 0xff) == 0) {
+      UBaseType_t headroom = uxTaskGetStackHighWaterMark(NULL);
+      if (headroom < port_stack_headroom_min) {
+        port_stack_headroom_min = headroom;
+        grid_platform_printf("port task stack headroom: %u bytes free (new worst case)\n", (unsigned int)(headroom * sizeof(StackType_t)));
+      }
+    }
 
     // When the rolling ID changes without error, reset watchdog
     if (rollid.last_recv != watchdog_rollid_last_recv) {

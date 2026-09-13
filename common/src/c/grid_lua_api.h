@@ -149,6 +149,8 @@ int GRID_LUA_FNC_DRAW_NAME(ldt)(lua_State*);
 int GRID_LUA_FNC_DRAW_NAME(ldft)(lua_State*);
 int GRID_LUA_FNC_DRAW_NAME(ldaf)(lua_State*);
 int GRID_LUA_FNC_DRAW_NAME(ldim)(lua_State*);
+int GRID_LUA_FNC_DRAW_NAME(lddi)(lua_State*);
+int GRID_LUA_FNC_DRAW_NAME(ldbi)(lua_State*);
 int GRID_LUA_FNC_DRAW_NAME(ldd)(lua_State*);
 int GRID_LUA_FNC_DRAW_NAME(lgrt)(lua_State*);
 
