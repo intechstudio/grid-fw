@@ -352,9 +352,6 @@ int main(void) {
   ext_irq_register(PIN_GRID_SYNC_1, button_on_SYNC1_pressed);
   ext_irq_register(PIN_GRID_SYNC_2, button_on_SYNC2_pressed);
 
-  struct grid_fingerprint_buf recent;
-  grid_fingerprint_buf_init(&recent, 64);
-
   // Configure task timers
   timer_sendfull = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
@@ -385,12 +382,15 @@ int main(void) {
       .period = 1000,
   };
 
-  struct grid_transport* xport = &grid_transport_state;
-
   // Load page zero
   grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, 0, 0, NULL);
   update_interrupt_mask_from_bulk_status();
   grid_ui_bulk_flush(&grid_ui_state);
+
+  struct grid_fingerprint_buf recent;
+  grid_fingerprint_buf_init(&recent, 64);
+
+  struct grid_transport* xport = &grid_transport_state;
 
   while (1) {
 
@@ -420,8 +420,6 @@ int main(void) {
       // grid_d51_nvic_debug_priorities();
     }
 
-    grid_usb_task();
-
     if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && grid_usb_connected()) {
 
       grid_platform_printf("USB CONNECTED\n");
@@ -443,10 +441,6 @@ int main(void) {
         // grid_ui_state.page_change_enabled = 1;
       }
     }
-
-    grid_usb_midi_rx_poll(&grid_usb_state.midi);
-    grid_usb_acm_rx_poll(&grid_usb_state.acm);
-    grid_usb_acm_rx_process(&grid_usb_state.acm);
 
     update_interrupt_mask_from_bulk_status();
     grid_ui_bulk_process(&grid_ui_state);
@@ -491,6 +485,12 @@ int main(void) {
     }
 
     grid_utask_health_report();
+
+    grid_usb_task();
+
+    grid_usb_midi_rx_poll(&grid_usb_state.midi);
+    grid_usb_acm_rx_poll(&grid_usb_state.acm);
+    grid_usb_acm_rx_process(&grid_usb_state.acm);
 
     grid_port_send_ui(port_ui);
 
