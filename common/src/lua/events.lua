@@ -17,7 +17,7 @@ _events_process = function(eleidx, evestr)
   end
   for i = 0, #ele do
     if ele[i].type == "touch" then
-      if ele[i]:touch_pop() and ele[i].touch_cb then
+      while ele[i]:touch_pop() and ele[i].touch_cb do
         ele[i]:touch_cb(ele[i]:tid(), ele[i]:tev(), ele[i]:txv(), ele[i]:tyv())
       end
     end
