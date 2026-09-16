@@ -20,10 +20,8 @@ static int grid_rp2350_encoder_dma_tx_chan;
 static int grid_rp2350_encoder_dma_rx_chan;
 static const uint8_t grid_rp2350_encoder_dummy_tx = 0x00;
 
-// Re-arms both DMA channels for the next transfer_length-byte burst. The TX
-// channel's read address never changes (same dummy byte re-read each time,
-// just there to pace SCK), but the RX channel's write address must be reset
-// back to the start of rx_buffer since it auto-increments during the burst.
+// Re-arms both DMA channels for the next burst; RX's write address must be
+// reset to rx_buffer's start each time since it auto-increments, TX's doesn't.
 static void grid_rp2350_encoder_arm_dma(struct grid_rp2350_encoder_model* enc) {
 
   dma_channel_set_trans_count(grid_rp2350_encoder_dma_tx_chan, enc->transfer_length, false);
@@ -34,9 +32,8 @@ static void grid_rp2350_encoder_arm_dma(struct grid_rp2350_encoder_model* enc) {
   dma_start_channel_mask((1u << grid_rp2350_encoder_dma_tx_chan) | (1u << grid_rp2350_encoder_dma_rx_chan));
 }
 
-// Fires once the RX DMA channel has captured transfer_length bytes. Pulses CS
-// low (the shift registers' load pulse) then back high before restarting, per
-// grid_d51_encoder.c's spi_transfer_complete_cb.
+// Pulses CS low (shift-register load pulse) then high before restarting,
+// per grid_d51_encoder.c's spi_transfer_complete_cb.
 static void grid_rp2350_encoder_dma_irq(void) {
 
   struct grid_rp2350_encoder_model* enc = &grid_rp2350_encoder_state;

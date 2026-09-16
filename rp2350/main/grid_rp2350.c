@@ -35,16 +35,11 @@
 const struct luaL_Reg gui_lib[] = {{NULL, NULL}};
 const struct luaL_Reg* grid_lua_api_gui_lib_reference = gui_lib;
 
-// USART x4 (N/E/S/W), UI, USB -- the same fixed 6-port layout D51/ESP32 use
-// (grid_transport.h's GRID_TRANSPORT_PORT_INDEX_UI/USB default to 4/5), now
-// that grid_rp2350_uart.c provides the daisy-chain directions.
+// Fixed 6-port layout (USART x4, UI, USB), matching D51/ESP32.
 enum { GRID_RP2350_PORT_COUNT = 6 };
 
-// GPIO6's mux entry for UART1 TX (see grid_rp2350_led.h for why the function
-// number isn't the generic GPIO_FUNC_UART here). BU16 is a temporary
-// exception on the current prototype hardware, using GPIO4 instead -- once
-// the newer fixed BU16 prototype lands, it moves to GPIO6/F11 like every
-// other variant and this whole per-variant pin selection goes away.
+// GPIO6 UART1 TX mux function (not generic GPIO_FUNC_UART). BU16's current
+// prototype uses GPIO4 instead until the fixed prototype lands on GPIO6.
 #define GRID_RP2350_GPIO6_FUNC_UART1_TX 11
 
 // MAP_MODE button: external pull-up, active-low (pressed = 0). No internal
@@ -92,12 +87,8 @@ static void grid_fs_bringup(void) {
   printf("littlefs: boot count = %lu\n", (unsigned long)boot_count);
 }
 
-// Replaces D51's RTC_Scheduler_realtime_ms task: RP2350 already has a real
-// hardware microsecond clock, so only the UI ms-tick hook itself is needed,
-// driven by a hardware alarm instead of D51's software RTC emulation. Also
-// drives the MAP_MODE button (D51/ESP32 poll it from their own 1ms tick the
-// same way) -- grid_ui_rtc_ms_mapmode_handler is a plain common/src/c edge
-// detector with no debounce, so this matches existing behavior exactly.
+// Replaces D51's RTC_Scheduler_realtime_ms with a hardware-alarm-driven UI
+// ms-tick; also polls MAP_MODE here, same as D51/ESP32's 1ms tick.
 static struct repeating_timer grid_rp2350_ms_timer;
 
 static bool grid_rp2350_ms_tick_cb(struct repeating_timer* t) {
@@ -132,8 +123,7 @@ static void grid_utask_ping(struct grid_utask_timer* timer) {
 }
 
 // Flashes green/red on USART neighbor connect/disconnect and resets the
-// disconnected direction's transmitter -- ports d51n20a/grid_d51n20a.c's
-// handle_connection_effect verbatim.
+// disconnected direction's transmitter, matching D51's handle_connection_effect.
 static void handle_connection_effect(void) {
 
   for (uint8_t dir = 0; dir < GRID_RP2350_UART_DIR_COUNT; ++dir) {
@@ -275,9 +265,8 @@ int main() {
   grid_rp2350_uart_init();
   grid_rp2350_checkpoint("TRANSPORT/PORT/UART INIT");
 
-  // Without this, active-bank color stays at its zero-init default (black),
-  // so an "auto" (-1) element LED color -- which derives from it -- resolves
-  // to black regardless of button state. D51/ESP32 both call this too.
+  // Needed so "auto" (-1) element LED color, which derives from active-bank
+  // color, doesn't resolve to black from zero-init. D51/ESP32 also call this.
   grid_sys_set_bank(&grid_sys_state, 0);
   grid_rp2350_checkpoint("BANK INIT");
 
@@ -296,14 +285,8 @@ int main() {
   timer_midi_rx = (struct grid_utask_timer){.last = now, .period = 1000};
   grid_rp2350_checkpoint("UTASK TIMERS SEEDED");
 
-  // Page 0 must be loaded (ui->element_list's template_parameter_list
-  // allocated/populated) before module init below starts the ADC/encoder --
-  // their ISRs read that array on literally the first sample, and hardware
-  // can complete a conversion in microseconds, faster than any interrupt
-  // mask toggled after the fact could reliably win the race. ESP32 orders
-  // its own bring-up the same way (page load before module init); D51
-  // instead starts its ADC first and masks interrupts around the page load,
-  // which turns out not to fully close this window (see project memory).
+  // Page 0 must load before ADC/encoder init -- their ISRs read
+  // ui->element_list from the first sample, faster than any IRQ mask can close.
   grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, 0, 0, NULL);
   grid_ui_bulk_flush(&grid_ui_state);
   grid_rp2350_checkpoint("PAGE 0 BULK LOAD");

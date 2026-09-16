@@ -18,9 +18,8 @@
 #include "grid_swsr.h"
 #include "grid_ui.h"
 
-// RP2040/RP2350 only expose a 64-bit flash unique ID (vs. the 128-bit IDs D51
-// and ESP32 read), so the upper two words of the shared 4x uint32_t shape are
-// left zeroed.
+// RP2040/RP2350 only expose a 64-bit flash unique ID (vs. D51/ESP32's 128-bit),
+// so the upper two words of the shared 4x uint32_t shape stay zeroed.
 uint32_t grid_platform_get_id(uint32_t* return_array) {
   pico_unique_board_id_t board_id;
   pico_get_unique_board_id(&board_id);
@@ -139,12 +138,8 @@ void grid_platform_lcd_set_backlight(uint8_t backlight) {}
 
 uint8_t grid_platform_get_adc_bit_depth() { return 12; }
 
-// RP2350's 4-way USART daisy-chain transport lives in grid_rp2350_uart.c
-// (PIO+DMA per direction, mirroring D51's real-DMA model -- see that file's
-// header comment for why PIO rather than a real UART peripheral). These 3
-// hooks are the entire grid_platform_* surface it needs.
 // grid_platform_enable/disable_grid_transmitter (present on D51) have no
-// callers anywhere in the shared codebase -- dead code there, skipped here.
+// callers anywhere in the shared codebase -- skipped here as dead code.
 uint32_t grid_platform_get_frame_len(uint8_t dir) {
 
   assert(dir < GRID_RP2350_UART_DIR_COUNT);
@@ -168,14 +163,8 @@ void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir) {
   grid_rp2350_uart_tx_start(dir, size);
 }
 
-// direction arrives in either representation depending on the caller:
-// grid_port_softreset (grid_port.c) passes the raw enum grid_port_dir (0-3),
-// while grid_rp2350_uart_port_recv passes the same raw enum too -- but D51's
-// own grid_d51_port_recv_uwsr instead passes grid_port_dir_to_code's
-// GRID_CONST_NORTH.. range (0x11-0x14), which its own implementation expects
-// and grid_port_softreset's call does not actually match. Normalizing here
-// accepts either range so this hook is correct regardless of which
-// convention a given caller uses.
+// Normalizes direction to a plain 0-3 enum regardless of whether the caller
+// passes that or D51's GRID_CONST_NORTH.. encoded range.
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) {
 
   uint8_t dir = direction >= GRID_CONST_NORTH ? direction - GRID_CONST_NORTH : direction;
@@ -187,7 +176,6 @@ uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) {
 }
 
 // No touch element on BU16 -- both platform-provided element-state tables
-// (required by grid_ui.c) stay empty, matching D51
-// (d51n20a/grid/d51/grid_d51.c:707-709).
+// (required by grid_ui.c) stay empty, matching D51.
 const grid_ui_element_state_any_t grid_ui_element_state_anys[GRID_PARAMETER_ELEMENT_COUNT] = {0};
 const grid_ui_element_state_reset_t grid_ui_element_state_resets[GRID_PARAMETER_ELEMENT_COUNT] = {0};
