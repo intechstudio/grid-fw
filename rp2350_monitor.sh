@@ -15,7 +15,7 @@ OPENOCD="${OPENOCD:-$(command -v openocd-rp2350 || echo openocd)}"
 # Start OpenOCD: attach, locate the RTT control block in SRAM, serve channel 0.
 env -u OPENOCD_SCRIPTS "$OPENOCD" -f rp2350/rp2350-openocd.cfg \
 	-c "init" \
-	-c "rtt setup 0x20003608 0x18 \"SEGGER RTT\"" \
+	-c "rtt setup 0x20000000 0x1000 \"SEGGER RTT\"" \
 	-c "rtt start" \
 	-c "rtt server start $PORT 0" &
 OCD_PID=$!

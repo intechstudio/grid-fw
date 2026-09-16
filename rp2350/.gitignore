@@ -7,4 +7,5 @@
 !main/CMakeLists.txt
 !main/*.c
 !main/*.h
+!main/*.incl
 !main/*.pio

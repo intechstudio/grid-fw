@@ -151,7 +151,7 @@ target_compile_definitions(grid_rp2350 PRIVATE PICO_FLASH_SIZE_BYTES=0x200000)
 # grid_rp2350_module_bu16.c, etc.) -- turning a would-be clean abort into
 # silent memory corruption. -UNDEBUG (processed after CMake's own -DNDEBUG)
 # keeps asserts active regardless of build type.
-target_compile_options(grid_rp2350 PRIVATE -UNDEBUG)
+target_compile_options(grid_rp2350 PRIVATE -UNDEBUG -DSEGGER_RTT_SECTION=".rtt")
 
 # Import pico_stdlib which imports commonly used features. hardware_resets is
 # needed by TinyUSB's rp2040 DCD (dcd_rp2040.c, RESETS_RESET_USBCTRL_BITS) and
@@ -176,3 +176,5 @@ pico_enable_stdio_rtt(grid_rp2350 1)
 
 # Create map/bin/hex/uf2 files
 pico_add_extra_outputs(grid_rp2350)
+
+pico_add_linker_script_override_path(grid_rp2350 ${CMAKE_CURRENT_LIST_DIR} FILES memory_extra.incl)

@@ -24,7 +24,7 @@ RUN apt-get update && \
 # Clone pico sdk
 RUN mkdir -p pico && \
     cd pico && \
-    git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.1.1 && \
+    git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.3.1 && \
     cd pico-sdk/ && \
     git submodule update --init
 
@@ -34,7 +34,7 @@ ENV PICO_SDK_PATH=/pico/pico-sdk
 
 # Install picotool
 RUN apt-get install -y libusb-1.0-0-dev
-RUN git clone --depth 1 --branch 2.1.1 https://github.com/raspberrypi/picotool.git
+RUN git clone --depth 1 --branch 2.3.1 https://github.com/raspberrypi/picotool.git
 RUN mkdir -p picotool/build
 WORKDIR /picotool
 RUN cmake . -B build
