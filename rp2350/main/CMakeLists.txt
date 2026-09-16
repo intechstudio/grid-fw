@@ -12,14 +12,12 @@ add_executable(grid_rp2350
     grid_rp2350_module_ef44.c
     grid_rp2350_uart.c
     ../../common/src/c/grid_led.c
-    # Shared LittleFS wrapper + portable FS platform API + the vendored
-    # LittleFS engine (all from common/).
+    # Shared LittleFS wrapper + FS platform API + vendored engine (common/).
     ../../common/src/c/grid_littlefs.c
     ../../common/src/c/grid_platform.c
     ../../common/dep/littlefs/lfs.c
     ../../common/dep/littlefs/lfs_util.c
-    # Shared, platform-agnostic composite CDC+MIDI+HID USB device stack
-    # (common/src/c) -- identical to the D51/ESP32-S3 integrations.
+    # Shared composite CDC+MIDI+HID USB device stack, identical to D51/ESP32-S3.
     ../../common/src/c/grid_usb.c
     ../../common/src/c/grid_usb_acm.c
     ../../common/src/c/grid_usb_midi.c
@@ -28,19 +26,12 @@ add_executable(grid_rp2350
     ../../common/src/c/grid_usb_mouse.c
     ../../common/src/c/grid_usb_gamepad.c
     ../../common/src/c/grid_usb_macro.c
-    # grid_usb_acm/midi/gamepad/macro.c depend on the swsr ring buffer and on
-    # grid_sys_state/grid_sys_get_rx_mode (USB rx-mode gating) even though this
-    # bringup doesn't wire the rest of grid_transport/grid_port.
+    # These depend on swsr + grid_sys_get_rx_mode (USB rx-mode gating) even
+    # though this bringup doesn't wire grid_transport/grid_port.
     ../../common/src/c/grid_swsr.c
     ../../common/src/c/grid_sys.c
-    # Grid protocol/message/transport/UI/Lua stack -- the same file list every
-    # other platform (D51, ESP32-S3) compiles in full and dispatches at
-    # runtime via hwcfg; see d51n20a/gcc/Makefile and
-    # esp32s3/components/grid_common/CMakeLists.txt. RP2350 only ever
-    # exercises the BU16 paths today, but grid_module.c bundles every module
-    # type's UI-init in one translation unit, so the full UI element-type
-    # surface (button/encoder/endless/lcd/potmeter/system/touch) has to be
-    # linked regardless.
+    # Same file list D51/ESP32-S3 compile; RP2350 only exercises BU16 today but
+    # grid_module.c bundles every UI element type's init in one translation unit.
     ../../common/src/c/grid_ain.c
     ../../common/src/c/grid_allocator.c
     ../../common/src/c/grid_asc.c
@@ -67,8 +58,7 @@ add_executable(grid_rp2350
     ../../common/src/c/grid_ui_system.c
     ../../common/src/c/grid_ui_touch.c
     ../../common/src/c/grid_utask.c
-    # Vendored Lua 5.5.0 interpreter (common/dep), same source list as
-    # d51n20a/gcc/Makefile.
+    # Vendored Lua 5.5.0 (common/dep), same source list as d51n20a/gcc/Makefile.
     ../../common/dep/lua-5.5.0/src/dirent.c
     ../../common/dep/lua-5.5.0/src/lapi.c
     ../../common/dep/lua-5.5.0/src/lauxlib.c
@@ -104,11 +94,8 @@ add_executable(grid_rp2350
     ../../common/dep/lua-5.5.0/src/lzio.c
     # TOML config parsing, needed by grid_config.c for calibration persistence.
     ../../common/dep/tomlc99/toml.c
-    # TinyUSB sourced from the shared common/dep/tinyusb submodule (an
-    # Intech Studio fork), NOT pico-sdk's own vendored lib/tinyusb -- mirrors
-    # the file list d51n20a/gcc/Makefile compiles, with the SAMD DCD swapped
-    # for the rp2040 DCD (TinyUSB has no distinct RP2350 port; rp2040 covers
-    # both chips, see common/dep/tinyusb/src/common/tusb_mcu.h).
+    # TinyUSB from common/dep/tinyusb (Intech fork), NOT pico-sdk's vendored
+    # copy -- rp2040 DCD covers RP2350 too (no distinct TinyUSB RP2350 port).
     ../../common/dep/tinyusb/src/tusb.c
     ../../common/dep/tinyusb/src/common/tusb_fifo.c
     ../../common/dep/tinyusb/src/device/usbd.c
@@ -120,17 +107,12 @@ add_executable(grid_rp2350
     ../../common/dep/tinyusb/src/portable/raspberrypi/rp2040/rp2040_usb.c
 )
 
-# PIO programs for the 4-way USART daisy-chain (grid_rp2350_uart.c), copied
-# from rp2040/src/ -- see that file's header comment.
+# PIO programs for the 4-way USART daisy-chain, copied from rp2040/src/.
 pico_generate_pio_header(grid_rp2350 ${CMAKE_CURRENT_LIST_DIR}/uart_tx.pio)
 pico_generate_pio_header(grid_rp2350 ${CMAKE_CURRENT_LIST_DIR}/uart_rx.pio)
 
-# Access to the shared grid_led / grid_littlefs / grid_usb models (common/src/c),
-# the LittleFS public header via "littlefs/lfs.h" (common/dep), the engine's own
-# "lfs.h" / "lfs_util.h" includes (common/dep/littlefs), TinyUSB's public headers
-# (common/dep/tinyusb/src), and this directory's own tusb_config.h (TinyUSB's
-# tusb_option.h resolves "tusb_config.h" via the include path, not relative to
-# the includer, so "." must be listed explicitly).
+# Needed for grid_led/littlefs/usb headers, littlefs's own includes, TinyUSB's
+# public headers, and this dir's tusb_config.h (resolved via include path).
 target_include_directories(grid_rp2350 PRIVATE
     .
     ../../common/src/c
@@ -145,33 +127,17 @@ target_include_directories(grid_rp2350 PRIVATE
 # 4 MB. Guarded #ifndef in the board header, so this -D wins without a warning.
 target_compile_definitions(grid_rp2350 PRIVATE PICO_FLASH_SIZE_BYTES=0x200000)
 
-# Pico SDK defaults CMAKE_BUILD_TYPE to Release when unset, which defines
-# NDEBUG and silently compiles out every assert() in common/src/c (bounds
-# checks in grid_swsr_write, element-index checks in
-# grid_rp2350_module_bu16.c, etc.) -- turning a would-be clean abort into
-# silent memory corruption. -UNDEBUG (processed after CMake's own -DNDEBUG)
-# keeps asserts active regardless of build type.
+# CMake defaults to Release (defines NDEBUG), silently compiling out every
+# assert() in common/src/c. -UNDEBUG keeps them active regardless of build type.
 target_compile_options(grid_rp2350 PRIVATE -UNDEBUG)
 
-# Import pico_stdlib which imports commonly used features. hardware_resets is
-# needed by TinyUSB's rp2040 DCD (dcd_rp2040.c, RESETS_RESET_USBCTRL_BITS) and
-# pico_sync by its OPT_OS_PICO OSAL (osal_pico.h: pico/sem.h, pico/mutex.h,
-# pico/critical_section.h); pico_unique_id backs grid_rp2350_platform.c's
+# hardware_resets is needed by TinyUSB's rp2040 DCD; pico_unique_id backs
 # grid_platform_get_id().
-target_link_libraries(grid_rp2350 PRIVATE pico_stdlib hardware_uart hardware_dma hardware_adc hardware_spi hardware_pio hardware_irq hardware_flash hardware_sync hardware_resets hardware_watchdog pico_sync pico_unique_id pico_rand)
+target_link_libraries(grid_rp2350 PRIVATE pico_stdlib hardware_uart hardware_dma hardware_adc hardware_spi hardware_pio hardware_irq hardware_flash hardware_sync hardware_resets hardware_watchdog pico_unique_id pico_rand)
 
-# Route stdio to UART0 (GPIO0 TX, 115200 8N1) and RTT-over-SWD. USB CDC is NOT
-# a stdio console here -- the composite grid_usb.c device stack owns the USB
-# CDC/ACM channel as the framed Grid protocol channel, matching D51/ESP32-S3
-# (pico_enable_stdio_usb would pull in pico-sdk's own vendored TinyUSB and
-# fight grid_usb.c for descriptor/enumeration ownership).
-#
-# The pico2 board's default UART0 RX pin is GPIO1, which collides with the
-# HWCFG SHIFT strap pin (see grid_rp2350_platform.c). Console RX is otherwise
-# unused (nothing reads stdin), so it's moved off GPIO1 rather than giving up
-# a stdio console entirely.
-target_compile_definitions(grid_rp2350 PRIVATE PICO_DEFAULT_UART_RX_PIN=9)
-pico_enable_stdio_uart(grid_rp2350 1)
+# USB CDC is the Grid protocol channel (grid_usb.c), not stdio, matching
+# D51/ESP32-S3. RTT-over-SWD is the only console -- UART0 stays off since every RX pin conflicts (HWCFG strap or a daisy-chain PIO line).
+pico_enable_stdio_uart(grid_rp2350 0)
 pico_enable_stdio_rtt(grid_rp2350 1)
 
 # Create map/bin/hex/uf2 files

@@ -17,6 +17,7 @@
 #include "grid_rp2350_uart.h"
 #include "grid_swsr.h"
 #include "grid_ui.h"
+#include "grid_usb.h"
 
 // RP2040/RP2350 only expose a 64-bit flash unique ID (vs. D51/ESP32's 128-bit),
 // so the upper two words of the shared 4x uint32_t shape stay zeroed.
@@ -67,18 +68,20 @@ uint32_t grid_platform_get_hwcfg() {
   gpio_pull_up(GRID_RP2350_HWCFG_DATA2_PIN);
 
   gpio_put(GRID_RP2350_HWCFG_SHIFT_PIN, 0);
-  sleep_ms(1);
+  gpio_put(GRID_RP2350_HWCFG_CLOCK_PIN, 1);
+
+  sleep_us(40);
+
   gpio_put(GRID_RP2350_HWCFG_SHIFT_PIN, 1);
-  sleep_ms(1);
-  gpio_put(GRID_RP2350_HWCFG_SHIFT_PIN, 0);
+
+  sleep_us(10);
 
   uint8_t hwcfg_value = 0;
   uint8_t hwcfg_value2 = 0;
 
   for (uint8_t i = 0; i < 8; i++) {
 
-    gpio_put(GRID_RP2350_HWCFG_SHIFT_PIN, 1);
-    sleep_ms(1);
+    gpio_put(GRID_RP2350_HWCFG_CLOCK_PIN, 0);
 
     if (gpio_get(GRID_RP2350_HWCFG_DATA_PIN)) {
       hwcfg_value |= (1 << i);
@@ -87,12 +90,9 @@ uint32_t grid_platform_get_hwcfg() {
       hwcfg_value2 |= (1 << i);
     }
 
-    if (i != 7) {
-
-      gpio_put(GRID_RP2350_HWCFG_CLOCK_PIN, 1);
-      sleep_ms(1);
-      gpio_put(GRID_RP2350_HWCFG_CLOCK_PIN, 0);
-    }
+    sleep_us(10);
+    gpio_put(GRID_RP2350_HWCFG_CLOCK_PIN, 1);
+    sleep_us(10);
   }
 
   return hwcfg_value != 255 ? hwcfg_value : hwcfg_value2;
@@ -138,6 +138,10 @@ void grid_platform_lcd_set_backlight(uint8_t backlight) {}
 
 uint8_t grid_platform_get_adc_bit_depth() { return 12; }
 
+// Unused hook on every platform today (D51 increments a counter nothing
+// external reads; ESP32 stubs it the same way).
+void grid_platform_sync1_pulse_send() {}
+
 // grid_platform_enable/disable_grid_transmitter (present on D51) have no
 // callers anywhere in the shared codebase -- skipped here as dead code.
 uint32_t grid_platform_get_frame_len(uint8_t dir) {
@@ -163,11 +167,17 @@ void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir) {
   grid_rp2350_uart_tx_start(dir, size);
 }
 
-// Normalizes direction to a plain 0-3 enum regardless of whether the caller
-// passes that or D51's GRID_CONST_NORTH.. encoded range.
-uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) {
+uint8_t grid_platform_stop_grid_transmitter(uint8_t dir) {
 
-  uint8_t dir = direction >= GRID_CONST_NORTH ? direction - GRID_CONST_NORTH : direction;
+  assert(dir < GRID_RP2350_UART_DIR_COUNT);
+
+  grid_rp2350_uart_port_stop_dma(dir);
+
+  return 0;
+}
+
+uint8_t grid_platform_reset_grid_transmitter(uint8_t dir) {
+
   assert(dir < GRID_RP2350_UART_DIR_COUNT);
 
   grid_rp2350_uart_port_reset_dma(dir);

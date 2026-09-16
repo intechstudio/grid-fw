@@ -168,6 +168,43 @@ void grid_port_softreset(struct grid_port* port) {
   grid_platform_reset_grid_transmitter(port->dir);
 }
 
+void grid_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, struct grid_fingerprint_buf* fpb) {
+
+  if (grid_uwsr_overflow(uwsr)) {
+
+    // Stop before touching uwsr state, not after: otherwise DMA can still
+    // write at its old offset while uwsr_init has already reset it.
+    grid_platform_stop_grid_transmitter(port->dir);
+    grid_uwsr_init(uwsr, uwsr->reject);
+    grid_platform_reset_grid_transmitter(port->dir);
+  }
+
+  struct grid_msg msg;
+
+  if (!grid_msg_from_uwsr(&msg, uwsr)) {
+    return;
+  }
+
+  if (grid_frame_verify((uint8_t*)msg.data, msg.length) != 0) {
+    return;
+  }
+
+  grid_str_transform_brc_params((uint8_t*)msg.data, msg.length, port->dx, port->dy, port->partner.rot);
+
+  uint32_t fingerprint = grid_fingerprint_calculate(msg.data);
+
+  if (msg.data[1] == GRID_CONST_BRC) {
+
+    if (grid_fingerprint_buf_find(fpb, fingerprint)) {
+      return;
+    }
+
+    grid_fingerprint_buf_store(fpb, fingerprint);
+  }
+
+  grid_port_recv_msg(port, (uint8_t*)msg.data, msg.length);
+}
+
 void grid_port_recv_msg(struct grid_port* port, uint8_t* msg, size_t size) {
 
   switch (msg[1]) {

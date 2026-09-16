@@ -18,8 +18,7 @@ ENTRYPOINT ["/esp-idf/tools/docker/entrypoint.sh"]
 
 # Install pico sdk and build dependencies
 RUN apt-get update && \
-    apt-get install -y git python3 python3-pip cmake gcc-arm-none-eabi libnewlib-arm-none-eabi gdb-multiarch build-essential xxd && \
-    ln -sf "$(command -v gdb-multiarch)" /usr/local/bin/arm-none-eabi-gdb
+    apt-get install -y git python3 python3-pip cmake gcc-arm-none-eabi libnewlib-arm-none-eabi gdb-multiarch build-essential xxd
 
 # Clone pico sdk
 RUN mkdir -p pico && \
@@ -51,13 +50,12 @@ WORKDIR /
 # `--disable-werror` is required (newer GCC errors on a warning in the angie driver).
 RUN apt-get update && \
     apt-get install -y autoconf automake libtool pkg-config texinfo libhidapi-dev libusb-1.0-0-dev
-RUN git clone https://github.com/raspberrypi/openocd.git --branch sdk-2.0.0 --depth 1 /openocd-rp2350
-WORKDIR /openocd-rp2350
-RUN ./bootstrap && \
+RUN git clone https://github.com/raspberrypi/openocd.git --branch sdk-2.0.0 --depth 1 /openocd-rp2350 && \
+    cd /openocd-rp2350 && \
+    ./bootstrap && \
     ./configure --prefix=/opt/openocd-rp2350 --enable-cmsis-dap --enable-picoprobe --disable-werror && \
     make -j"$(nproc)" && \
     make install
-WORKDIR /
 RUN ln -sf /opt/openocd-rp2350/bin/openocd /usr/local/bin/openocd-rp2350
 
 RUN apt-get update && \

@@ -8,13 +8,7 @@
 
 #include "grid_ain.h"
 #include "grid_asc.h"
-#include "grid_cal.h"
-#include "grid_config.h"
 #include "grid_platform.h"
-#include "grid_sys.h"
-#include "grid_ui.h"
-
-#include "grid_rp2350_adc.h"
 
 // Modeled on ESP32's hall-sensor BU16 driver (pressure-sensitive analog
 // buttons), not D51's simple mux'd push-buttons. This board reports

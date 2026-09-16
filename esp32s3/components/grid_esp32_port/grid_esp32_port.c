@@ -26,6 +26,7 @@
 #include "grid_esp32_pins.h"
 #include "grid_esp32_platform.h"
 #include "grid_health.h"
+#include "grid_led.h"
 #include "grid_rollid.h"
 #include "grid_sys.h"
 #include "grid_transport.h"

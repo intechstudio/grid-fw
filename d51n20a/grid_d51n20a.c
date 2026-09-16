@@ -275,41 +275,6 @@ static void button_on_SYNC1_pressed(void) { sync1_received++; }
 
 static void button_on_SYNC2_pressed(void) { sync2_received++; }
 
-void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, struct grid_fingerprint_buf* fpb) {
-
-  if (grid_uwsr_overflow(uwsr)) {
-
-    grid_uwsr_init(uwsr, uwsr->reject);
-
-    grid_platform_reset_grid_transmitter(grid_port_dir_to_code(port->dir));
-  }
-
-  struct grid_msg msg;
-
-  if (!grid_msg_from_uwsr(&msg, uwsr)) {
-    return;
-  }
-
-  if (grid_frame_verify((uint8_t*)msg.data, msg.length) != 0) {
-    return;
-  }
-
-  grid_str_transform_brc_params((uint8_t*)msg.data, msg.length, port->dx, port->dy, port->partner.rot);
-
-  uint32_t fingerprint = grid_fingerprint_calculate(msg.data);
-
-  if (msg.data[1] == GRID_CONST_BRC) {
-
-    if (grid_fingerprint_buf_find(fpb, fingerprint)) {
-      return;
-    }
-
-    grid_fingerprint_buf_store(fpb, fingerprint);
-  }
-
-  grid_port_recv_msg(port, (uint8_t*)msg.data, msg.length);
-}
-
 int main(void) {
 
   // Allocate profiler & assign its interface
@@ -456,7 +421,7 @@ int main(void) {
       struct grid_port* port = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
       struct grid_uwsr_t* uwsr = &usart_uwsr[i];
 
-      grid_d51_port_recv_uwsr(port, uwsr, &recent);
+      grid_port_recv_uwsr(port, uwsr, &recent);
     }
 
     struct grid_port* port_ui = grid_transport_get_port(xport, 4, GRID_PORT_UI, 0);

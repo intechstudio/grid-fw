@@ -347,7 +347,7 @@ int main() {
 
       struct grid_port* port = grid_transport_get_port(&grid_transport_state, dir, GRID_PORT_USART, dir);
 
-      grid_rp2350_uart_port_recv(port, &grid_rp2350_uart_uwsr[dir], &recent);
+      grid_port_recv_uwsr(port, &grid_rp2350_uart_uwsr[dir], &recent);
     }
 
     for (uint8_t dir = 0; dir < GRID_RP2350_UART_DIR_COUNT; ++dir) {

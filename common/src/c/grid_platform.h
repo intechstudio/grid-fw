@@ -74,7 +74,10 @@ extern uint32_t grid_platform_get_frame_len(uint8_t dir);
 
 extern void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir);
 
-extern uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
+// dir is always a raw enum grid_port_dir value (0-3) -- never the wire-protocol
+// GRID_CONST_NORTH.. encoding, which is grid_port_dir_to_code()'s concern, not this one's.
+extern uint8_t grid_platform_stop_grid_transmitter(uint8_t dir);
+extern uint8_t grid_platform_reset_grid_transmitter(uint8_t dir);
 
 extern void* grid_platform_allocate_volatile(size_t size);
 

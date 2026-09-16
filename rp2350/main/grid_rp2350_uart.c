@@ -10,9 +10,6 @@
 #include "uart_rx.pio.h"
 #include "uart_tx.pio.h"
 
-#include "grid_msg.h"
-#include "grid_platform.h"
-#include "grid_protocol.h"
 #include "grid_transport.h"
 
 // Real UARTs already claimed (UART0=stdio, UART1=WS2812 LED) -- daisy-chain
@@ -160,43 +157,4 @@ void grid_rp2350_uart_init(void) {
   // Boosted above PICO_DEFAULT_IRQ_PRIORITY so grid_rp2350_littlefs_api.c can
   // mask everything else via BASEPRI during a flash program/erase.
   irq_set_priority(DMA_IRQ_2, PICO_HIGHEST_IRQ_PRIORITY);
-}
-
-// Ported from D51's grid_d51_port_recv_uwsr; only the overflow branch below
-// deliberately differs from D51's literal source.
-void grid_rp2350_uart_port_recv(struct grid_port* port, struct grid_uwsr_t* uwsr, struct grid_fingerprint_buf* fpb) {
-
-  if (grid_uwsr_overflow(uwsr)) {
-
-    // Stop DMA *before* touching uwsr state, not after: otherwise DMA can
-    // still write at its old offset while uwsr_init has already reset it.
-    grid_rp2350_uart_port_stop_dma(port->dir);
-    grid_uwsr_init(uwsr, uwsr->reject);
-    grid_rp2350_uart_port_reset_dma(port->dir);
-  }
-
-  struct grid_msg msg;
-
-  if (!grid_msg_from_uwsr(&msg, uwsr)) {
-    return;
-  }
-
-  if (grid_frame_verify((uint8_t*)msg.data, msg.length) != 0) {
-    return;
-  }
-
-  grid_str_transform_brc_params((uint8_t*)msg.data, msg.length, port->dx, port->dy, port->partner.rot);
-
-  uint32_t fingerprint = grid_fingerprint_calculate(msg.data);
-
-  if (msg.data[1] == GRID_CONST_BRC) {
-
-    if (grid_fingerprint_buf_find(fpb, fingerprint)) {
-      return;
-    }
-
-    grid_fingerprint_buf_store(fpb, fingerprint);
-  }
-
-  grid_port_recv_msg(port, (uint8_t*)msg.data, msg.length);
 }
