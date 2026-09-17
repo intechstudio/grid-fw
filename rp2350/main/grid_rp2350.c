@@ -70,6 +70,27 @@ static void grid_utask_led(struct grid_utask_timer* timer) {
   grid_rp2350_led_start_transfer(&grid_rp2350_led_state);
 }
 
+struct grid_utask_timer timer_format;
+
+static bool grid_utask_format(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return false;
+  }
+
+  if (gpio_get(GRID_RP2350_MAPMODE_PIN) == 0) {
+
+    grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
+    grid_alert_all_set_frequency(&grid_led_state, 4);
+    grid_utask_led(&timer_led);
+    grid_platform_nvm_format_and_mount();
+    sleep_ms(500);
+    grid_utask_led(&timer_led);
+  }
+
+  return true;
+}
+
 static struct grid_utask_timer timer_ping;
 
 static void grid_utask_ping(struct grid_utask_timer* timer) {
@@ -171,6 +192,35 @@ static void grid_utask_midi_rx(struct grid_utask_timer* timer) {
 
 int main() {
 
+  timer_led = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 10000,
+  };
+  timer_format = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_MAPMODE_TIMEOUT_us,
+  };
+  timer_ping = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_PINGINTERVAL_us,
+  };
+  timer_heart = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_HEARTBEATINTERVAL_us,
+  };
+  timer_health_report = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000000,
+  };
+  timer_process_ui = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_UICOOLDOWN_us,
+  };
+  timer_midi_rx = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000,
+  };
+
   stdio_init_all();
 
   gpio_init(GRID_RP2350_MAPMODE_PIN);
@@ -219,17 +269,12 @@ int main() {
   grid_rp2350_checkpoint("BANK INIT");
   grid_sys_set_bank(&grid_sys_state, 0);
 
+  while (!grid_utask_format(&timer_format)) {
+  }
+
   grid_rp2350_checkpoint("LOAD PAGE ZERO");
   grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, 0, 0, NULL);
   grid_ui_bulk_flush(&grid_ui_state);
-
-  uint64_t now = grid_platform_rtc_get_micros();
-  timer_led = (struct grid_utask_timer){.last = now, .period = 10000};
-  timer_ping = (struct grid_utask_timer){.last = now, .period = GRID_PARAMETER_PINGINTERVAL_us};
-  timer_heart = (struct grid_utask_timer){.last = now, .period = GRID_PARAMETER_HEARTBEATINTERVAL_us};
-  timer_health_report = (struct grid_utask_timer){.last = now, .period = 1000000};
-  timer_process_ui = (struct grid_utask_timer){.last = now, .period = GRID_PARAMETER_UICOOLDOWN_us};
-  timer_midi_rx = (struct grid_utask_timer){.last = now, .period = 1000};
 
   if (grid_hwcfg_module_is_bu16(&grid_sys_state)) {
     grid_rp2350_module_bu16_init(&grid_sys_state, &grid_ui_state, &grid_rp2350_adc_state, &grid_config_state, &grid_cal_state);
