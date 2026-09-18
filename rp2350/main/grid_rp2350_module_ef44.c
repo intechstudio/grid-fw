@@ -9,14 +9,7 @@
 
 #include "grid_ain.h"
 #include "grid_asc.h"
-#include "grid_cal.h"
-#include "grid_config.h"
 #include "grid_platform.h"
-#include "grid_sys.h"
-#include "grid_ui.h"
-
-#include "grid_rp2350_adc.h"
-#include "grid_rp2350_encoder.h"
 
 // This board has 4 direct ADC pins (no external mux, unlike BU16's two
 // 74HC4052s), and its 4 encoders are read via a shift-register chain

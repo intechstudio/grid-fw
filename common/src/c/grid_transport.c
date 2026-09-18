@@ -6,6 +6,8 @@
 #include <string.h>
 
 #include "grid_health.h"
+#include "grid_led.h"
+#include "grid_swsr.h"
 #include "grid_usb.h"
 
 struct grid_transport grid_transport_state;

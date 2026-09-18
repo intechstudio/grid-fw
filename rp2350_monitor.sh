@@ -13,23 +13,18 @@ OPENOCD="${OPENOCD:-$(command -v openocd-rp2350 || echo openocd)}"
 # fork uses its OWN bundled scripts, not the Espressif rp2350.cfg (which expects
 # an `rp2xxx` flash driver this fork doesn't have). No-op on the host.
 # Start OpenOCD: attach, locate the RTT control block in SRAM, serve channel 0.
+set -m # background jobs get their own process group, so we can kill it whole
 env -u OPENOCD_SCRIPTS "$OPENOCD" -f rp2350/rp2350-openocd.cfg \
 	-c "init" \
 	-c "rtt setup 0x20000000 0x1000 \"SEGGER RTT\"" \
 	-c "rtt start" \
 	-c "rtt server start $PORT 0" &
 OCD_PID=$!
-trap 'kill $OCD_PID 2>/dev/null' EXIT INT TERM
+# Negative PID = whole process group, so any child OpenOCD spawns dies too.
+trap 'kill -TERM -$OCD_PID 2>/dev/null' EXIT INT TERM
 
 sleep 1
 echo "--- RTT channel 0 on localhost:$PORT (Ctrl-C to quit) ---"
 
-# Bridge the RTT TCP channel to this terminal with whatever client is present:
-# nc on the host, socat in the Docker image, telnet as a last resort.
-if command -v nc >/dev/null 2>&1; then
-	nc localhost "$PORT"
-elif command -v socat >/dev/null 2>&1; then
-	socat - "TCP:localhost:$PORT"
-else
-	telnet localhost "$PORT"
-fi
+# Bridge the RTT TCP channel to this terminal.
+socat - "TCP:localhost:$PORT"

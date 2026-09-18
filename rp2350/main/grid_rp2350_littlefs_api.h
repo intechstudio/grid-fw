@@ -31,46 +31,18 @@ struct rp2350_littlefs_t {
   bool read_only;
 };
 
-/**
- * @brief Read a region in a block.
- *
- * Served directly from the memory-mapped XIP window, so no SDK call and no
- * interrupt masking is required.
- *
- * @return errorcode. 0 on success.
- */
+// Served directly from the memory-mapped XIP window -- no SDK call or
+// interrupt masking required.
 int littlefs_api_read(const struct lfs_config* c, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size);
 
-/**
- * @brief Program a region in a block.
- *
- * The block must have previously been erased. Interrupts are masked (via a
- * BASEPRI threshold, not a blanket disable) for the duration because XIP is
- * disabled while the flash is written, and any flash-resident code that runs
- * meanwhile would fault -- see the .c file's comment for which interrupt is
- * deliberately left unmasked and why.
- *
- * @return errorcode. 0 on success.
- */
+// Interrupts are masked (BASEPRI threshold) during the write, since XIP is
+// disabled and flash-resident code would fault; see .c for the exception.
 int littlefs_api_prog(const struct lfs_config* c, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size);
 
-/**
- * @brief Erase a block.
- *
- * A block must be erased before being programmed. Interrupts are masked for the
- * same reason as littlefs_api_prog().
- *
- * @return errorcode. 0 on success.
- */
+// Interrupts are masked for the same reason as littlefs_api_prog().
 int littlefs_api_erase(const struct lfs_config* c, lfs_block_t block);
 
-/**
- * @brief Sync the state of the underlying block device.
- *
- * No-op: writes are committed synchronously by littlefs_api_prog/erase.
- *
- * @return errorcode. 0 on success.
- */
+// No-op: writes are committed synchronously by prog/erase.
 int littlefs_api_sync(const struct lfs_config* c);
 
 #endif /* GRID_RP2350_LITTLEFS_API_H */

@@ -3,8 +3,6 @@
 
 #include "grid_rp2350_littlefs_api.h"
 
-#include "littlefs/lfs.h"
-
 int grid_rp2350_littlefs_mount(struct rp2350_littlefs_t* rfs, bool force_format);
 int grid_rp2350_littlefs_unmount(struct rp2350_littlefs_t* rfs);
 

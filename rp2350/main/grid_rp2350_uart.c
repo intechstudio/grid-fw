@@ -10,24 +10,15 @@
 #include "uart_rx.pio.h"
 #include "uart_tx.pio.h"
 
-#include "grid_msg.h"
-#include "grid_platform.h"
-#include "grid_protocol.h"
 #include "grid_transport.h"
 
-// Both of RP2350's real PL011 UARTs are already claimed (UART0=stdio console,
-// UART1=WS2812 LED, see grid_rp2350_led.c) -- all 4 daisy-chain directions run
-// on PIO instead. One block is loaded once with the TX program and shares it
-// across 4 SMs (one per direction), a second block does the same for RX,
-// mirroring the split rp2040/src/grid_pico_pio.c already uses to avoid
-// reloading a program per SM. The third PIO block (12 - 8 = 4 SMs) stays free.
+// Real UARTs already claimed (UART0=stdio, UART1=WS2812 LED) -- daisy-chain
+// runs on PIO instead: one TX block and one RX block, each shared by 4 SMs.
 #define GRID_RP2350_UART_TX_PIO pio0
 #define GRID_RP2350_UART_RX_PIO pio1
 
-// Direction order matches enum grid_port_dir (grid_port.h): NORTH, EAST,
-// SOUTH, WEST. GPIO9 (WEST RX) doubles as PICO_DEFAULT_UART_RX_PIN (stdio
-// console RX, see rp2350/main/CMakeLists.txt) -- harmless since nothing reads
-// stdin, but worth knowing if the console ever needs real RX in the future.
+// Order matches enum grid_port_dir: N/E/S/W. GPIO9 (WEST RX) doubles as
+// stdio console RX (harmless -- nothing reads stdin).
 static const uint8_t grid_rp2350_uart_tx_pin[GRID_RP2350_UART_DIR_COUNT] = {22, 20, 10, 8};
 static const uint8_t grid_rp2350_uart_rx_pin[GRID_RP2350_UART_DIR_COUNT] = {7, 21, 19, 9};
 
@@ -39,50 +30,25 @@ static uint grid_rp2350_uart_rx_sm[GRID_RP2350_UART_DIR_COUNT];
 static int grid_rp2350_uart_tx_dma_chan[GRID_RP2350_UART_DIR_COUNT];
 static int grid_rp2350_uart_rx_dma_chan[GRID_RP2350_UART_DIR_COUNT];
 
-// The uart_rx program's ISR shifts right without autopush (32-bit threshold),
-// so after 8 sampled bits the byte sits left-justified in the FIFO word's
-// uppermost byte -- same "+3" trick as the .pio file's own
-// uart_rx_program_getc, just driven by DMA instead of a polled CPU read.
+// Shift-right without autopush leaves the byte left-justified in the FIFO
+// word's top byte -- same "+3" trick as uart_rx_program_getc, via DMA here.
 static inline volatile uint8_t* grid_rp2350_uart_rxf_byte(uint sm) { return (volatile uint8_t*)&GRID_RP2350_UART_RX_PIO->rxf[sm] + 3; }
 
-// Stops direction dir's RX DMA transfer without rewinding/rearming it --
-// split out from grid_rp2350_uart_port_reset_dma so a caller can quiesce the
-// channel, safely touch its uwsr buffer's software state, and only then
-// rearm (see grid_rp2350_uart_port_recv's overflow handling, which needs
-// exactly that ordering to avoid a stale-DMA-offset race).
-//
-// RAM-resident (see grid_rp2350_uart_init's DMA_IRQ_2 priority boost and
-// grid_rp2350_littlefs_api.c's BASEPRI masking): this function, and every
-// static inline it calls (all inlined here, so they go to RAM with it), must
-// be safe to execute with XIP disabled during a flash program/erase.
+// Stops dir's RX DMA without rewinding/rearming, so a caller can touch uwsr
+// state before rearming. RAM-resident -- safe with XIP disabled.
 void __not_in_flash_func(grid_rp2350_uart_port_stop_dma)(uint8_t dir) {
 
   assert(dir < GRID_RP2350_UART_DIR_COUNT);
 
   int chan = grid_rp2350_uart_rx_dma_chan[dir];
 
-  // Mask the whole DMA_IRQ_2 line (not just this channel) for the critical
-  // section below. This function runs both from mainline (USART disconnect,
-  // RX-overflow recovery) and from the completion ISR itself
-  // (grid_rp2350_uart_rx_dma_irq) -- without this, a genuine completion for
-  // this exact channel landing between entry and the errata-mandated
-  // EN-clear just below could preempt a mainline caller mid-sequence and run
-  // a second, overlapping stop+rearm for the same channel, discarding
-  // whatever landed in the gap between the two rearms. Calling this from
-  // inside the ISR is harmless: NVIC won't re-enter the same line at the
-  // same priority regardless, so it's a no-op mask/restore there. This
-  // coarser whole-line mask also covers what the errata fix itself needs
-  // (suppressing the spurious IRQ dma_channel_abort can raise), so the
-  // narrower per-channel dma_irqn_set_channel_enabled toggle this replaced
-  // is no longer needed.
+  // Masks the whole DMA_IRQ_2 line so a completion IRQ can't preempt a
+  // mainline caller mid-stop and run a second, overlapping stop+rearm.
   bool irq2_was_enabled = irq_is_enabled(DMA_IRQ_2);
   irq_set_enabled(DMA_IRQ_2, false);
 
-  // RP2350 errata RP2350-E5 (see hardware/dma.h's dma_channel_abort doc): the
-  // channel's enable bit must be cleared before the abort, or an in-flight
-  // channel can silently re-trigger instead of actually stopping. Mirrors
-  // the pico-sdk's own dma_channel_cleanup() (hardware_dma/dma.c): clear
-  // CHAIN_TO/EN, abort, then clear any pending status it left behind.
+  // Errata RP2350-E5: EN must be cleared before abort, or the channel can
+  // silently re-trigger instead of stopping (mirrors pico-sdk's dma_channel_cleanup).
   hw_write_masked(&dma_hw->ch[chan].al1_ctrl, (chan << DMA_CH0_CTRL_TRIG_CHAIN_TO_LSB) | (0u << DMA_CH0_CTRL_TRIG_EN_LSB), DMA_CH0_CTRL_TRIG_CHAIN_TO_BITS | DMA_CH0_CTRL_TRIG_EN_BITS);
   dma_channel_abort(chan);
   dma_hw->ints2 = 1u << chan;
@@ -95,30 +61,22 @@ void __not_in_flash_func(grid_rp2350_uart_port_reset_dma)(uint8_t dir) {
 
   assert(dir < GRID_RP2350_UART_DIR_COUNT);
 
-  // Mirrors grid_d51_uart_port_reset_dma's unconditional disable+retrigger --
-  // called both from the completion IRQ (transfer already finished) and from
-  // an externally forced reset (transfer still mid-flight), so the hard abort
-  // is needed for the latter case and harmless for the former.
+  // Mirrors D51's unconditional disable+retrigger -- called from both the
+  // completion IRQ and an external reset, so the hard abort covers both cases.
   grid_rp2350_uart_port_stop_dma(dir);
 
   int chan = grid_rp2350_uart_rx_dma_chan[dir];
 
-  // stop_dma leaves the channel disabled (EN=0) as its contract, for callers
-  // that need it to stay stopped (grid_rp2350_uart_port_recv's overflow
-  // handling). But per DMA_CH0_CTRL_TRIG_EN's own register doc: "When 0, the
-  // channel will ignore triggers" -- so EN must be set back to 1 here before
-  // the retrigger below, or the trigger write is silently ignored and the
-  // channel never actually restarts.
+  // stop_dma leaves EN=0; it must be set back to 1 before the retrigger
+  // below, or the trigger write is silently ignored and DMA never restarts.
   hw_write_masked(&dma_hw->ch[chan].al1_ctrl, DMA_CH0_CTRL_TRIG_EN_BITS, DMA_CH0_CTRL_TRIG_EN_BITS);
 
   dma_channel_set_write_addr(chan, grid_rp2350_uart_uwsr[dir].data, false);
   dma_channel_set_trans_count(chan, grid_rp2350_uart_uwsr[dir].capacity, true);
 }
 
-// RAM-resident and boosted above PICO_DEFAULT_IRQ_PRIORITY (see
-// grid_rp2350_uart_init) so this can keep servicing RX completions via
-// BASEPRI-based selective masking while grid_rp2350_littlefs_api.c holds a
-// flash program/erase in progress -- see that file's comment for why.
+// RAM-resident and priority-boosted (grid_rp2350_uart_init) so RX completions
+// keep servicing via BASEPRI masking during a flash program/erase.
 static void __not_in_flash_func(grid_rp2350_uart_rx_dma_irq)(void) {
 
   for (uint8_t dir = 0; dir < GRID_RP2350_UART_DIR_COUNT; ++dir) {
@@ -143,9 +101,8 @@ void grid_rp2350_uart_tx_start(uint8_t dir, uint32_t size) {
   dma_channel_set_trans_count(chan, size, true);
 }
 
-// dma_channel_is_busy() already exposes TX-in-flight state directly from
-// hardware -- no need for a separately-maintained ready flag/ISR pair
-// tracking the same bit as a second source of truth.
+// dma_channel_is_busy() already exposes TX-in-flight state from hardware --
+// no need for a separate ready-flag/ISR pair as a second source of truth.
 bool grid_rp2350_uart_tx_busy(uint8_t dir) {
 
   assert(dir < GRID_RP2350_UART_DIR_COUNT);
@@ -168,9 +125,8 @@ void grid_rp2350_uart_init(void) {
     grid_rp2350_uart_rx_sm[dir] = pio_claim_unused_sm(GRID_RP2350_UART_RX_PIO, true);
     uart_rx_program_init(GRID_RP2350_UART_RX_PIO, grid_rp2350_uart_rx_sm[dir], rx_offset, grid_rp2350_uart_rx_pin[dir], GRID_PARAMETER_UART_baudrate);
 
-    // TX DMA: fed on demand by grid_rp2350_uart_tx_start, one byte per FIFO
-    // slot (narrow 8-bit write lands the byte in the OSR's low byte, which is
-    // what the TX program's right-shift-out expects).
+    // Fed on demand by grid_rp2350_uart_tx_start; 8-bit writes land in the
+    // OSR's low byte, matching the TX program's right-shift-out.
     int tx_chan = dma_claim_unused_channel(true);
     grid_rp2350_uart_tx_dma_chan[dir] = tx_chan;
     dma_channel_config tx_cfg = dma_channel_get_default_config(tx_chan);
@@ -180,9 +136,8 @@ void grid_rp2350_uart_init(void) {
     channel_config_set_dreq(&tx_cfg, pio_get_dreq(GRID_RP2350_UART_TX_PIO, grid_rp2350_uart_tx_sm[dir], true));
     dma_channel_configure(tx_chan, &tx_cfg, &GRID_RP2350_UART_TX_PIO->txf[grid_rp2350_uart_tx_sm[dir]], grid_rp2350_uart_tx_buf[dir], 0, false);
 
-    // RX DMA: DREQ-paced off the RX FIFO, fixed-length transfer restarted on
-    // completion by grid_rp2350_uart_rx_dma_irq -- same shape as
-    // grid_rp2350_adc.c's DREQ-paced, completion-IRQ-rearmed sweep.
+    // DREQ-paced off the RX FIFO, restarted on completion by
+    // grid_rp2350_uart_rx_dma_irq -- same shape as grid_rp2350_adc.c's sweep.
     int rx_chan = dma_claim_unused_channel(true);
     grid_rp2350_uart_rx_dma_chan[dir] = rx_chan;
     dma_channel_config rx_cfg = dma_channel_get_default_config(rx_chan);
@@ -194,70 +149,12 @@ void grid_rp2350_uart_init(void) {
     dma_irqn_set_channel_enabled(2, rx_chan, true);
   }
 
-  // DMA_IRQ_0 (ADC) and DMA_IRQ_1 (encoder) are already claimed exclusively
-  // (grid_rp2350_adc.c, grid_rp2350_encoder.c) -- this ISR only restarts DMA,
-  // never touching ui->element_list, so unlike ADC/encoder it does NOT need
-  // gating around bulk UI operations. TX has no completion IRQ of its own
-  // (DMA_IRQ_3 unused) -- grid_rp2350_uart_tx_busy() reads dma_channel_is_busy()
-  // directly instead.
+  // Unlike ADC/encoder, this ISR never touches ui->element_list, so it does
+  // NOT need gating around bulk UI ops. TX has no completion IRQ of its own.
   irq_set_exclusive_handler(DMA_IRQ_2, grid_rp2350_uart_rx_dma_irq);
   irq_set_enabled(DMA_IRQ_2, true);
 
-  // Every interrupt starts at PICO_DEFAULT_IRQ_PRIORITY (0x80) per the
-  // pico-sdk's own documented guarantee (hardware/irq.h) and nothing else in
-  // this firmware changes that -- boosting only this one lets
-  // grid_rp2350_littlefs_api.c mask every other interrupt source (ADC,
-  // encoder, USB, the ms tick timer) via a BASEPRI threshold between the two
-  // priorities during a flash program/erase, without having to enumerate
-  // those sources by name.
+  // Boosted above PICO_DEFAULT_IRQ_PRIORITY so grid_rp2350_littlefs_api.c can
+  // mask everything else via BASEPRI during a flash program/erase.
   irq_set_priority(DMA_IRQ_2, PICO_HIGHEST_IRQ_PRIORITY);
-}
-
-// Ported from d51n20a/grid_d51n20a.c's grid_d51_port_recv_uwsr, built
-// entirely from shared common/src/c functions -- no platform-specific logic,
-// except the overflow branch below, which deliberately differs from D51's
-// literal source line.
-void grid_rp2350_uart_port_recv(struct grid_port* port, struct grid_uwsr_t* uwsr, struct grid_fingerprint_buf* fpb) {
-
-  if (grid_uwsr_overflow(uwsr)) {
-
-    // Stop DMA *before* touching uwsr's software state, not after (as D51's
-    // grid_d51_port_recv_uwsr does via a single grid_platform_reset_grid_transmitter
-    // call following grid_uwsr_init): otherwise the DMA can still be writing
-    // at its old hardware offset while grid_uwsr_init has already zeroed the
-    // buffer and reset the read/seek indices to 0, so bytes landing at that
-    // stale offset are silently discarded once the DMA is later rewound.
-    // Calling the RP2350-specific stop/reset pair directly (rather than
-    // through the generic grid_platform_reset_grid_transmitter hook D51 uses
-    // here) also sidesteps that hook's direction-encoding ambiguity, since
-    // port->dir is already the plain enum this file's own functions expect.
-    grid_rp2350_uart_port_stop_dma(port->dir);
-    grid_uwsr_init(uwsr, uwsr->reject);
-    grid_rp2350_uart_port_reset_dma(port->dir);
-  }
-
-  struct grid_msg msg;
-
-  if (!grid_msg_from_uwsr(&msg, uwsr)) {
-    return;
-  }
-
-  if (grid_frame_verify((uint8_t*)msg.data, msg.length) != 0) {
-    return;
-  }
-
-  grid_str_transform_brc_params((uint8_t*)msg.data, msg.length, port->dx, port->dy, port->partner.rot);
-
-  uint32_t fingerprint = grid_fingerprint_calculate(msg.data);
-
-  if (msg.data[1] == GRID_CONST_BRC) {
-
-    if (grid_fingerprint_buf_find(fpb, fingerprint)) {
-      return;
-    }
-
-    grid_fingerprint_buf_store(fpb, fingerprint);
-  }
-
-  grid_port_recv_msg(port, (uint8_t*)msg.data, msg.length);
 }

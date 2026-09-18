@@ -5,15 +5,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "grid_led.h"
+#include "grid_msg.h"
 #include "grid_port.h"
 #include "grid_protocol.h"
-#include "grid_swsr.h"
 
 enum { GRID_PORT_SWSR_SIZE = GRID_PARAMETER_SPI_TRANSACTION_length * 2 };
 
-enum { GRID_TRANSPORT_UI = 4 };
-enum { GRID_TRANSPORT_USB = 5 };
+enum {
+  GRID_TRANSPORT_UI = 4,
+  GRID_TRANSPORT_USB = 5,
+};
 
 typedef bool (*grid_brc_between_t)(enum grid_port_type t1, enum grid_port_type t2);
 

@@ -6,8 +6,6 @@
 #include "hardware/dma.h"
 #include "hardware/irq.h"
 
-#include "grid_ain.h"
-
 #define GRID_ADC_FIRST_PIN 26   // AIN0..3 live on GPIO26..29 (RP2350A / Pico 2)
 #define GRID_ADC_NUM_CHANNELS 4 // four ADC common lines, one per 74HC4052 pair
 #define GRID_ADC_ROUND_ROBIN_MASK 0x0F

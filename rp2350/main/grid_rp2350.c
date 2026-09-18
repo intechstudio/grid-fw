@@ -323,7 +323,7 @@ int main() {
 
       struct grid_port* port = grid_transport_get_port(xport, dir, GRID_PORT_USART, dir);
 
-      grid_rp2350_uart_port_recv(port, &grid_rp2350_uart_uwsr[dir], &recent);
+      grid_port_recv_uwsr(port, &grid_rp2350_uart_uwsr[dir], &recent);
     }
 
     struct grid_port* port_ui = grid_transport_get_port(xport, GRID_TRANSPORT_UI, GRID_PORT_UI, 0);
