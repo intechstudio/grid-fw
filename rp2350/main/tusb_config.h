@@ -5,13 +5,10 @@
 // needs __not_in_flash() (from pico.h) regardless of OSAL choice.
 #include "pico.h"
 
-// ---- MCU ----
-// TinyUSB has no distinct RP2350 port; the rp2040 port is shared by both chips
-// (see common/dep/tinyusb/src/common/tusb_mcu.h).
+// ---- MCU: RP2040, as TinyUSB has no distinct port for RP2350 ----
 #define CFG_TUSB_MCU OPT_MCU_RP2040
 
 // ---- OS abstraction ----
-// No RTOS -- tud_task() is polled cooperatively, matching D51/ESP32's tusb_config.h.
 #define CFG_TUSB_OS OPT_OS_NONE
 
 // ---- Debug (0 = silent) ----

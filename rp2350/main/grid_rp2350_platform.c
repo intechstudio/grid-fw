@@ -19,16 +19,13 @@
 #include "grid_ui.h"
 #include "grid_usb.h"
 
-// RP2040/RP2350 only expose a 64-bit flash unique ID (vs. D51/ESP32's 128-bit),
-// so the upper two words of the shared 4x uint32_t shape stay zeroed.
-uint32_t grid_platform_get_id(uint32_t* return_array) {
+void grid_platform_get_id(uint32_t id[4]) {
+
   pico_unique_board_id_t board_id;
   pico_get_unique_board_id(&board_id);
 
-  memset(return_array, 0, 4 * sizeof(uint32_t));
-  memcpy(return_array, board_id.id, PICO_UNIQUE_BOARD_ID_SIZE_BYTES);
-
-  return 0;
+  memset(id, 0, sizeof(uint32_t[4]));
+  memcpy(id, board_id.id, PICO_UNIQUE_BOARD_ID_SIZE_BYTES);
 }
 
 uint64_t grid_platform_rtc_get_micros() { return time_us_64(); }
@@ -40,39 +37,39 @@ uint64_t grid_platform_rtc_get_diff(uint64_t t1, uint64_t t2) { return t1 - t2; 
 void grid_platform_delay_ms(uint32_t delay_milliseconds) { sleep_ms(delay_milliseconds); }
 
 // HWCFG strap read: GPIO1=SHIFT, GPIO2=CLOCK, GPIO3=DATA, GPIO4=DATA2. Bit-bang
-// protocol ported directly from d51n20a/grid/d51/grid_d51.c:521-564 (a
-// 74HC165-style parallel-in-serial-out shift register, LSB first, 8 bits).
-// GPIO1 is moved off stdio UART0 RX (see rp2350/main/CMakeLists.txt) to make
-// room for SHIFT.
+// GPIO1 is tied to UART0 RX so that's disabled in rp2350/main/CMakeLists.txt
 //
 // Two board variants place the shift register on different DATA lines; only
 // one is ever actually populated. Both DATA pins are pulled up internally so
 // an unpopulated line floats high and reads back as 255 (all bits set) --
 // whichever line reads something other than 255 is the real hwcfg value.
-#define GRID_RP2350_HWCFG_SHIFT_PIN 1
-#define GRID_RP2350_HWCFG_CLOCK_PIN 2
-#define GRID_RP2350_HWCFG_DATA_PIN 3
-#define GRID_RP2350_HWCFG_DATA2_PIN 4
+#define RP2350_PIN_HWCFG_SHIFT 1
+#define RP2350_PIN_HWCFG_CLOCK 2
+#define RP2350_PIN_HWCFG_DATA 3
+#define RP2350_PIN_HWCFG_DATA2 4
 
 uint32_t grid_platform_get_hwcfg() {
 
-  gpio_init(GRID_RP2350_HWCFG_SHIFT_PIN);
-  gpio_init(GRID_RP2350_HWCFG_CLOCK_PIN);
-  gpio_init(GRID_RP2350_HWCFG_DATA_PIN);
-  gpio_init(GRID_RP2350_HWCFG_DATA2_PIN);
-  gpio_set_dir(GRID_RP2350_HWCFG_SHIFT_PIN, GPIO_OUT);
-  gpio_set_dir(GRID_RP2350_HWCFG_CLOCK_PIN, GPIO_OUT);
-  gpio_set_dir(GRID_RP2350_HWCFG_DATA_PIN, GPIO_IN);
-  gpio_set_dir(GRID_RP2350_HWCFG_DATA2_PIN, GPIO_IN);
-  gpio_pull_up(GRID_RP2350_HWCFG_DATA_PIN);
-  gpio_pull_up(GRID_RP2350_HWCFG_DATA2_PIN);
+  gpio_init(RP2350_PIN_HWCFG_SHIFT);
+  gpio_set_dir(RP2350_PIN_HWCFG_SHIFT, GPIO_OUT);
 
-  gpio_put(GRID_RP2350_HWCFG_SHIFT_PIN, 0);
-  gpio_put(GRID_RP2350_HWCFG_CLOCK_PIN, 1);
+  gpio_init(RP2350_PIN_HWCFG_CLOCK);
+  gpio_set_dir(RP2350_PIN_HWCFG_CLOCK, GPIO_OUT);
+
+  gpio_init(RP2350_PIN_HWCFG_DATA);
+  gpio_set_dir(RP2350_PIN_HWCFG_DATA, GPIO_IN);
+  gpio_pull_up(RP2350_PIN_HWCFG_DATA);
+
+  gpio_init(RP2350_PIN_HWCFG_DATA2);
+  gpio_set_dir(RP2350_PIN_HWCFG_DATA2, GPIO_IN);
+  gpio_pull_up(RP2350_PIN_HWCFG_DATA2);
+
+  gpio_put(RP2350_PIN_HWCFG_SHIFT, 0);
+  gpio_put(RP2350_PIN_HWCFG_CLOCK, 1);
 
   sleep_us(40);
 
-  gpio_put(GRID_RP2350_HWCFG_SHIFT_PIN, 1);
+  gpio_put(RP2350_PIN_HWCFG_SHIFT, 1);
 
   sleep_us(10);
 
@@ -81,17 +78,17 @@ uint32_t grid_platform_get_hwcfg() {
 
   for (uint8_t i = 0; i < 8; i++) {
 
-    gpio_put(GRID_RP2350_HWCFG_CLOCK_PIN, 0);
+    gpio_put(RP2350_PIN_HWCFG_CLOCK, 0);
 
-    if (gpio_get(GRID_RP2350_HWCFG_DATA_PIN)) {
+    if (gpio_get(RP2350_PIN_HWCFG_DATA)) {
       hwcfg_value |= (1 << i);
     }
-    if (gpio_get(GRID_RP2350_HWCFG_DATA2_PIN)) {
+    if (gpio_get(RP2350_PIN_HWCFG_DATA2)) {
       hwcfg_value2 |= (1 << i);
     }
 
     sleep_us(10);
-    gpio_put(GRID_RP2350_HWCFG_CLOCK_PIN, 1);
+    gpio_put(RP2350_PIN_HWCFG_CLOCK, 1);
     sleep_us(10);
   }
 
@@ -138,12 +135,8 @@ void grid_platform_lcd_set_backlight(uint8_t backlight) {}
 
 uint8_t grid_platform_get_adc_bit_depth() { return 12; }
 
-// Unused hook on every platform today (D51 increments a counter nothing
-// external reads; ESP32 stubs it the same way).
 void grid_platform_sync1_pulse_send() {}
 
-// grid_platform_enable/disable_grid_transmitter (present on D51) have no
-// callers anywhere in the shared codebase -- skipped here as dead code.
 uint32_t grid_platform_get_frame_len(uint8_t dir) {
 
   assert(dir < GRID_RP2350_UART_DIR_COUNT);
@@ -185,7 +178,6 @@ uint8_t grid_platform_reset_grid_transmitter(uint8_t dir) {
   return 0;
 }
 
-// No touch element on BU16 -- both platform-provided element-state tables
-// (required by grid_ui.c) stay empty, matching D51.
 const grid_ui_element_state_any_t grid_ui_element_state_anys[GRID_PARAMETER_ELEMENT_COUNT] = {0};
+
 const grid_ui_element_state_reset_t grid_ui_element_state_resets[GRID_PARAMETER_ELEMENT_COUNT] = {0};

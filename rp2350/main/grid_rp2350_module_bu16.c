@@ -10,15 +10,6 @@
 #include "grid_asc.h"
 #include "grid_platform.h"
 
-// Modeled on ESP32's hall-sensor BU16 driver (pressure-sensitive analog
-// buttons), not D51's simple mux'd push-buttons. This board reports
-// GRID_MODULE_BU16_RevH, so ESP32's rev_h software path is kept (lower ASC
-// smoothing factor + a calibration-limits read from NVM config) -- but not
-// its hardware implication (ESP32's rev_h has no physical mux): RP2350's mux
-// (two 74HC4052s, see grid_rp2350_adc.c) is confirmed present, so
-// grid_rp2350_adc_init keeps mux-scanning unconditionally.
-#define GRID_MODULE_BU16_ADC_CHANNELS 4
-#define GRID_MODULE_BU16_MUX_POSITIONS 4
 #define GRID_MODULE_BU16_MUX_POSITIONS_BM 0x0F
 #define GRID_MODULE_BU16_ASC_FACTOR 8
 #define GRID_MODULE_BU16_ASC_FACTOR_REVH 1
@@ -27,13 +18,11 @@ static struct grid_ui_model* ui_ptr = NULL;
 static struct grid_asc* asc_array = NULL;
 static uint8_t asc_array_length = 0;
 
-// Maps the physical (ADC channel, mux position) to a logical element index,
-// verified against real hardware.
-static const uint8_t mux_element_lookup[GRID_MODULE_BU16_ADC_CHANNELS][GRID_MODULE_BU16_MUX_POSITIONS] = {
-    {0, 1, 4, 5},     // ADC0 (GPIO26), mux positions 0..3
-    {8, 9, 12, 13},   // ADC1 (GPIO27)
-    {2, 3, 6, 7},     // ADC2 (GPIO28)
-    {10, 11, 14, 15}, // ADC3 (GPIO29)
+static const uint8_t mux_element_lookup[4][4] = {
+    {0, 1, 4, 5},
+    {8, 9, 12, 13},
+    {2, 3, 6, 7},
+    {10, 11, 14, 15},
 };
 static uint16_t element_invert_bm = 0;
 

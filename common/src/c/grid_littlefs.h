@@ -7,11 +7,8 @@ const char* littlefs_errno(enum lfs_error lfs_errno);
 
 int grid_littlefs_mount_or_format(lfs_t* lfs, struct lfs_config* cfg, bool force_format);
 
-// Owns the malloc/free; returns NULL (already freed) on failure, never a
-// dangling pointer for the caller.
 lfs_t* grid_littlefs_mount(struct lfs_config* cfg, bool force_format);
 
-// Frees *lfs and nulls it only on success; asserts non-NULL on entry.
 int grid_littlefs_unmount(lfs_t** lfs);
 
 int grid_littlefs_remove(lfs_t* lfs, const char* path);

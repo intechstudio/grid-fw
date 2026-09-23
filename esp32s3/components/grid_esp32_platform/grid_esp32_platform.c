@@ -136,48 +136,21 @@ uint32_t grid_platform_get_hwcfg() {
   return hwcfg;
 }
 
-uint32_t grid_platform_get_id(uint32_t* return_array) {
-
-  /*
-
-      struct ESP_FUSE3
-      {
-          uint8_t crc;
-          uint8_t macAddr[6];
-          uint8_t reserved[8];
-          uint8_t version;
-      };
-  */
+void grid_platform_get_id(uint32_t id[4]) {
 
   uint8_t block[32] = {0};
 
   if (ESP_OK == esp_efuse_read_block(EFUSE_BLK1, block, 0, 6 * 8)) {
-    ESP_LOGI(TAG, "CPUID OK");
+    ESP_LOGI(TAG, "EFUSE_BLK1 READ OK");
+  } else {
+    ESP_LOGW(TAG, "EFUSE_BLK1 READ NOK");
+    return;
   }
 
-  uint8_t* mac_address = &block[0];
+  ESP_LOGI(TAG, "MAC: %02x:%02x:%02x:%02x:%02x:%02x", block[0], block[1], block[2], block[3], block[4], block[5]);
 
-  ESP_LOGI(TAG, "MAC: %02x:%02x:%02x:%02x:%02x:%02x", mac_address[0], mac_address[1], mac_address[2], mac_address[3], mac_address[4], mac_address[5]);
-
-  uint64_t cpuid = 0;
-
-  for (uint8_t i = 0; i < 6; i++) {
-
-    // ESP_LOGI(TAG, "CPUID: %016llx",cpuid);
-    cpuid |= ((uint64_t)mac_address[i]) << ((5 - i) * 8);
-  }
-
-  ESP_LOGI(TAG, "CPUID: %016llx", cpuid);
-
-  uint8_t* array = (uint8_t*)return_array;
-  array[0] = mac_address[0];
-  array[1] = mac_address[1];
-  array[2] = mac_address[2];
-  array[3] = mac_address[3];
-  array[4] = mac_address[4];
-  array[5] = mac_address[5];
-
-  return 0;
+  memset(id, 0, sizeof(uint32_t[4]));
+  memcpy(id, block, 6);
 }
 
 uint8_t grid_platform_get_random_8() {
@@ -214,11 +187,7 @@ uint8_t grid_platform_disable_grid_transmitter(uint8_t direction) {
 
 uint8_t grid_platform_stop_grid_transmitter(uint8_t direction) { return 1; }
 
-uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) {
-
-  // ets_printf("grid_platform_reset_grid_transmitter NOT IMPLEMENTED!!!\r\n");
-  return 1;
-}
+uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) { return 1; }
 
 uint8_t grid_platform_enable_grid_transmitter(uint8_t direction) {
 

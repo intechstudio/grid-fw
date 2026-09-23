@@ -172,8 +172,6 @@ void grid_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, struc
 
   if (grid_uwsr_overflow(uwsr)) {
 
-    // Stop before touching uwsr state, not after: otherwise DMA can still
-    // write at its old offset while uwsr_init has already reset it.
     grid_platform_stop_grid_transmitter(port->dir);
     grid_uwsr_init(uwsr, uwsr->reject);
     grid_platform_reset_grid_transmitter(port->dir);

@@ -11,12 +11,7 @@
 #include "grid_asc.h"
 #include "grid_platform.h"
 
-// This board has 4 direct ADC pins (no external mux, unlike BU16's two
-// 74HC4052s), and its 4 encoders are read via a shift-register chain
-// cascaded behind HWCFG's (see grid_rp2350_encoder.h) rather than ESP32's
-// I2S-TDM or D51's dedicated SPI bus.
 #define GRID_MODULE_EF44_ENCODER_COUNT 4
-#define GRID_MODULE_EF44_ADC_CHANNELS 4
 #define GRID_MODULE_EF44_ASC_FACTOR 16
 #define GRID_MODULE_EF44_MUX_POSITIONS_BM 0x01
 
@@ -25,12 +20,7 @@ static struct grid_asc* asc_array = NULL;
 static uint8_t asc_array_length = 0;
 static uint16_t element_invert_bm = 0;
 
-// grid_module_ef44_ui_init lays out elements 0-3 as encoders, 4-7 as
-// potmeters/faders, 8 as system. There's no mux stepping (mux_state always
-// 0), so this is a straight 1D table rather than D51/ESP32's [channel][mux]
-// table -- kept as an explicit lookup rather than computed arithmetic so a
-// future PCB revision with a different channel order is a one-line change.
-static const uint8_t mux_element_lookup[GRID_MODULE_EF44_ADC_CHANNELS] = {4, 5, 6, 7};
+static const uint8_t mux_element_lookup[4] = {4, 5, 6, 7};
 
 static void ef44_process_analog(struct grid_adc_result* result) {
 
@@ -95,9 +85,8 @@ void grid_rp2350_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_mod
   grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL);
   grid_ui_bulk_flush(ui);
 
-  // 1 hwcfg byte (discarded) + 2 encoder-data bytes (4 encoders, 2 per byte).
-  // 500 Hz target poll rate, matching D51/ESP32's EF44 encoder read rate.
   uint8_t transfer_length = 1 + GRID_MODULE_EF44_ENCODER_COUNT / 2;
+  // I2S clock rate chosen so callback fires at 500 Hz: rate = 500 * 32bit * 4slots
   uint32_t clock_rate = 500 * transfer_length * 8;
   grid_rp2350_encoder_init(enc, transfer_length, clock_rate, ef44_process_encoder);
 

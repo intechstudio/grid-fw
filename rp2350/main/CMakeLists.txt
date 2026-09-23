@@ -12,12 +12,10 @@ add_executable(grid_rp2350
     grid_rp2350_module_ef44.c
     grid_rp2350_uart.c
     ../../common/src/c/grid_led.c
-    # Shared LittleFS wrapper + FS platform API + vendored engine (common/).
     ../../common/src/c/grid_littlefs.c
     ../../common/src/c/grid_platform.c
     ../../common/dep/littlefs/lfs.c
     ../../common/dep/littlefs/lfs_util.c
-    # Shared composite CDC+MIDI+HID USB device stack, identical to D51/ESP32-S3.
     ../../common/src/c/grid_usb.c
     ../../common/src/c/grid_usb_acm.c
     ../../common/src/c/grid_usb_midi.c
@@ -26,12 +24,8 @@ add_executable(grid_rp2350
     ../../common/src/c/grid_usb_mouse.c
     ../../common/src/c/grid_usb_gamepad.c
     ../../common/src/c/grid_usb_macro.c
-    # These depend on swsr + grid_sys_get_rx_mode (USB rx-mode gating) even
-    # though this bringup doesn't wire grid_transport/grid_port.
     ../../common/src/c/grid_swsr.c
     ../../common/src/c/grid_sys.c
-    # Same file list D51/ESP32-S3 compile; RP2350 only exercises BU16 today but
-    # grid_module.c bundles every UI element type's init in one translation unit.
     ../../common/src/c/grid_ain.c
     ../../common/src/c/grid_allocator.c
     ../../common/src/c/grid_asc.c
@@ -58,7 +52,6 @@ add_executable(grid_rp2350
     ../../common/src/c/grid_ui_system.c
     ../../common/src/c/grid_ui_touch.c
     ../../common/src/c/grid_utask.c
-    # Vendored Lua 5.5.0 (common/dep), same source list as d51n20a/gcc/Makefile.
     ../../common/dep/lua-5.5.0/src/dirent.c
     ../../common/dep/lua-5.5.0/src/lapi.c
     ../../common/dep/lua-5.5.0/src/lauxlib.c
@@ -92,10 +85,7 @@ add_executable(grid_rp2350
     ../../common/dep/lua-5.5.0/src/lutf8lib.c
     ../../common/dep/lua-5.5.0/src/lvm.c
     ../../common/dep/lua-5.5.0/src/lzio.c
-    # TOML config parsing, needed by grid_config.c for calibration persistence.
     ../../common/dep/tomlc99/toml.c
-    # TinyUSB from common/dep/tinyusb (Intech fork), NOT pico-sdk's vendored
-    # copy -- rp2040 DCD covers RP2350 too (no distinct TinyUSB RP2350 port).
     ../../common/dep/tinyusb/src/tusb.c
     ../../common/dep/tinyusb/src/common/tusb_fifo.c
     ../../common/dep/tinyusb/src/device/usbd.c
