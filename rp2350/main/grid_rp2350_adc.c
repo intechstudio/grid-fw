@@ -1,10 +1,14 @@
 #include "grid_rp2350_adc.h"
 
+#include <string.h>
+
 #include "pico/stdlib.h"
 
 #include "hardware/adc.h"
 #include "hardware/dma.h"
 #include "hardware/irq.h"
+
+#include "grid_platform.h"
 
 #define RP2350_PIN_ADC_FIRST 26
 #define RP2350_ADC_CHAN_COUNT 4
@@ -15,16 +19,16 @@
 
 struct grid_rp2350_adc_model grid_rp2350_adc_state;
 
-#define RP2350_ADC_OVERSAMPLE 8
+#define RP2350_ADC_OVERSAMPLE 15
 
 // Number of encoded transfers, round-robin over 4 channels with oversampling
 #define ADC_DWELL_SAMPLES (RP2350_ADC_CHAN_COUNT * RP2350_ADC_OVERSAMPLE)
 
 static int grid_adc_dma_chan;
 
-static inline void grid_rp2350_adc_mux_increment(struct grid_rp2350_adc_model* adc) { GRID_MUX_INCREMENT(adc->mux_index, adc->mux_positions_bm); }
+GRID_IRAM_ATTR static inline void grid_rp2350_adc_mux_increment(struct grid_rp2350_adc_model* adc) { GRID_MUX_INCREMENT(adc->mux_index, adc->mux_positions_bm); }
 
-static inline void grid_rp2350_adc_mux_write(struct grid_rp2350_adc_model* adc) {
+GRID_IRAM_ATTR static inline void grid_rp2350_adc_mux_write(struct grid_rp2350_adc_model* adc) {
 
   gpio_put(RP2350_PIN_MUX_A0, adc->mux_index & 1);
   gpio_put(RP2350_PIN_MUX_A1, (adc->mux_index >> 1) & 1);
@@ -32,13 +36,13 @@ static inline void grid_rp2350_adc_mux_write(struct grid_rp2350_adc_model* adc) 
 
 static uint16_t grid_adc_dma_buffer[ADC_DWELL_SAMPLES];
 
-static void grid_rp2350_adc_arm_dma(void) {
+GRID_IRAM_ATTR static void grid_rp2350_adc_arm_dma(void) {
 
   dma_channel_set_write_addr(grid_adc_dma_chan, grid_adc_dma_buffer, false);
   dma_channel_set_trans_count(grid_adc_dma_chan, ADC_DWELL_SAMPLES, true);
 }
 
-static void grid_rp2350_adc_dma_irq(void) {
+GRID_IRAM_ATTR static void grid_rp2350_adc_dma_irq(void) {
 
   struct grid_rp2350_adc_model* adc = &grid_rp2350_adc_state;
 
@@ -52,11 +56,20 @@ static void grid_rp2350_adc_dma_irq(void) {
   grid_rp2350_adc_mux_increment(adc);
   grid_rp2350_adc_mux_write(adc);
 
+  // Copy samples before restarting the ADC
+  uint16_t buf[ADC_DWELL_SAMPLES];
+  memcpy(buf, grid_adc_dma_buffer, sizeof(buf));
+
+  // Drain stray samples from the FIFO
+  adc_fifo_drain();
+
+  grid_rp2350_adc_start(adc);
+
   for (int chan = 0; chan < RP2350_ADC_CHAN_COUNT; ++chan) {
 
     uint32_t sum = 0;
     for (int pass = 0; pass < RP2350_ADC_OVERSAMPLE; ++pass) {
-      sum += grid_adc_dma_buffer[chan + pass * RP2350_ADC_CHAN_COUNT];
+      sum += buf[chan + pass * RP2350_ADC_CHAN_COUNT];
     }
 
     struct grid_adc_result result = {
@@ -67,11 +80,6 @@ static void grid_rp2350_adc_dma_irq(void) {
 
     adc->process_analog(&result);
   }
-
-  // Drain stray samples from the FIFO
-  adc_fifo_drain();
-
-  grid_rp2350_adc_start(adc);
 }
 
 void grid_rp2350_adc_init(struct grid_rp2350_adc_model* adc, uint8_t mux_positions_bm, grid_process_analog_t process_analog) {
@@ -120,7 +128,7 @@ void grid_rp2350_adc_mux_init(struct grid_rp2350_adc_model* adc, uint8_t mux_pos
   grid_rp2350_adc_mux_write(adc);
 }
 
-void grid_rp2350_adc_start(struct grid_rp2350_adc_model* adc) {
+GRID_IRAM_ATTR void grid_rp2350_adc_start(struct grid_rp2350_adc_model* adc) {
 
   adc_select_input(0);
   grid_rp2350_adc_arm_dma();

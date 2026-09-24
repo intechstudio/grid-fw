@@ -6,6 +6,23 @@
 
 #define GRID_UI_CONFIG_PATH "config.toml"
 
+#ifdef GRID_RP2350
+
+#define GRID_IRAM_ATTR __attribute__((section(".time_critical.")))
+#define GRID_DRAM_ATTR
+
+#elif GRID_ESP32
+
+#define GRID_IRAM_ATTR IRAM_ATTR
+#define GRID_DRAM_ATTR DRAM_ATTR
+
+#else
+
+#define GRID_IRAM_ATTR
+#define GRID_DRAM_ATTR
+
+#endif /* GRID_ESP32 */
+
 extern void grid_platform_set_lfs(void* lfs);
 
 extern void* grid_platform_fopen(const char* pathname, const char* mode);

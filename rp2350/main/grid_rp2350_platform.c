@@ -28,11 +28,11 @@ void grid_platform_get_id(uint32_t id[4]) {
   memcpy(id, board_id.id, PICO_UNIQUE_BOARD_ID_SIZE_BYTES);
 }
 
-uint64_t grid_platform_rtc_get_micros() { return time_us_64(); }
+GRID_IRAM_ATTR uint64_t grid_platform_rtc_get_micros() { return time_us_64(); }
 
-uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told) { return time_us_64() - told; }
+GRID_IRAM_ATTR uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told) { return time_us_64() - told; }
 
-uint64_t grid_platform_rtc_get_diff(uint64_t t1, uint64_t t2) { return t1 - t2; }
+GRID_IRAM_ATTR uint64_t grid_platform_rtc_get_diff(uint64_t t1, uint64_t t2) { return t1 - t2; }
 
 void grid_platform_delay_ms(uint32_t delay_milliseconds) { sleep_ms(delay_milliseconds); }
 

@@ -1,6 +1,8 @@
 #include "grid_noflash.h"
 
-struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t event_type) {
+#include "grid_platform.h"
+
+GRID_IRAM_ATTR struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t event_type) {
 
   if (!ele) {
     return NULL;
@@ -14,7 +16,7 @@ struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t ev
   return i < ele->event_list_length ? &ele->event_list[i] : NULL;
 }
 
-void grid_ui_event_state_set(struct grid_ui_event* eve, enum grid_eve_state_t state) {
+GRID_IRAM_ATTR void grid_ui_event_state_set(struct grid_ui_event* eve, enum grid_eve_state_t state) {
 
   // TODO assert instead
   if (!eve) {

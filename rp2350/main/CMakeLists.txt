@@ -119,7 +119,7 @@ target_compile_definitions(grid_rp2350 PRIVATE PICO_FLASH_SIZE_BYTES=0x200000)
 
 # CMake defaults to Release (defines NDEBUG), silently compiling out every
 # assert() in common/src/c. -UNDEBUG keeps them active regardless of build type.
-target_compile_options(grid_rp2350 PRIVATE -UNDEBUG -DSEGGER_RTT_SECTION=".rtt")
+target_compile_options(grid_rp2350 PRIVATE -UNDEBUG -DSEGGER_RTT_SECTION=".rtt" -DGRID_RP2350)
 
 # hardware_resets is needed by TinyUSB's rp2040 DCD; pico_unique_id backs
 # grid_platform_get_id().

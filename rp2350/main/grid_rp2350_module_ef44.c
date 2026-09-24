@@ -22,7 +22,7 @@ static uint16_t element_invert_bm = 0;
 
 static const uint8_t mux_element_lookup[4] = {4, 5, 6, 7};
 
-static void ef44_process_analog(struct grid_adc_result* result) {
+GRID_IRAM_ATTR static void ef44_process_analog(struct grid_adc_result* result) {
 
   assert(result);
 
