@@ -1,4 +1,9 @@
 !CMakeLists.txt
-!main.c
+!gui_main.c
+!headless_main.c
 !platform.c
 !shell_minimal.html
+!sim_core.c
+!sim_core.h
+!usb_stub.c
+!example.js

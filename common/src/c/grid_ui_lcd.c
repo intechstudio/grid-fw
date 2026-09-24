@@ -6,7 +6,13 @@
 #include "grid_ain.h"
 #include "grid_lua_api.h"
 
-#ifdef ESP_PLATFORM
+#if defined(ESP_PLATFORM) || defined(__EMSCRIPTEN__)
+
+// The l_grid_gui_draw_* functions (and their grid_lua_draw_* wrappers,
+// generated via GRID_LUA_FNC_DRAW_DEFI) that this table points to are
+// platform-independent and live in grid_lua_api_gui.c. Any target that
+// links that file - ESP32 hardware today, the wasm simulator as of this
+// change - can wire up the module's real "lcd" element to draw for real.
 
 const luaL_Reg GRID_LUA_L_INDEX_META[] = {{GRID_LUA_FNC_L_ELEMENT_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_L_ELEMENT_INDEX_index)},
                                           {GRID_LUA_FNC_L_SCREEN_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_L_SCREEN_INDEX_index)},
@@ -37,7 +43,7 @@ const luaL_Reg GRID_LUA_L_INDEX_META[] = {{GRID_LUA_FNC_L_ELEMENT_INDEX_short, X
 
 const luaL_Reg GRID_LUA_L_INDEX_META[] = {{NULL, NULL}};
 
-#endif /* ESP_PLATFORM */
+#endif /* ESP_PLATFORM || __EMSCRIPTEN__ */
 
 void grid_ui_element_lcd_init(struct grid_ui_element* ele, template_init_t initializer) {
 

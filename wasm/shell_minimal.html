@@ -3,218 +3,397 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Emscripten-Generated Code</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Grid VSN1L Simulator</title>
     <style>
-      .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
-      textarea.emscripten { font-family: monospace; width: 80%; }
-      div.emscripten { text-align: center; }
-      div.emscripten_border { border: 1px solid black; }
-      /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten { border: 0px none; background-color: black; }
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+      body {
+        font-family: -apple-system, system-ui, sans-serif;
+        background: #14161a;
+        color: #e8e8e8;
+        margin: 0;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+      }
+      #status { font-size: 13px; color: #9aa; min-height: 1.2em; }
+      #progress { width: 200px; }
 
-      .spinner {
-        height: 50px;
-        width: 50px;
-        margin: 0px auto;
-        -webkit-animation: rotation .8s linear infinite;
-        -moz-animation: rotation .8s linear infinite;
-        -o-animation: rotation .8s linear infinite;
-        animation: rotation 0.8s linear infinite;
-        border-left: 10px solid rgb(0,150,240);
-        border-right: 10px solid rgb(0,150,240);
-        border-bottom: 10px solid rgb(0,150,240);
-        border-top: 10px solid rgb(100,0,200);
-        border-radius: 100%;
-        background-color: rgb(200,100,250);
+      .screen-wrap {
+        width: 100%;
+        max-width: 480px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #000;
+        border: 1px solid #333;
       }
-      @-webkit-keyframes rotation {
-        from {-webkit-transform: rotate(0deg);}
-        to {-webkit-transform: rotate(360deg);}
-      }
-      @-moz-keyframes rotation {
-        from {-moz-transform: rotate(0deg);}
-        to {-moz-transform: rotate(360deg);}
-      }
-      @-o-keyframes rotation {
-        from {-o-transform: rotate(0deg);}
-        to {-o-transform: rotate(360deg);}
-      }
-      @keyframes rotation {
-        from {transform: rotate(0deg);}
-        to {transform: rotate(360deg);}
+      canvas.emscripten {
+        display: block;
+        width: 100%;
+        height: auto;
+        image-rendering: pixelated;
+        border: 0;
       }
 
+      .panel {
+        width: 100%;
+        max-width: 480px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .button-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        width: 100%;
+      }
+      .btn {
+        touch-action: none;
+        user-select: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        min-height: 56px;
+        border-radius: 10px;
+        background: #23262d;
+        border: 1px solid #3a3e46;
+        color: #ddd;
+        font-size: 13px;
+      }
+      .btn:active, .btn.pressed { background: #3a3e46; border-color: #666; }
+      .led {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #000;
+        border: 1px solid #444;
+      }
+
+      .dial-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+      .dial-outer {
+        touch-action: none;
+        user-select: none;
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 45%, #2c3038, #1a1c21);
+        border: 1px solid #3a3e46;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .dial-needle {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        width: 3px;
+        height: 22px;
+        background: #7fd0ff;
+        border-radius: 2px;
+        transform-origin: 50% 60px;
+      }
+      .dial-inner {
+        touch-action: none;
+        user-select: none;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #23262d;
+        border: 1px solid #4a4e56;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: #aaa;
+      }
+      .dial-inner:active, .dial-inner.pressed { background: #3a3e46; }
+      .dial-leds { display: flex; gap: 5px; }
+
+      label.section { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #777; align-self: flex-start; }
+
+      .console-wrap {
+        width: 100%;
+        max-width: 480px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .console-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .console-header button {
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: #23262d;
+        border: 1px solid #3a3e46;
+        color: #ccc;
+      }
+      #console {
+        width: 100%;
+        height: 160px;
+        overflow-y: auto;
+        background: #0b0c0e;
+        border: 1px solid #333;
+        border-radius: 8px;
+        margin: 0;
+        padding: 8px;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 11px;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        word-break: break-all;
+        -webkit-overflow-scrolling: touch;
+      }
+      #console .err { color: #ff8080; }
     </style>
   </head>
   <body>
-    <hr/>
-    <figure style="overflow:visible;" id="spinner"><div class="spinner"></div><center style="margin-top:0.5em"><strong>emscripten</strong></center></figure>
-    <div class="emscripten" id="status">Downloading...</div>
-    <div class="emscripten">
-      <progress value="0" max="100" id="progress" hidden=1></progress>
-    </div>
-    <div class="emscripten_border">
+    <div id="status">Downloading...</div>
+    <progress value="0" max="100" id="progress" hidden="1"></progress>
+
+    <div class="screen-wrap">
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
     </div>
-    <hr/>
-    <div class="emscripten">
-      <input type="checkbox" id="resize">Resize canvas
-      <input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer
-      &nbsp;&nbsp;&nbsp;
-      <input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked,
-                                                                                document.getElementById('resize').checked)">
+
+    <div class="panel">
+      <div style="width:100%">
+        <label class="section">Buttons 0-7</label>
+        <div class="button-row" id="row-top"></div>
+      </div>
+
+      <div class="dial-area">
+        <label class="section">Endless (8)</label>
+        <div class="dial-outer" id="dial-outer">
+          <div class="dial-needle" id="dial-needle"></div>
+          <div class="dial-inner" id="dial-push">push</div>
+        </div>
+        <div class="dial-leds" id="dial-leds"></div>
+      </div>
+
+      <div style="width:100%">
+        <label class="section">Buttons 9-12</label>
+        <div class="button-row" id="row-bottom"></div>
+      </div>
     </div>
 
-    <hr/>
-    <textarea class="emscripten" id="output" rows="8"></textarea>
-    <textarea class="emscripten" id="init_script" rows="8">
-loopcounter = 0
-print('init completed')
-print('slider'..sliderValue)
-    </textarea>
-    <textarea class="emscripten" id="loop_script" rows="8">
-loopcounter = loopcounter+1
-print('loopcounter '..loopcounter)
-ggdrf(0,0,0,320,240,{0,0,0})
-ggdd(0,loopcounter)
-ggdft(0,'hello '..loopcounter, 10, 10, 8, {255,255,255})
-ggdt(0,'hello '..loopcounter, 10, 20, 24, {255,255,255})
-    </textarea>
-    <button id="loadScriptButton" onclick="Module.ccall('loadScript', 'void', ['string', 'string'], [slider_script + document.getElementById('init_script').value, document.getElementById('loop_script').value]);">Load Script</button>
-    <hr>
-    <div class="emscripten">
-      <label for="slider">Adjust Value:</label>
-      <input type="range" id="slider" min="0" max="255" value="50">
+    <div class="console-wrap">
+      <div class="console-header">
+        <label class="section" style="margin:0">Console (grid_platform_printf)</label>
+        <button id="console-clear" type="button">Clear</button>
+      </div>
+      <pre id="console"></pre>
     </div>
-    <textarea class="emscripten" id="slider_value" rows="1">
-sliderValue = 50
-    </textarea>
 
-      <script type='text/javascript'>
-        // Function to get query parameters
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
-        }
-
-        // Function to update query parameters in the URL
-        function updateQueryParam(param, value) {
-            const url = new URL(window.location.href);
-            url.searchParams.set(param, value);
-            window.history.replaceState(null, '', url);
-        }
-
-        // Load the 'text' query parameter into the textarea
-        const init_textarea = document.getElementById('init_script');
-        const init_queryParamValue = getQueryParam('init');
-        if (init_queryParamValue) {
-            init_textarea.value = decodeURIComponent(init_queryParamValue);
-        }
-
-        // Update the query parameter when the textarea is updated
-        init_textarea.addEventListener('input', () => {
-            const value = encodeURIComponent(init_textarea.value);
-            updateQueryParam('init', value);
-        });
-
-        // Load the 'text' query parameter into the textarea
-        const loop_textarea = document.getElementById('loop_script');
-        const loop_queryParamValue = getQueryParam('loop');
-        if (loop_queryParamValue) {
-            loop_textarea.value = decodeURIComponent(loop_queryParamValue);
-        }
-
-        // Update the query parameter when the textarea is updated
-        loop_textarea.addEventListener('input', () => {
-            const value = encodeURIComponent(loop_textarea.value);
-            updateQueryParam('loop', value);
-        });
-    </script>
     <script type='text/javascript'>
-
-
-
-
-
-
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
-      var spinnerElement = document.getElementById('spinner');
 
-      var sliderElement = document.getElementById('slider');
-      var slider_text_area = document.getElementById("slider_value");
-      var slider_script = ""
-
-      sliderElement.addEventListener('input', function () {
-        var sliderValue = sliderElement.value;
-        slider_script = `sliderValue = ${sliderValue}\n`
-        slider_text_area.innerText = slider_script
-        loadScriptButton.click()
+      // On-page console - every grid_platform_printf() call (wasm/platform.c)
+      // comes through Module.print as one line; runtime/JS-side errors come
+      // through Module.printErr. Capped so a long session doesn't grow the
+      // DOM forever.
+      var consoleElement = document.getElementById('console');
+      var consoleLines = [];
+      var CONSOLE_MAX_LINES = 400;
+      function appendConsoleLine(text, isError) {
+        var atBottom = consoleElement.scrollTop + consoleElement.clientHeight >= consoleElement.scrollHeight - 4;
+        var span = document.createElement('span');
+        if (isError) span.className = 'err';
+        span.textContent = text + '\n';
+        consoleElement.appendChild(span);
+        consoleLines.push(span);
+        while (consoleLines.length > CONSOLE_MAX_LINES) {
+          consoleElement.removeChild(consoleLines.shift());
+        }
+        if (atBottom) consoleElement.scrollTop = consoleElement.scrollHeight;
+      }
+      document.getElementById('console-clear').addEventListener('click', () => {
+        consoleElement.textContent = '';
+        consoleLines = [];
       });
 
       var Module = {
-        print: (function() {
-          var element = document.getElementById('output');
-          if (element) element.value = ''; // clear browser cache
-          return (...args) => {
-            var text = args.join(' ');
-            // These replacements are necessary if you render to raw HTML
-            //text = text.replace(/&/g, "&amp;");
-            //text = text.replace(/</g, "&lt;");
-            //text = text.replace(/>/g, "&gt;");
-            //text = text.replace('\n', '<br>', 'g');
-            console.log(text);
-            if (element) {
-              element.value += text + "\n";
-              element.scrollTop = element.scrollHeight; // focus on bottom
-            }
-          };
-        })(),
-        canvas: (() => {
-          var canvas = document.getElementById('canvas');
-
-          // As a default initial behavior, pop up an alert when webgl context is lost. To make your
-          // application robust, you may want to override this behavior before shipping!
-          // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
-          canvas.addEventListener("webglcontextlost", (e) => { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
-
-          return canvas;
-        })(),
+        print: (...args) => { var text = args.join(' '); console.log(text); appendConsoleLine(text, false); },
+        printErr: (...args) => { var text = args.join(' '); console.error(text); appendConsoleLine(text, true); },
+        canvas: document.getElementById('canvas'),
         setStatus: (text) => {
           if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
           if (text === Module.setStatus.last.text) return;
           var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
           var now = Date.now();
-          if (m && now - Module.setStatus.last.time < 30) return; // if this is a progress update, skip it if too soon
+          if (m && now - Module.setStatus.last.time < 30) return;
           Module.setStatus.last.time = now;
           Module.setStatus.last.text = text;
           if (m) {
             text = m[1];
-            progressElement.value = parseInt(m[2])*100;
-            progressElement.max = parseInt(m[4])*100;
+            progressElement.value = parseInt(m[2]) * 100;
+            progressElement.max = parseInt(m[4]) * 100;
             progressElement.hidden = false;
-            spinnerElement.hidden = false;
           } else {
-            progressElement.value = null;
-            progressElement.max = null;
             progressElement.hidden = true;
-            if (!text) spinnerElement.hidden = true;
           }
           statusElement.innerHTML = text;
         },
         totalDependencies: 0,
         monitorRunDependencies: (left) => {
-          this.totalDependencies = Math.max(this.totalDependencies, left);
-          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
-        }
+          Module.totalDependencies = Math.max(Module.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (Module.totalDependencies - left) + '/' + Module.totalDependencies + ')' : 'Ready');
+        },
       };
       Module.setStatus('Downloading...');
       window.onerror = () => {
         Module.setStatus('Exception thrown, see JavaScript console');
-        spinnerElement.style.display = 'none';
-        Module.setStatus = (text) => {
-          if (text) console.error('[post-exception status] ' + text);
-        };
+      };
+
+      // ---- On-screen controls (touch/mouse), wired once the wasm runtime is up ----
+
+      function callVoid(name, types, args) { Module.ccall(name, null, types, args); }
+
+      function makeButton(container, element, label) {
+        var btn = document.createElement('div');
+        btn.className = 'btn';
+        btn.innerHTML = '<span>' + label + '</span><span class="led" data-led></span>';
+        container.appendChild(btn);
+
+        var press = (e) => { e.preventDefault(); btn.classList.add('pressed'); callVoid('grid_sim_input_button', ['number', 'number'], [element, 1]); };
+        var release = (e) => { e.preventDefault(); btn.classList.remove('pressed'); callVoid('grid_sim_input_button', ['number', 'number'], [element, 0]); };
+
+        btn.addEventListener('pointerdown', press);
+        btn.addEventListener('pointerup', release);
+        btn.addEventListener('pointercancel', release);
+        btn.addEventListener('pointerleave', (e) => { if (btn.classList.contains('pressed')) release(e); });
+
+        return btn;
+      }
+
+      function setupButtonRows() {
+        var top = document.getElementById('row-top');
+        var bottom = document.getElementById('row-bottom');
+        for (var i = 0; i <= 7; i++) makeButton(top, i, 'B' + i);
+        for (var i = 9; i <= 12; i++) makeButton(bottom, i, 'B' + i);
+
+        for (var i = 0; i < 5; i++) {
+          var led = document.createElement('span');
+          led.className = 'led';
+          led.dataset.dialLed = i;
+          document.getElementById('dial-leds').appendChild(led);
+        }
+      }
+
+      function setupDial() {
+        var outer = document.getElementById('dial-outer');
+        var inner = document.getElementById('dial-push');
+        var needle = document.getElementById('dial-needle');
+
+        var dragging = false;
+        var lastAngle = 0;
+        var accumDeg = 0;
+        var needleDeg = 0;
+        var DEG_PER_STEP = 8;
+
+        function angleAt(e) {
+          var rect = outer.getBoundingClientRect();
+          var cx = rect.left + rect.width / 2;
+          var cy = rect.top + rect.height / 2;
+          return Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI;
+        }
+
+        outer.addEventListener('pointerdown', (e) => {
+          if (e.target === inner) return;
+          e.preventDefault();
+          dragging = true;
+          outer.setPointerCapture(e.pointerId);
+          lastAngle = angleAt(e);
+        });
+
+        outer.addEventListener('pointermove', (e) => {
+          if (!dragging) return;
+          e.preventDefault();
+          var a = angleAt(e);
+          var diff = a - lastAngle;
+          if (diff > 180) diff -= 360;
+          if (diff < -180) diff += 360;
+          lastAngle = a;
+
+          accumDeg += diff;
+          needleDeg += diff;
+          needle.style.transform = 'rotate(' + needleDeg + 'deg)';
+
+          while (accumDeg >= DEG_PER_STEP) {
+            callVoid('grid_sim_input_endless_rotate', ['number', 'number'], [8, 1]);
+            accumDeg -= DEG_PER_STEP;
+          }
+          while (accumDeg <= -DEG_PER_STEP) {
+            callVoid('grid_sim_input_endless_rotate', ['number', 'number'], [8, -1]);
+            accumDeg += DEG_PER_STEP;
+          }
+        });
+
+        var stopDrag = (e) => { dragging = false; };
+        outer.addEventListener('pointerup', stopDrag);
+        outer.addEventListener('pointercancel', stopDrag);
+
+        var push = (e) => { e.preventDefault(); e.stopPropagation(); inner.classList.add('pressed'); callVoid('grid_sim_input_endless_button', ['number', 'number'], [8, 1]); };
+        var release = (e) => { e.preventDefault(); e.stopPropagation(); inner.classList.remove('pressed'); callVoid('grid_sim_input_endless_button', ['number', 'number'], [8, 0]); };
+        inner.addEventListener('pointerdown', push);
+        inner.addEventListener('pointerup', release);
+        inner.addEventListener('pointercancel', release);
+        inner.addEventListener('pointerleave', (e) => { if (inner.classList.contains('pressed')) release(e); });
+      }
+
+      function packedToCss(packed) {
+        var r = (packed >> 16) & 0xff, g = (packed >> 8) & 0xff, b = packed & 0xff;
+        return 'rgb(' + r + ',' + g + ',' + b + ')';
+      }
+
+      function startLedPolling() {
+        var getPacked = Module.cwrap('grid_sim_get_element_led_rgb_packed', 'number', ['number']);
+        var getPackedLed = Module.cwrap('grid_sim_get_led_rgb_packed', 'number', ['number']);
+        var getIndices = Module.cwrap('grid_sim_get_element_led_indices', 'number', ['number', 'number', 'number']);
+
+        // Element 8's LED indices are looked up fresh every tick, not cached
+        // once at startup: onRuntimeInitialized can fire before main() (and
+        // therefore grid_sim_init()) has actually run, which would
+        // permanently cache an empty list. This lookup is cheap (5 LEDs),
+        // so there's no real cost to redoing it each poll.
+        var dialLedPtr = Module._malloc(8);
+
+        setInterval(() => {
+          document.getElementById('row-top').querySelectorAll('.btn').forEach((btn, i) => {
+            btn.querySelector('[data-led]').style.background = packedToCss(getPacked(i));
+          });
+          document.getElementById('row-bottom').querySelectorAll('.btn').forEach((btn, i) => {
+            btn.querySelector('[data-led]').style.background = packedToCss(getPacked(i + 9));
+          });
+
+          var n = getIndices(8, dialLedPtr, 8);
+          document.querySelectorAll('[data-dial-led]').forEach((led) => {
+            var i = parseInt(led.dataset.dialLed, 10);
+            led.style.background = i >= n ? '#000' : packedToCss(getPackedLed(Module.HEAPU8[dialLedPtr + i]));
+          });
+        }, 100);
+      }
+
+      Module.onRuntimeInitialized = () => {
+        setupButtonRows();
+        setupDial();
+        startLedPolling();
       };
     </script>
     {{{ SCRIPT }}}
