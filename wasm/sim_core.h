@@ -32,6 +32,17 @@
 #define GRID_SIM_LCD_HEIGHT 240
 #define GRID_SIM_LCD_BYTES_PER_PIXEL 3
 
+// Transport port indices, matching the layout grid_sim_init() sets up in
+// grid_transport_state.ports[] (common/src/c/grid_transport.h) - the same
+// 6-port layout real pbf4/vsnx-family modules use.
+#define GRID_SIM_PORT_NORTH 0
+#define GRID_SIM_PORT_EAST 1
+#define GRID_SIM_PORT_SOUTH 2
+#define GRID_SIM_PORT_WEST 3
+#define GRID_SIM_PORT_UI 4
+#define GRID_SIM_PORT_USB 5
+#define GRID_SIM_PORT_COUNT 6
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -116,6 +127,110 @@ EMSCRIPTEN_KEEPALIVE const char* grid_sim_drain_module_output(void);
 // error is also always echoed to the console regardless (grid_lua_broadcast_stde).
 EMSCRIPTEN_KEEPALIVE const char* grid_sim_drain_stdo(void);
 EMSCRIPTEN_KEEPALIVE const char* grid_sim_drain_stde(void);
+
+// ---------------------------------------------------------------------------
+// Port-level transport: rx -> broadcast-relay -> tx across all 6 ports
+// (N/E/S/W USART, UI, USB), matching real firmware's per-tick loop (see
+// d51n20a/grid_d51n20a.c's main() - the one target that actually wires this
+// up in full: grid_transport_rx_broadcast_tx() per port, then
+// grid_port_send_usart()/send_usb()/send_ui()). Lets you inject a message
+// as if it just arrived over a port's wire/USB, and listen to whatever the
+// module then queues to send back out that same port.
+// ---------------------------------------------------------------------------
+
+// Build a real DCT ("direct") handshake ping frame - the exact bytes
+// grid_ping_init() (common/src/c/grid_port.c) produces for a module
+// announcing itself as attached via `claimed_source_dir`. Inject this into
+// a USART port (grid_sim_port_inject) to establish its connection before
+// grid_sim_tick()'s relay will touch it - a BRC (broadcast) frame is
+// ignored on an unconnected port, exactly like real hardware
+// (grid_port_recv_msg, common/src/c/grid_port.c). Writes up to max_out
+// bytes into out and returns how many were written (always <= 15).
+EMSCRIPTEN_KEEPALIVE uint32_t grid_sim_build_ping_frame(uint8_t claimed_source_dir, char* out, uint32_t max_out);
+
+// Builds a complete, valid BRC (broadcast) message wrapping one MIDI class
+// frame (GRID_CLASS_MIDI_frame, common/src/c/grid_protocol.h), using the
+// same steps real code takes to send one (l_grid_midi_send(), common/src/c/
+// grid_lua_api.c, builds the class frame; grid_ui_clear_triggered(),
+// grid_ui.c, wraps it in a BRC envelope and closes it). Ready to inject
+// as-is via grid_sim_port_inject() (e.g. into GRID_SIM_PORT_USB) - already
+// includes the checksum footer, unlike grid_sim_terminate_frame(). A
+// concrete, known-correct example of what a real injectable message looks
+// like end to end. Writes up to max_out bytes into out and returns how many.
+EMSCRIPTEN_KEEPALIVE uint32_t grid_sim_build_midi_frame(uint8_t channel, uint8_t command, uint8_t param1, uint8_t param2, char* out, uint32_t max_out);
+
+// Builds a complete, valid BRC message wrapping one GRID_CLASS_EVALUATE
+// frame - "run this Lua source and report the result", the mechanism the
+// desktop editor uses to evaluate live snippets in the module's own Lua VM
+// (grid_decode_evaluate_to_ui(), common/src/c/grid_decode.c:609). Unlike
+// grid_sim_build_midi_frame(), this class has no existing "build one"
+// function anywhere in the codebase to copy - only the receiving side, on a
+// real module, ever needs to construct one - so this is composed directly
+// from grid_msg_add_frame()/add_segment_char(), the same primitives that
+// receiving side's response uses.
+//
+// GRID_CLASS_EVALUATE is only in grid_decoder_to_ui[], not
+// grid_decoder_to_usb[] - inject the result into GRID_SIM_PORT_UI, not
+// GRID_SIM_PORT_USB. Writes up to max_out bytes into out and returns how
+// many; 0 if lua_code didn't fit.
+EMSCRIPTEN_KEEPALIVE uint32_t grid_sim_build_evaluate_frame(const char* lua_code, uint32_t code_len, char* out, uint32_t max_out);
+
+// Appends a valid footer - EOT + a correctly computed 2-hex-digit checksum +
+// '\n' - onto `in`, into `out`. grid_swsr_until_msg_end() (common/src/c/
+// grid_swsr.c) - what grid_sim_tick()'s port relay uses to find a message's
+// end - specifically looks for that exact EOT+..+\n trailer; anything
+// injected without one sits in the port's rx forever, never relayed. Real
+// firmware builds every outbound frame the same way (grid_ping_init(),
+// common/src/c/grid_port.c: compose with a placeholder checksum, then
+// overwrite it via grid_frame_calculate_checksum_packet()+
+// grid_str_checksum_set()). Pass a message body with no footer of its own -
+// running an already-terminated frame through this again double-appends.
+// Writes up to max_out bytes into out (in_len + 4) and returns how many;
+// 0 if it didn't fit.
+EMSCRIPTEN_KEEPALIVE uint32_t grid_sim_terminate_frame(const char* in, uint32_t in_len, char* out, uint32_t max_out);
+
+// Feed raw protocol bytes into a port's rx, as if they had just arrived
+// over its wire/USB (grid_port_recv_msg(), common/src/c/grid_port.c) -
+// handles DCT (handshake) and BRC (broadcast) frames exactly like real
+// firmware. A constructed BRC frame's source position header (BRC_SX/
+// BRC_SY) determines whether grid_rx_should_handle() (grid_decode.c) treats
+// it as this module's own traffic looped back (HANDLE_INTERNAL) or a
+// neighbor's (HANDLE_EXTERNAL) - see grid_msg_is_source_internal().
+//
+// Simplification versus real firmware: this doesn't run the per-target BRC
+// position transform (grid_str_transform_brc_params, applied by e.g.
+// grid_d51_port_recv_uwsr before calling grid_port_recv_msg) or duplicate-
+// broadcast fingerprint suppression - both are about multi-hop relay
+// topology, out of scope for a single simulated module.
+EMSCRIPTEN_KEEPALIVE void grid_sim_port_inject(uint8_t port, const char* data, uint32_t length);
+
+// Drain (and clear) whatever this module has queued to send out of a
+// port's wire/USB since the last call - what a real neighbor or USB host
+// would have received. Port 4 (UI) is grid_sim_drain_module_output()'s
+// content, exposed here too for uniformity. Empty string if nothing
+// pending.
+//
+// Protocol frames can contain embedded 0x00 bytes (raw parameter data), and
+// this returns a NUL-terminated C string - fine for display/logging, but a
+// byte at/after the first 0x00 is invisible to it. Use
+// grid_sim_port_tx_pending()/grid_sim_port_drain_tx_bytes() below for exact,
+// binary-safe access (e.g. before re-injecting a captured frame elsewhere).
+EMSCRIPTEN_KEEPALIVE const char* grid_sim_port_drain_tx(uint8_t port);
+
+// How many bytes are currently pending for this port (does not clear them) -
+// size grid_sim_port_drain_tx_bytes()'s output buffer with this first.
+EMSCRIPTEN_KEEPALIVE uint32_t grid_sim_port_tx_pending(uint8_t port);
+
+// Binary-safe drain: copies up to max_out pending bytes into out and clears
+// exactly that many from the queue (any excess beyond max_out is left
+// pending for the next call), returning how many bytes were copied.
+EMSCRIPTEN_KEEPALIVE uint32_t grid_sim_port_drain_tx_bytes(uint8_t port, uint8_t* out, uint32_t max_out);
+
+// Is this port currently connected (grid_port_connected(), common/src/c/
+// grid_port.c)? USART ports auto-disconnect after
+// GRID_PARAMETER_DISCONNECTTIMEOUT_us (500ms) without traffic refreshing
+// them, matching real hardware - re-inject a ping to reconnect.
+EMSCRIPTEN_KEEPALIVE uint8_t grid_sim_port_is_connected(uint8_t port);
 
 #ifdef __cplusplus
 }

@@ -144,7 +144,7 @@
         border: 1px solid #3a3e46;
         color: #ccc;
       }
-      #console {
+      .console-box {
         width: 100%;
         height: 160px;
         overflow-y: auto;
@@ -160,7 +160,41 @@
         word-break: break-all;
         -webkit-overflow-scrolling: touch;
       }
-      #console .err { color: #ff8080; }
+      .console-box .err { color: #ff8080; }
+      .console-box .sent { color: #7fd0ff; }
+
+      .console-input-row {
+        display: flex;
+        gap: 6px;
+      }
+      .console-input-row select {
+        background: #0b0c0e;
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 8px 4px;
+        color: #e8e8e8;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 12px;
+      }
+      .console-input-row input {
+        flex: 1;
+        min-width: 0;
+        background: #0b0c0e;
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 8px;
+        color: #e8e8e8;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 12px;
+      }
+      .console-input-row button {
+        font-size: 12px;
+        padding: 8px 14px;
+        border-radius: 6px;
+        background: #23262d;
+        border: 1px solid #3a3e46;
+        color: #ccc;
+      }
     </style>
   </head>
   <body>
@@ -197,40 +231,105 @@
         <label class="section" style="margin:0">Console (grid_platform_printf)</label>
         <button id="console-clear" type="button">Clear</button>
       </div>
-      <pre id="console"></pre>
+      <pre id="console" class="console-box"></pre>
+    </div>
+
+    <div class="console-wrap">
+      <div class="console-header">
+        <label class="section" style="margin:0">USB serial (raw)</label>
+        <button id="usb-console-clear" type="button">Clear</button>
+      </div>
+      <pre id="usb-console" class="console-box"></pre>
+      <div class="console-input-row">
+        <select id="usb-send-port" title="Port to inject into">
+          <option value="0">N</option>
+          <option value="1">E</option>
+          <option value="2">S</option>
+          <option value="3">W</option>
+          <option value="4" selected>UI</option>
+          <option value="5">USB</option>
+        </select>
+        <input id="usb-send-input" type="text" placeholder="type text, or \xNN for raw bytes (e.g. \x01)" autocomplete="off"
+          value="\x01\x0f003500517f7f00000000\x17\x02086e000104000dprint(&quot;test&quot;)\x03">
+        <button id="usb-send-btn" type="button">Send</button>
+      </div>
     </div>
 
     <script type='text/javascript'>
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
 
-      // On-page console - every grid_platform_printf() call (wasm/platform.c)
-      // comes through Module.print as one line; runtime/JS-side errors come
-      // through Module.printErr. Capped so a long session doesn't grow the
-      // DOM forever.
-      var consoleElement = document.getElementById('console');
-      var consoleLines = [];
-      var CONSOLE_MAX_LINES = 400;
-      function appendConsoleLine(text, isError) {
-        var atBottom = consoleElement.scrollTop + consoleElement.clientHeight >= consoleElement.scrollHeight - 4;
-        var span = document.createElement('span');
-        if (isError) span.className = 'err';
-        span.textContent = text + '\n';
-        consoleElement.appendChild(span);
-        consoleLines.push(span);
-        while (consoleLines.length > CONSOLE_MAX_LINES) {
-          consoleElement.removeChild(consoleLines.shift());
-        }
-        if (atBottom) consoleElement.scrollTop = consoleElement.scrollHeight;
+      // On-page consoles. Capped (per-instance) so neither the DOM nor the
+      // visible scrollback grows unbounded. makeConsole() returns an
+      // appendLine(text, className) function bound to one <pre>/clear-button
+      // pair; className is optional ('err', 'sent', or falsy for a plain line).
+      function makeConsole(preId, clearButtonId, maxLines) {
+        var el = document.getElementById(preId);
+        var lines = [];
+        document.getElementById(clearButtonId).addEventListener('click', () => {
+          el.textContent = '';
+          lines = [];
+        });
+        return function appendLine(text, className) {
+          var atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 4;
+          var span = document.createElement('span');
+          if (className) span.className = className;
+          span.textContent = text + '\n';
+          el.appendChild(span);
+          lines.push(span);
+          while (lines.length > maxLines) {
+            el.removeChild(lines.shift());
+          }
+          if (atBottom) el.scrollTop = el.scrollHeight;
+        };
       }
-      document.getElementById('console-clear').addEventListener('click', () => {
-        consoleElement.textContent = '';
-        consoleLines = [];
-      });
+
+      // grid_platform_printf() (wasm/platform.c) comes through Module.print
+      // as one line; runtime/JS-side errors come through Module.printErr.
+      var appendConsoleLine = makeConsole('console', 'console-clear', 400);
+
+      // Raw bytes this module has queued to send out its USB serial port -
+      // grid_usb_acm_write() (wasm/usb_stub.c), captured via
+      // grid_sim_port_drain_tx_bytes(GRID_SIM_PORT_USB) - see startUsbPolling().
+      // Also where sendUsbMessage() below echoes what it injected.
+      var appendUsbLine = makeConsole('usb-console', 'usb-console-clear', 10);
+
+      // Protocol frames use control bytes (STX/ETX/etc) that don't render -
+      // show anything outside printable ASCII as \xNN, like
+      // grid_platform_printf_nonprint() (wasm/platform.c) does for the
+      // native console.
+      function escapeBytes(bytes) {
+        var out = '';
+        for (var i = 0; i < bytes.length; i++) {
+          var c = bytes[i];
+          out += (c >= 0x20 && c < 0x7f) ? String.fromCharCode(c) : '\\x' + c.toString(16).padStart(2, '0');
+        }
+        return out;
+      }
+
+      // Inverse of escapeBytes(): literal characters pass through as their
+      // own byte, \xNN sequences become the raw byte NN - so typing a real
+      // control byte (e.g. \x01 for STX) is possible without needing to
+      // paste one in directly.
+      function parseEscapedBytes(text) {
+        var out = [];
+        for (var i = 0; i < text.length; i++) {
+          if (text[i] === '\\' && text[i + 1] === 'x' && i + 3 < text.length) {
+            var val = parseInt(text.substr(i + 2, 2), 16);
+            if (!isNaN(val)) {
+              out.push(val);
+              i += 3;
+              continue;
+            }
+          }
+          out.push(text.charCodeAt(i) & 0xff);
+        }
+        return new Uint8Array(out);
+      }
 
       var Module = {
-        print: (...args) => { var text = args.join(' '); console.log(text); appendConsoleLine(text, false); },
-        printErr: (...args) => { var text = args.join(' '); console.error(text); appendConsoleLine(text, true); },
+        print: (...args) => { var text = args.join(' '); console.log(text); appendConsoleLine(text); },
+        printErr: (...args) => { var text = args.join(' '); console.error(text); appendConsoleLine(text, 'err'); },
         canvas: document.getElementById('canvas'),
         setStatus: (text) => {
           if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
@@ -256,6 +355,14 @@
           Module.setStatus(left ? 'Preparing... (' + (Module.totalDependencies - left) + '/' + Module.totalDependencies + ')' : 'Ready');
         },
       };
+
+      // Tells emscripten's SDL layer not to capture/preventDefault()
+      // keyboard events at all - this page has no keyboard-driven module
+      // controls (buttons/dial are pointer-only), so there's no reason for
+      // SDL to intercept typing anywhere on the page. Whitelisted via
+      // -sINCOMING_MODULE_JS_API in wasm/CMakeLists.txt, or this aborts.
+      Module.doNotCaptureKeyboard = true;
+
       Module.setStatus('Downloading...');
       window.onerror = () => {
         Module.setStatus('Exception thrown, see JavaScript console');
@@ -390,10 +497,88 @@
         }, 100);
       }
 
+      var GRID_SIM_PORT_USB = 5;
+
+      function startUsbPolling() {
+        var pending = Module.cwrap('grid_sim_port_tx_pending', 'number', ['number']);
+        var drainBytes = Module.cwrap('grid_sim_port_drain_tx_bytes', 'number', ['number', 'number', 'number']);
+
+        var capacity = 4096;
+        var bufPtr = Module._malloc(capacity);
+
+        setInterval(() => {
+          var n = pending(GRID_SIM_PORT_USB);
+          if (n === 0) return;
+
+          var copied = drainBytes(GRID_SIM_PORT_USB, bufPtr, capacity);
+          appendUsbLine(escapeBytes(Module.HEAPU8.subarray(bufPtr, bufPtr + copied)));
+        }, 100);
+      }
+
+      // Injects whatever's typed into the selected port's rx, as if it had
+      // just arrived over that port's wire/USB - grid_sim_terminate_frame()
+      // appends the checksum trailer the message needs to actually be found
+      // and relayed (see its comment in wasm/sim_core.h), so a plain word or
+      // a hand-built \x01... frame both work without the sender needing to
+      // compute that by hand. Some classes (e.g. GRID_CLASS_EVALUATE) are
+      // only recognized on specific ports - UI, not USB - hence the port
+      // picker rather than always targeting USB.
+      function setupUsbSend() {
+        var input = document.getElementById('usb-send-input');
+        var portSelect = document.getElementById('usb-send-port');
+        var terminate = Module.cwrap('grid_sim_terminate_frame', 'number', ['number', 'number', 'number', 'number']);
+        var inject = Module.cwrap('grid_sim_port_inject', null, ['number', 'number', 'number']);
+
+        // Not a real history stack - just the one most recently sent
+        // message, recalled with ArrowUp.
+        var lastSent = '';
+
+        function send() {
+          var text = input.value;
+          if (!text) return;
+          var port = parseInt(portSelect.value, 10);
+          lastSent = text;
+
+          var body = parseEscapedBytes(text);
+          var bodyPtr = Module._malloc(body.length);
+          Module.HEAPU8.set(body, bodyPtr);
+
+          var maxOut = body.length + 4;
+          var outPtr = Module._malloc(maxOut);
+          var outLen = terminate(bodyPtr, body.length, outPtr, maxOut);
+
+          if (outLen > 0) {
+            var framed = Module.HEAPU8.slice(outPtr, outPtr + outLen);
+            var p = Module._malloc(framed.length);
+            Module.HEAPU8.set(framed, p);
+            inject(port, p, framed.length);
+            Module._free(p);
+
+            appendUsbLine('> ' + escapeBytes(framed), 'sent');
+          }
+
+          Module._free(bodyPtr);
+          Module._free(outPtr);
+          input.value = '';
+        }
+
+        document.getElementById('usb-send-btn').addEventListener('click', send);
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            send();
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            input.value = lastSent;
+          }
+        });
+      }
+
       Module.onRuntimeInitialized = () => {
         setupButtonRows();
         setupDial();
         startLedPolling();
+        startUsbPolling();
+        setupUsbSend();
       };
     </script>
     {{{ SCRIPT }}}

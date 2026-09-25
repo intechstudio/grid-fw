@@ -1,5 +1,6 @@
 #include "sim_core.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -48,42 +49,69 @@ static uint8_t sim_lcd_framebuffer[GRID_SIM_LCD_WIDTH * GRID_SIM_LCD_HEIGHT * GR
 // else would ever trigger the LCD's DRAW event at all.
 static struct grid_utask_timer sim_lcd_draw_timer;
 
-// grid_transport_send_msg_to_all() (used by every triggered element event,
-// grid_ui_clear_triggered(), common/src/c/grid_ui.c) writes straight into
-// port 4's ("UI") rx buffer - see sim_decode_ui_port() below, which is what
-// actually decodes that and drives self.eventrx_cb() on elements that
-// define one (e.g. VSN1's LCD - see grid_ui_lcd.h's
-// GRID_ACTIONSTRING_LCD_INIT). grid_sim_drain_module_output() has its own
-// copy appended here rather than reading port 4's rx directly, since that
-// buffer is a single-reader queue that sim_decode_ui_port() also consumes
-// every tick - both need to see everything sent.
-static char sim_module_output_buf[2048];
-static size_t sim_module_output_len = 0;
+// Per-port capture of whatever this module has queued to physically send
+// out (USART/USB), or decoded off its UI port - what grid_sim_port_drain_tx()
+// / grid_sim_drain_module_output() read. Filled from three different real
+// call sites, one per port kind: grid_platform_send_frame() (platform.c,
+// called from the real grid_port_send_usart() for ports 0-3),
+// grid_usb_acm_write() (usb_stub.c, called from the real grid_port_send_usb()
+// for port 5), and sim_send_ui_with_capture() below (port 4 - UI has no
+// "physical wire" hook to intercept, so this mirrors the real
+// grid_port_send_ui() itself rather than calling it).
+static char sim_port_tx_buf[GRID_SIM_PORT_COUNT][2048];
+static size_t sim_port_tx_len[GRID_SIM_PORT_COUNT];
 
-static void sim_append_module_output(const char* data, size_t len) {
-  size_t avail = sizeof(sim_module_output_buf) - sim_module_output_len - 1;
-  if (len > avail) {
-    len = avail;
+void grid_sim_port_tx_capture(uint8_t port, const char* data, uint32_t len) {
+
+  if (port >= GRID_SIM_PORT_COUNT) {
+    return;
   }
-  memcpy(sim_module_output_buf + sim_module_output_len, data, len);
-  sim_module_output_len += len;
+
+  size_t avail = sizeof(sim_port_tx_buf[port]) - sim_port_tx_len[port] - 1;
+  if (len > avail) {
+    len = (uint32_t)avail;
+  }
+  memcpy(sim_port_tx_buf[port] + sim_port_tx_len[port], data, len);
+  sim_port_tx_len[port] += len;
 }
 
-// Real firmware doesn't wire this up on any target yet (see the analysis
-// that led here) - every module always broadcasts EVENTVIEW frames for its
-// own events, but nothing anywhere calls grid_port_decode_msg() to actually
-// decode them back into Lua. VSN1's default config only makes sense with
-// this in place: its LCD screen is designed to show the name/value of the
-// last-interacted element (this module's own, or a neighbor's).
-static void sim_decode_ui_port(void) {
+// Mirrors the real grid_port_send_ui() (common/src/c/grid_port.c) - drains
+// the UI port's tx (which this tick's relay, below, just filled via its
+// rx->tx self-loop - see grid_transport_rx_broadcast_tx()'s "Loopback only
+// for UI" case) and decodes it. This is the (previously entirely unwired -
+// see the analysis that led here) mechanism that drives self.eventrx_cb()
+// on elements that define one, e.g. VSN1's LCD showing the name/value of
+// the last-interacted element (GRID_ACTIONSTRING_LCD_INIT, grid_ui_lcd.h).
+// Reimplemented rather than calling grid_port_send_ui() directly only so
+// the raw bytes can be captured for grid_sim_port_drain_tx().
+static void sim_send_ui_with_capture(void) {
 
-  struct grid_swsr_t* rx = grid_port_get_rx(&grid_transport_state.ports[4]);
+  struct grid_swsr_t* tx = grid_port_get_tx(&grid_transport_state.ports[GRID_SIM_PORT_UI]);
 
   struct grid_msg msg;
-  while (grid_msg_from_swsr(&msg, rx)) {
-    sim_append_module_output(msg.data, msg.length);
+  while (grid_msg_from_swsr(&msg, tx)) {
+    grid_sim_port_tx_capture(GRID_SIM_PORT_UI, msg.data, msg.length);
     grid_port_decode_msg(grid_decoder_to_ui_reference, &msg);
   }
+}
+
+// Real firmware's per-tick port service loop (see d51n20a/grid_d51n20a.c's
+// main() for the one target that wires this up in full): relay each
+// connected port's rx into every other connected port's tx (with a UI-only
+// self-loop exception - grid_transport_rx_broadcast_tx(), common/src/c/
+// grid_transport.c), then drain/service each port's tx side.
+static void sim_service_ports(void) {
+
+  for (uint8_t i = 0; i < GRID_SIM_PORT_COUNT; ++i) {
+    grid_transport_rx_broadcast_tx(&grid_transport_state, &grid_transport_state.ports[i], NULL);
+  }
+
+  for (uint8_t i = 0; i < 4; ++i) {
+    grid_port_send_usart(&grid_transport_state.ports[i]);
+  }
+
+  grid_port_send_usb(&grid_transport_state.ports[GRID_SIM_PORT_USB]);
+  sim_send_ui_with_capture();
 }
 
 static void sim_lcd_draw_tick(void) {
@@ -101,6 +129,28 @@ static void sim_lcd_draw_tick(void) {
   struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, GRID_SIM_LCD_ELEMENT);
   struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_DRAW);
   grid_ui_process_single(&grid_ui_state, ele, eve);
+}
+
+// Real firmware's grid_utask_heart() (e.g. d51n20a/grid_d51n20a.c:106) fires
+// this on a fixed GRID_PARAMETER_HEARTBEATINTERVAL_us timer - nothing else
+// would ever call grid_transport_heartbeat() here. It broadcasts the same
+// way any other event does (grid_transport_send_msg_to_all()), so once
+// generated it needs no separate wiring to show up wherever module output
+// is already observed (grid_sim_port_drain_tx(), grid_sim_drain_module_output()).
+static struct grid_utask_timer sim_heartbeat_timer;
+
+static void sim_heartbeat_tick(void) {
+
+  if (!grid_utask_timer_elapsed(&sim_heartbeat_timer)) {
+    return;
+  }
+
+  uint8_t type = grid_msg_get_heartbeat_type(&grid_msg_state);
+  uint32_t hwcfg = grid_sys_get_hwcfg(&grid_sys_state);
+  uint8_t activepage = grid_ui_state.page_activepage;
+  uint8_t gccount = grid_lua_gc_count_unsafe(&grid_lua_state);
+
+  grid_transport_heartbeat(&grid_transport_state, type, hwcfg, activepage, gccount);
 }
 
 // grid_ui_button_store_input() only starts producing button/endless events
@@ -246,7 +296,11 @@ void grid_sim_init(void) {
       .last = grid_platform_rtc_get_micros(),
       .period = GRID_PARAMETER_DRAWTRIGGER_us,
   };
-  sim_module_output_len = 0;
+  sim_heartbeat_timer = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_HEARTBEATINTERVAL_us,
+  };
+  memset(sim_port_tx_len, 0, sizeof(sim_port_tx_len));
 }
 
 int grid_sim_load_config(const char* toml) {
@@ -276,10 +330,13 @@ void grid_sim_tick(uint32_t dt_ms) {
   grid_ui_bulk_process(&grid_ui_state);
   grid_ui_process_triggered(&grid_ui_state);
 
-  // Consume whatever grid_ui_process_triggered() just broadcast (EVENTVIEW
-  // frames included) before triggering this frame's LCD redraw, so a
-  // newly-updated self.eventrx_cb value can show up as early as this tick.
-  sim_decode_ui_port();
+  sim_heartbeat_tick();
+
+  // Relay/service all 6 ports (including any messages injected this tick
+  // via grid_sim_port_inject()) before triggering this frame's LCD redraw,
+  // so a newly-updated self.eventrx_cb value can show up as early as this
+  // tick.
+  sim_service_ports();
 
   sim_lcd_draw_tick();
 
@@ -392,19 +449,177 @@ uint8_t grid_sim_get_element_led_indices(uint8_t element, uint8_t* out, uint8_t 
 
 uint8_t* grid_sim_get_lcd_framebuffer(void) { return sim_lcd_framebuffer; }
 
-const char* grid_sim_drain_module_output(void) {
+uint32_t grid_sim_build_ping_frame(uint8_t claimed_source_dir, char* out, uint32_t max_out) {
 
-  static char out[sizeof(sim_module_output_buf)];
+  struct grid_ping ping;
+  grid_ping_init(&ping, (enum grid_port_dir)(claimed_source_dir % GRID_PORT_DIR_COUNT));
 
-  // See sim_module_output_buf's comment above: this is a copy taken as
-  // sim_decode_ui_port() (called every grid_sim_tick()) consumes port 4's
-  // real rx queue, not a read of that queue itself.
-  memcpy(out, sim_module_output_buf, sim_module_output_len);
-  out[sim_module_output_len] = '\0';
-  sim_module_output_len = 0;
+  uint32_t n = (uint32_t)ping.size < max_out ? (uint32_t)ping.size : max_out;
+  memcpy(out, ping.data, n);
+
+  return n;
+}
+
+uint32_t grid_sim_build_midi_frame(uint8_t channel, uint8_t command, uint8_t param1, uint8_t param2, char* out, uint32_t max_out) {
+
+  // Same as l_grid_midi_send() (common/src/c/grid_lua_api.c): build the
+  // bare class frame into its own small buffer first.
+  char midiframe[15] = {0};
+  sprintf(midiframe, GRID_CLASS_MIDI_frame);
+  grid_msg_set_parameter_raw((uint8_t*)midiframe, INSTR, GRID_INSTR_EXECUTE_code);
+  grid_msg_set_parameter_raw((uint8_t*)midiframe, CLASS_MIDI_CHANNEL, channel);
+  grid_msg_set_parameter_raw((uint8_t*)midiframe, CLASS_MIDI_COMMAND, command);
+  grid_msg_set_parameter_raw((uint8_t*)midiframe, CLASS_MIDI_PARAM1, param1);
+  grid_msg_set_parameter_raw((uint8_t*)midiframe, CLASS_MIDI_PARAM2, param2);
+
+  // Same as grid_ui_clear_triggered() (common/src/c/grid_ui.c): wrap it in
+  // a BRC envelope and close it, which appends the real checksum footer.
+  struct grid_msg msg;
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+
+  if (grid_msg_nprintf(&msg, "%s", midiframe) < 0) {
+    return 0;
+  }
+
+  if (grid_msg_close_brc(&grid_msg_state, &msg) < 0) {
+    return 0;
+  }
+
+  uint32_t n = (uint32_t)msg.length < max_out ? (uint32_t)msg.length : max_out;
+  memcpy(out, msg.data, n);
+
+  return n;
+}
+
+uint32_t grid_sim_build_evaluate_frame(const char* lua_code, uint32_t code_len, char* out, uint32_t max_out) {
+
+  struct grid_msg msg;
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+
+  // GRID_CLASS_EVALUATE_frame_start writes STX + class code + placeholder
+  // bytes for INSTR/LASTHEADER/ELEMENTS (grid_msg_add_frame() stores the
+  // frame's start offset first, so the grid_msg_set_parameter() calls below
+  // land at the right spot within it).
+  if (grid_msg_add_frame(&msg, GRID_CLASS_EVALUATE_frame_start) < 0) {
+    return 0;
+  }
+  grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_EXECUTE_code);
+  grid_msg_set_parameter(&msg, CLASS_EVALUATE_LASTHEADER, 0);
+  grid_msg_set_parameter(&msg, CLASS_EVALUATE_ELEMENTS, 1);
+
+  // One element: a Lua string. grid_msg_add_segment_char(msg, hexdigits,
+  // size, buffer) writes `size` as `hexdigits` hex chars followed by `size`
+  // raw (non-hex) bytes of `buffer` - exactly ELEMENT_TYPE (2 hex, no data:
+  // size=0) then ELEMENT_SIZE+DATA (4 hex, code_len raw bytes) need
+  // (common/src/c/grid_protocol.h's GRID_CLASS_EVALUATE_ELEMENT_* offsets).
+  // grid_decode_evaluate_to_ui() (grid_decode.c:668) asserts the byte right
+  // after the script is ETX, which grid_msg_add_frame(frame_end) below
+  // writes immediately next - no gap.
+  if (grid_msg_add_segment_char(&msg, 2, LUA_TSTRING, "") < 0) {
+    return 0;
+  }
+  if (grid_msg_add_segment_char(&msg, 4, code_len, lua_code) < 0) {
+    return 0;
+  }
+
+  if (grid_msg_add_frame(&msg, GRID_CLASS_EVALUATE_frame_end) < 0) {
+    return 0;
+  }
+
+  if (grid_msg_close_brc(&grid_msg_state, &msg) < 0) {
+    return 0;
+  }
+
+  uint32_t n = (uint32_t)msg.length < max_out ? (uint32_t)msg.length : max_out;
+  memcpy(out, msg.data, n);
+
+  return n;
+}
+
+uint32_t grid_sim_terminate_frame(const char* in, uint32_t in_len, char* out, uint32_t max_out) {
+
+  uint32_t total = in_len + 4;
+  if (total > max_out) {
+    return 0;
+  }
+
+  memcpy(out, in, in_len);
+  out[in_len + 0] = GRID_CONST_EOT;
+  out[in_len + 1] = '0';
+  out[in_len + 2] = '0';
+  out[in_len + 3] = '\n';
+
+  uint8_t checksum = grid_frame_calculate_checksum_packet((uint8_t*)out, total);
+  grid_str_checksum_set(out, total, checksum);
+
+  return total;
+}
+
+void grid_sim_port_inject(uint8_t port, const char* data, uint32_t length) {
+
+  if (port >= GRID_SIM_PORT_COUNT) {
+    return;
+  }
+
+  grid_port_recv_msg(&grid_transport_state.ports[port], (uint8_t*)data, length);
+}
+
+const char* grid_sim_port_drain_tx(uint8_t port) {
+
+  static char out[2048];
+
+  if (port >= GRID_SIM_PORT_COUNT) {
+    out[0] = '\0';
+    return out;
+  }
+
+  memcpy(out, sim_port_tx_buf[port], sim_port_tx_len[port]);
+  out[sim_port_tx_len[port]] = '\0';
+  sim_port_tx_len[port] = 0;
 
   return out;
 }
+
+uint32_t grid_sim_port_tx_pending(uint8_t port) {
+
+  if (port >= GRID_SIM_PORT_COUNT) {
+    return 0;
+  }
+
+  return (uint32_t)sim_port_tx_len[port];
+}
+
+uint32_t grid_sim_port_drain_tx_bytes(uint8_t port, uint8_t* out, uint32_t max_out) {
+
+  if (port >= GRID_SIM_PORT_COUNT) {
+    return 0;
+  }
+
+  uint32_t n = (uint32_t)sim_port_tx_len[port] < max_out ? (uint32_t)sim_port_tx_len[port] : max_out;
+
+  memcpy(out, sim_port_tx_buf[port], n);
+
+  // Shift any bytes beyond what was copied down to the front, so they stay
+  // pending for the next call instead of being silently dropped.
+  size_t remaining = sim_port_tx_len[port] - n;
+  memmove(sim_port_tx_buf[port], sim_port_tx_buf[port] + n, remaining);
+  sim_port_tx_len[port] = remaining;
+
+  return n;
+}
+
+uint8_t grid_sim_port_is_connected(uint8_t port) {
+
+  if (port >= GRID_SIM_PORT_COUNT) {
+    return 0;
+  }
+
+  return grid_port_connected(&grid_transport_state.ports[port]) ? 1 : 0;
+}
+
+const char* grid_sim_drain_module_output(void) { return grid_sim_port_drain_tx(GRID_SIM_PORT_UI); }
 
 const char* grid_sim_drain_stdo(void) {
 

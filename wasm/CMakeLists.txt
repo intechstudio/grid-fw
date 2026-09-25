@@ -80,7 +80,7 @@ add_executable(index ${CORE_SRC_FILES} ${CMAKE_SOURCE_DIR}/gui_main.c)
 set_target_properties(index PROPERTIES
     SUFFIX ".html"
     COMPILE_FLAGS "-s NO_EXIT_RUNTIME=1 -sSTACK_SIZE=2000000"
-    LINK_FLAGS "-s 'EXPORTED_RUNTIME_METHODS=[\"ccall\",\"cwrap\",\"HEAPU8\"]' -s 'EXPORTED_FUNCTIONS=[\"_main\",\"_malloc\",\"_free\"]' --shell-file ${CMAKE_SOURCE_DIR}/shell_minimal.html"
+    LINK_FLAGS "-s 'EXPORTED_RUNTIME_METHODS=[\"ccall\",\"cwrap\",\"HEAPU8\"]' -s 'EXPORTED_FUNCTIONS=[\"_main\",\"_malloc\",\"_free\"]' -s 'INCOMING_MODULE_JS_API=[\"print\",\"printErr\",\"canvas\",\"setStatus\",\"monitorRunDependencies\",\"onRuntimeInitialized\",\"doNotCaptureKeyboard\"]' --shell-file ${CMAKE_SOURCE_DIR}/shell_minimal.html"
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 

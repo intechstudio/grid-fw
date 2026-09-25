@@ -4,6 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "grid_swsr.h"
+
+// Defined in sim_core.c - captures a port's outbound bytes for
+// grid_sim_port_drain_tx(). Not part of grid_platform.h because it's a
+// simulator-only observability hook, not a hardware capability.
+extern void grid_sim_port_tx_capture(uint8_t port, const char* data, uint32_t len);
+
 // grid_platform_* implementation for the wasm module simulator (both the
 // headless entry point and the SDL/browser GUI entry point link this).
 //
@@ -170,10 +177,27 @@ uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told) { return grid_platfor
 uint32_t grid_platform_get_frame_len(uint8_t dir) { return 0; }
 
 void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir) {
-  // No real UART/SPI to send over - this single-module simulator drops
-  // outbound inter-module transport frames. grid_lua_api's grid_send()/
-  // midi_send()/etc. do not go through this path (see grid_lua.h's
-  // stdo/stde buffers, read via grid_sim_drain_stdo()/drain_stde()).
+  // No real UART to send over, but grid_port_send_usart() (common/src/c/
+  // grid_port.c) still expects this to drain the swsr it hands us - that's
+  // how it knows the frame went out and its tx queue can advance. Capture
+  // the bytes instead of just dropping them, so grid_sim_port_drain_tx()
+  // can show what this module would have sent over that USART port.
+  struct grid_swsr_t* tx = (struct grid_swsr_t*)swsr;
+
+  char buf[2048];
+  uint32_t n = size < sizeof(buf) ? size : (uint32_t)sizeof(buf);
+  grid_swsr_read(tx, buf, (int)n);
+  grid_sim_port_tx_capture(dir, buf, n);
+
+  // The swsr must end up fully drained of this frame regardless of the
+  // capture buffer's size, or the next grid_swsr_until_msg_end() call gets
+  // confused by the leftover tail.
+  for (uint32_t remaining = size - n; remaining > 0;) {
+    char discard[256];
+    uint32_t chunk = remaining < sizeof(discard) ? remaining : (uint32_t)sizeof(discard);
+    grid_swsr_read(tx, discard, (int)chunk);
+    remaining -= chunk;
+  }
 }
 
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) { return 0; }

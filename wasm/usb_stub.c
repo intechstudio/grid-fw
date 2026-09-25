@@ -2,7 +2,9 @@
 // wire grid_usb_* up to tinyusb). grid_port.c and grid_decode.c reference
 // it directly to forward *external* protocol messages (received from other
 // modules) onto USB - this single-module simulator has no real USB device,
-// so these just report success and drop the data.
+// so grid_usb_acm_write() (the one call real firmware treats as "bytes
+// actually went out") captures what would have been sent instead, readable
+// via grid_sim_port_drain_tx(GRID_SIM_PORT_USB).
 //
 // This is a separate path from a module's own grid_send()/midi_send()/etc.
 // Lua calls, which go through grid_lua_append_stdo() instead and are
@@ -15,12 +17,19 @@
 #include "grid_usb_gamepad.h"
 #include "grid_usb_macro.h"
 #include "grid_usb_midi.h"
+#include "sim_core.h"
+
+// Defined in sim_core.c.
+extern void grid_sim_port_tx_capture(uint8_t port, const char* data, uint32_t len);
 
 struct grid_usb_model grid_usb_state = {0};
 
 bool grid_usb_acm_tx_busy(struct grid_usb_acm_model* acm) { return false; }
 
-int32_t grid_usb_acm_write(struct grid_usb_acm_model* acm, char* buffer, uint32_t length) { return (int32_t)length; }
+int32_t grid_usb_acm_write(struct grid_usb_acm_model* acm, char* buffer, uint32_t length) {
+  grid_sim_port_tx_capture(GRID_SIM_PORT_USB, buffer, length);
+  return (int32_t)length;
+}
 
 uint8_t grid_usb_midi_tx_push(struct grid_usb_midi_model* midi, struct grid_midi_event_desc midi_event) { return 0; }
 
