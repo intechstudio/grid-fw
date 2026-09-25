@@ -9,6 +9,7 @@ struct grid_rp2350_encoder_model {
 
   uint8_t rx_length;
   uint8_t* rx_buffer;
+  uint8_t* rx_buffer2;
 
   grid_process_encoder_t process_encoder;
 };

@@ -39,7 +39,7 @@ GRID_IRAM_ATTR static void ef44_process_analog(struct grid_adc_result* result) {
   grid_ui_potmeter_store_input(grid_ui_potmeter_get_state(ele), result->value);
 }
 
-static void ef44_process_encoder(struct grid_encoder_result* result) {
+GRID_IRAM_ATTR static void ef44_process_encoder(struct grid_encoder_result* result) {
 
   static const uint8_t encoder_lookup[GRID_MODULE_EF44_ENCODER_COUNT] = {2, 3, 0, 1};
 

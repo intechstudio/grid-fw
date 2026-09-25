@@ -140,7 +140,7 @@ void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buf
 
 #define SIGN(x) (((x) > 0) - ((x) < 0))
 
-int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uint8_t detent, int8_t* last_leave_dir) {
+GRID_IRAM_ATTR int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uint8_t detent, int8_t* last_leave_dir) {
 
   // lookup table indexed by a combination of old and new encoder output AB
   static int8_t encoder_heading[] = {
@@ -182,7 +182,7 @@ int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uin
   return delta;
 }
 
-void grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* last_real_time, int16_t delta) {
+GRID_IRAM_ATTR void grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* last_real_time, int16_t delta) {
 
   // limit lastrealtime
   uint64_t now = grid_platform_rtc_get_micros();
@@ -260,7 +260,7 @@ void grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* last_
   grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
 }
 
-void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, struct grid_ui_encoder_sample sample) {
+GRID_IRAM_ATTR void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, struct grid_ui_encoder_sample sample) {
 
   // Reconstruct rotation value from phases
   uint8_t new_value = sample.phase_a | (sample.phase_b << 1);
@@ -290,3 +290,5 @@ void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, struct gri
     grid_ui_encoder_update_trigger(ele, &state->encoder_last_real_time, delta * state->direction);
   }
 }
+
+GRID_IRAM_ATTR inline struct grid_ui_encoder_state* grid_ui_encoder_get_state(struct grid_ui_element* ele) { return (struct grid_ui_encoder_state*)ele->primary_state; }

@@ -7,6 +7,7 @@
 #include "hardware/gpio.h"
 #include "hardware/irq.h"
 #include "hardware/spi.h"
+#include "hardware/timer.h"
 
 #include "grid_platform.h"
 
@@ -41,17 +42,21 @@ static void grid_rp2350_encoder_dma_irq(void) {
   // Drive SH/LDZ low to let the register load
   gpio_put(RP2350_PIN_ENCODER_CS, 0);
 
-  // Offset by 1 to skip the HWCFG register
-  struct grid_encoder_result result = {
-      .data = &enc->rx_buffer[1],
-      .length = enc->rx_length - 1,
-  };
-  enc->process_encoder(&result);
+  // Copy samples before re-arming DMA
+  memcpy(enc->rx_buffer2, enc->rx_buffer, enc->rx_length);
 
   // Drive SH/LDZ high to let the register shift
+  busy_wait_us(1);
   gpio_put(RP2350_PIN_ENCODER_CS, 1);
 
   grid_rp2350_encoder_arm_dma(enc);
+
+  // Offset by 1 to skip the HWCFG register
+  struct grid_encoder_result result = {
+      .data = &enc->rx_buffer2[1],
+      .length = enc->rx_length - 1,
+  };
+  enc->process_encoder(&result);
 }
 
 static const uint8_t grid_rp2350_encoder_dummy_tx = 0;
@@ -61,6 +66,7 @@ void grid_rp2350_encoder_init(struct grid_rp2350_encoder_model* enc, uint8_t tra
   enc->rx_length = transfer_length;
   enc->rx_buffer = grid_platform_allocate_volatile(enc->rx_length);
   memset(enc->rx_buffer, 0, enc->rx_length);
+  enc->rx_buffer2 = grid_platform_allocate_volatile(enc->rx_length);
 
   assert(process_encoder);
   enc->process_encoder = process_encoder;
