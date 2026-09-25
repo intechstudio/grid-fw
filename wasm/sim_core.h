@@ -175,6 +175,36 @@ EMSCRIPTEN_KEEPALIVE uint32_t grid_sim_build_midi_frame(uint8_t channel, uint8_t
 // many; 0 if lua_code didn't fit.
 EMSCRIPTEN_KEEPALIVE uint32_t grid_sim_build_evaluate_frame(const char* lua_code, uint32_t code_len, char* out, uint32_t max_out);
 
+// Event type codes, matching GRID_PARAMETER_EVENT_* (common/src/c/
+// grid_protocol.h) - the values grid_sim_get_default_actionstring() and
+// grid_sim_build_config_frame() take as `event`. The LCD element (13 on
+// VSN1L) only ever registers INIT and DRAW (GRID_LUA_FNC_ASSIGN_META_EVENT
+// calls in grid_ui_lcd.h) - any other event code finds nothing for it.
+#define GRID_SIM_EVENT_INIT 0
+#define GRID_SIM_EVENT_DRAW 8
+
+// This element/event's compiled-in default script (the GRID_ACTIONSTRING_*
+// macro its element type registered it with, e.g. GRID_ACTIONSTRING_LCD_INIT/
+// _DRAW in grid_ui_lcd.h) - always the default, even if grid_sim_build_config_frame()
+// has since overwritten what the event actually runs (eve->default_script is
+// set once at init and never touched by a config write - see
+// grid_ui_event_generate_script(), common/src/c/grid_ui.c). Empty string if
+// `element` or `event` doesn't exist (e.g. an event type this element never
+// registers, like DRAW on a button).
+EMSCRIPTEN_KEEPALIVE const char* grid_sim_get_default_actionstring(uint8_t element, uint8_t event);
+
+// Builds a complete, valid BRC message wrapping one GRID_CLASS_CONFIG frame
+// with INSTR_EXECUTE, the "overwrite this element/event's script"
+// instruction a real desktop editor sends when a user edits and saves an
+// event's code (grid_decode_config_to_ui()'s GRID_INSTR_EXECUTE_code case,
+// common/src/c/grid_decode.c:1258). Always targets page 0 (the sim's only
+// page) - the module silently ignores a write for any other page
+// (grid_decode.c:1271's `currentpage` check). `lua_code` must be a plain
+// NUL-terminated C string with no embedded NUL bytes (its strlen() becomes
+// the frame's declared ACTIONLENGTH). Writes up to max_out bytes into out
+// and returns how many; 0 if it didn't fit or a component failed to build.
+EMSCRIPTEN_KEEPALIVE uint32_t grid_sim_build_config_frame(uint8_t element, uint8_t event, const char* lua_code, char* out, uint32_t max_out);
+
 // Appends a valid footer - EOT + a correctly computed 2-hex-digit checksum +
 // '\n' - onto `in`, into `out`. grid_swsr_until_msg_end() (common/src/c/
 // grid_swsr.c) - what grid_sim_tick()'s port relay uses to find a message's

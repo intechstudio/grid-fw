@@ -538,6 +538,85 @@ uint32_t grid_sim_build_evaluate_frame(const char* lua_code, uint32_t code_len, 
   return n;
 }
 
+const char* grid_sim_get_default_actionstring(uint8_t element, uint8_t event) {
+
+  static char out[GRID_PARAMETER_ACTIONSTRING_maxlength + 1];
+  out[0] = '\0';
+
+  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, element);
+  if (!ele) {
+    return out;
+  }
+
+  struct grid_ui_event* eve = grid_ui_event_find(ele, event);
+  if (!eve) {
+    return out;
+  }
+
+  // eve->default_script (set once in grid_ui_event_init(), common/src/c/
+  // grid_ui.c, and never touched by grid_ui_register_script()) is always
+  // the compiled-in GRID_ACTIONSTRING_* macro for this event (e.g.
+  // GRID_ACTIONSTRING_LCD_INIT/_DRAW, grid_ui_lcd.h), regardless of any
+  // customization since - read it back through the real API rather than
+  // duplicating those strings here, so a firmware default changing can't
+  // silently drift from the sim's UI.
+  grid_ui_event_generate_script(eve, out);
+
+  return out;
+}
+
+uint32_t grid_sim_build_config_frame(uint8_t element, uint8_t event, const char* lua_code, char* out, uint32_t max_out) {
+
+  struct grid_msg msg;
+
+  // Unlike grid_sim_build_evaluate_frame()/build_midi_frame() (both
+  // GRID_PARAMETER_GLOBAL_POSITION), CONFIG's own destination check
+  // (grid_decode_config_to_ui(), grid_decode.c:1243) only accepts
+  // GRID_DESTINATION_IS_ME | GRID_DESTINATION_IS_LOCAL - not IS_GLOBAL
+  // (grid_check_destination(), grid_decode.c:37-53). DEFAULT_POSITION is
+  // what marks a frame IS_ME; GLOBAL_POSITION here would make the module
+  // silently drop the whole frame at that very first check.
+  uint8_t xy = GRID_PARAMETER_DEFAULT_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+
+  // Same field layout grid_decode_config_to_ui()'s GRID_INSTR_FETCH_code
+  // response builds (grid_decode.c:1340-1354), with INSTR_EXECUTE instead of
+  // INSTR_REPORT - that's the "set this event's script" instruction its own
+  // GRID_INSTR_EXECUTE_code case reads back (grid_decode.c:1258-1313):
+  // PAGENUMBER must match the module's active page (0, the sim's only page)
+  // or the write is silently ignored. VERSIONMAJOR/MINOR/PATCH share the
+  // same byte offsets as PAGENUMBER/ELEMENTNUMBER/EVENTTYPE - unread by the
+  // EXECUTE case, so left as the frame_start placeholder's dots.
+  if (grid_msg_add_frame(&msg, GRID_CLASS_CONFIG_frame_start) < 0) {
+    return 0;
+  }
+  grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_EXECUTE_code);
+  grid_msg_set_parameter(&msg, CLASS_CONFIG_PAGENUMBER, 0);
+  grid_msg_set_parameter(&msg, CLASS_CONFIG_ELEMENTNUMBER, element);
+  grid_msg_set_parameter(&msg, CLASS_CONFIG_EVENTTYPE, event);
+  grid_msg_set_parameter(&msg, CLASS_CONFIG_ACTIONLENGTH, strlen(lua_code));
+
+  // ACTIONSTRING has no length prefix of its own (GRID_CLASS_CONFIG_ACTIONSTRING_length
+  // is 0 - "rest of frame") - ACTIONLENGTH above is what the receiving side
+  // trusts, so lua_code must not contain an embedded '\0'.
+  if (grid_msg_nprintf(&msg, "%s", lua_code) < 0) {
+    return 0;
+  }
+
+  if (grid_msg_add_frame(&msg, GRID_CLASS_CONFIG_frame_end) < 0) {
+    return 0;
+  }
+
+  if (grid_msg_close_brc(&grid_msg_state, &msg) < 0) {
+    return 0;
+  }
+
+  uint32_t n = (uint32_t)msg.length < max_out ? (uint32_t)msg.length : max_out;
+  memcpy(out, msg.data, n);
+
+  return n;
+}
+
 uint32_t grid_sim_terminate_frame(const char* in, uint32_t in_len, char* out, uint32_t max_out) {
 
   uint32_t total = in_len + 4;

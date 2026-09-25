@@ -12,19 +12,65 @@
         background: #14161a;
         color: #e8e8e8;
         margin: 0;
-        padding: 12px;
+        padding: 20px 24px;
+      }
+      #status-bar {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        gap: 14px;
+        gap: 10px;
+        margin-bottom: 16px;
       }
       #status { font-size: 13px; color: #9aa; min-height: 1.2em; }
       #progress { width: 200px; }
 
+      .app {
+        display: grid;
+        grid-template-columns: 380px 460px 1fr;
+        gap: 24px;
+        align-items: start;
+        max-width: 1500px;
+      }
+      .col {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-width: 0;
+      }
+      .event-editor {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .event-editor textarea {
+        width: 100%;
+        min-height: 260px;
+        resize: vertical;
+        background: #0b0c0e;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 10px;
+        color: #e8e8e8;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .event-editor-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+      .event-editor-actions button {
+        font-size: 12px;
+        padding: 8px 14px;
+        border-radius: 6px;
+        background: #23262d;
+        border: 1px solid #3a3e46;
+        color: #ccc;
+      }
+
       .screen-wrap {
         width: 100%;
-        max-width: 480px;
-        border-radius: 10px;
         overflow: hidden;
         background: #000;
         border: 1px solid #333;
@@ -39,7 +85,6 @@
 
       .panel {
         width: 100%;
-        max-width: 480px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -126,7 +171,6 @@
 
       .console-wrap {
         width: 100%;
-        max-width: 480px;
         display: flex;
         flex-direction: column;
         gap: 4px;
@@ -195,63 +239,116 @@
         border: 1px solid #3a3e46;
         color: #ccc;
       }
+      .console-input-row.eval-row {
+        align-items: flex-end;
+      }
+      .console-input-row textarea {
+        flex: 1;
+        min-width: 0;
+        min-height: 90px;
+        resize: vertical;
+        background: #0b0c0e;
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 8px;
+        color: #e8e8e8;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 12px;
+      }
     </style>
   </head>
   <body>
-    <div id="status">Downloading...</div>
-    <progress value="0" max="100" id="progress" hidden="1"></progress>
-
-    <div class="screen-wrap">
-      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+    <div id="status-bar">
+      <div id="status">Downloading...</div>
+      <progress value="0" max="100" id="progress" hidden="1"></progress>
     </div>
 
-    <div class="panel">
-      <div style="width:100%">
-        <label class="section">Buttons 0-7</label>
-        <div class="button-row" id="row-top"></div>
-      </div>
-
-      <div class="dial-area">
-        <label class="section">Endless (8)</label>
-        <div class="dial-outer" id="dial-outer">
-          <div class="dial-needle" id="dial-needle"></div>
-          <div class="dial-inner" id="dial-push">push</div>
+    <div class="app">
+      <div class="col col-left">
+        <div class="screen-wrap">
+          <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
         </div>
-        <div class="dial-leds" id="dial-leds"></div>
+
+        <div class="panel">
+          <div style="width:100%">
+            <label class="section">Buttons 0-7</label>
+            <div class="button-row" id="row-top"></div>
+          </div>
+
+          <div class="dial-area">
+            <label class="section">Endless (8)</label>
+            <div class="dial-outer" id="dial-outer">
+              <div class="dial-needle" id="dial-needle"></div>
+              <div class="dial-inner" id="dial-push">push</div>
+            </div>
+            <div class="dial-leds" id="dial-leds"></div>
+          </div>
+
+          <div style="width:100%">
+            <label class="section">Buttons 9-12</label>
+            <div class="button-row" id="row-bottom"></div>
+          </div>
+        </div>
       </div>
 
-      <div style="width:100%">
-        <label class="section">Buttons 9-12</label>
-        <div class="button-row" id="row-bottom"></div>
-      </div>
-    </div>
+      <div class="col col-middle">
+        <div class="console-wrap">
+          <div class="console-header">
+            <label class="section" style="margin:0">Console (grid_platform_printf)</label>
+            <button id="console-clear" type="button">Clear</button>
+          </div>
+          <pre id="console" class="console-box"></pre>
+        </div>
 
-    <div class="console-wrap">
-      <div class="console-header">
-        <label class="section" style="margin:0">Console (grid_platform_printf)</label>
-        <button id="console-clear" type="button">Clear</button>
+        <div class="console-wrap">
+          <div class="console-header">
+            <label class="section" style="margin:0">USB serial (raw)</label>
+            <button id="usb-console-clear" type="button">Clear</button>
+          </div>
+          <pre id="usb-console" class="console-box"></pre>
+          <div class="console-input-row">
+            <select id="usb-send-port" title="Port to inject into">
+              <option value="0">N</option>
+              <option value="1">E</option>
+              <option value="2">S</option>
+              <option value="3">W</option>
+              <option value="4" selected>UI</option>
+              <option value="5">USB</option>
+            </select>
+            <input id="usb-send-input" type="text" placeholder="type text, or \xNN for raw bytes (e.g. \x01)" autocomplete="off"
+              value="\x01\x0f003500517f7f00000000\x17\x02086e000104000dprint(&quot;test&quot;)\x03">
+            <button id="usb-send-btn" type="button">Send</button>
+          </div>
+          <div class="console-input-row eval-row">
+            <textarea id="usb-eval-input" placeholder="Lua code to evaluate on the module (sent as a GRID_CLASS_EVALUATE frame over USB)" autocomplete="off" spellcheck="false">ele[13]:ldft("TEST",10,10,8,{255,0,0})
+ele[13]:ldsw()</textarea>
+            <button id="usb-eval-btn" type="button">Eval</button>
+          </div>
+        </div>
       </div>
-      <pre id="console" class="console-box"></pre>
-    </div>
 
-    <div class="console-wrap">
-      <div class="console-header">
-        <label class="section" style="margin:0">USB serial (raw)</label>
-        <button id="usb-console-clear" type="button">Clear</button>
-      </div>
-      <pre id="usb-console" class="console-box"></pre>
-      <div class="console-input-row">
-        <select id="usb-send-port" title="Port to inject into">
-          <option value="0">N</option>
-          <option value="1">E</option>
-          <option value="2">S</option>
-          <option value="3">W</option>
-          <option value="4" selected>UI</option>
-          <option value="5">USB</option>
-        </select>
-        <input id="usb-send-input" type="text" placeholder="type text, or \xNN for raw bytes (e.g. \x01)" autocomplete="off"
-          value="\x01\x0f003500517f7f00000000\x17\x02086e000104000dprint(&quot;test&quot;)\x03">
-        <button id="usb-send-btn" type="button">Send</button>
+      <div class="col col-right">
+        <div class="event-editor">
+          <div class="console-header">
+            <label class="section" style="margin:0">LCD Init (element 13)</label>
+          </div>
+          <textarea id="lcd-init-code" spellcheck="false"></textarea>
+          <div class="event-editor-actions">
+            <button id="lcd-init-reset" type="button">Reset</button>
+            <button id="lcd-init-update" type="button">Update</button>
+          </div>
+        </div>
+
+        <div class="event-editor">
+          <div class="console-header">
+            <label class="section" style="margin:0">LCD Draw (element 13)</label>
+          </div>
+          <textarea id="lcd-draw-code" spellcheck="false"></textarea>
+          <div class="event-editor-actions">
+            <button id="lcd-draw-reset" type="button">Reset</button>
+            <button id="lcd-draw-update" type="button">Update</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -498,6 +595,9 @@
       }
 
       var GRID_SIM_PORT_USB = 5;
+      var GRID_SIM_LCD_ELEMENT = 13;
+      var GRID_SIM_EVENT_INIT = 0;
+      var GRID_SIM_EVENT_DRAW = 8;
 
       function startUsbPolling() {
         var pending = Module.cwrap('grid_sim_port_tx_pending', 'number', ['number']);
@@ -573,12 +673,141 @@
         });
       }
 
+      // Builds a complete GRID_CLASS_EVALUATE frame from plain Lua source -
+      // grid_sim_build_evaluate_frame() already appends the checksum footer
+      // (unlike setupUsbSend()'s raw field above, no grid_sim_terminate_frame()
+      // call needed here). Always injected into the USB port, matching how a
+      // real desktop editor evaluates a live snippet - over the module's
+      // actual USB wire, relayed to the UI decoder by the same broadcast
+      // relay real firmware uses (grid_transport_rx_broadcast_tx(), see
+      // sim_core.c's sim_service_ports()).
+      function setupUsbEvalSend() {
+        var textarea = document.getElementById('usb-eval-input');
+        var build = Module.cwrap('grid_sim_build_evaluate_frame', 'number', ['number', 'number', 'number', 'number']);
+        var inject = Module.cwrap('grid_sim_port_inject', null, ['number', 'number', 'number']);
+
+        // GRID_PARAMETER_ACTIONSTRING_maxlength (common/src/c/grid_protocol.h) -
+        // grid_decode_evaluate_to_ui() silently drops anything longer.
+        var MAX_LUA_LEN = 909;
+
+        function send() {
+          var code = textarea.value;
+          if (!code) return;
+
+          var codeBytes = new TextEncoder().encode(code);
+          if (codeBytes.length > MAX_LUA_LEN) {
+            appendUsbLine('! Lua code too long (' + codeBytes.length + ' > ' + MAX_LUA_LEN + ' bytes) - not sent', 'err');
+            return;
+          }
+
+          var codePtr = Module._malloc(codeBytes.length || 1);
+          Module.HEAPU8.set(codeBytes, codePtr);
+
+          var maxOut = codeBytes.length + 64;
+          var outPtr = Module._malloc(maxOut);
+          var outLen = build(codePtr, codeBytes.length, outPtr, maxOut);
+
+          if (outLen > 0) {
+            var framed = Module.HEAPU8.slice(outPtr, outPtr + outLen);
+            var p = Module._malloc(framed.length);
+            Module.HEAPU8.set(framed, p);
+            inject(GRID_SIM_PORT_USB, p, framed.length);
+            Module._free(p);
+
+            appendUsbLine('> ' + escapeBytes(framed), 'sent');
+          } else {
+            appendUsbLine('! failed to build evaluate frame', 'err');
+          }
+
+          Module._free(codePtr);
+          Module._free(outPtr);
+        }
+
+        document.getElementById('usb-eval-btn').addEventListener('click', send);
+        textarea.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            send();
+          }
+        });
+      }
+
+      // One LCD (element 13) event-script editor: Reset always restores the
+      // compiled-in GRID_ACTIONSTRING_LCD_INIT/_DRAW default
+      // (grid_sim_get_default_actionstring(), wasm/sim_core.c - never what a
+      // prior Update wrote, that's not tracked here). Update writes new code
+      // to the module with a GRID_CLASS_CONFIG frame
+      // (grid_sim_build_config_frame()), always over the USB port - same
+      // port and relay path as setupUsbEvalSend()'s Eval field above.
+      function setupLcdEventEditor(event, textareaId, resetBtnId, updateBtnId) {
+        var textarea = document.getElementById(textareaId);
+        var getDefault = Module.cwrap('grid_sim_get_default_actionstring', 'string', ['number', 'number']);
+        var build = Module.cwrap('grid_sim_build_config_frame', 'number', ['number', 'number', 'number', 'number', 'number']);
+        var inject = Module.cwrap('grid_sim_port_inject', null, ['number', 'number', 'number']);
+
+        function reset() {
+          textarea.value = getDefault(GRID_SIM_LCD_ELEMENT, event);
+        }
+
+        function update() {
+          var code = textarea.value;
+          if (!code) return;
+
+          // NUL-terminated, not just length-prefixed - grid_sim_build_config_frame()
+          // takes a plain C string (see its comment in wasm/sim_core.h).
+          var codeBytes = new TextEncoder().encode(code);
+          var codePtr = Module._malloc(codeBytes.length + 1);
+          Module.HEAPU8.set(codeBytes, codePtr);
+          Module.HEAPU8[codePtr + codeBytes.length] = 0;
+
+          var maxOut = codeBytes.length + 64;
+          var outPtr = Module._malloc(maxOut);
+          var outLen = build(GRID_SIM_LCD_ELEMENT, event, codePtr, outPtr, maxOut);
+
+          if (outLen > 0) {
+            var framed = Module.HEAPU8.slice(outPtr, outPtr + outLen);
+            var p = Module._malloc(framed.length);
+            Module.HEAPU8.set(framed, p);
+            inject(GRID_SIM_PORT_USB, p, framed.length);
+            Module._free(p);
+
+            appendUsbLine('> ' + escapeBytes(framed), 'sent');
+          } else {
+            appendUsbLine('! failed to build config frame', 'err');
+          }
+
+          Module._free(codePtr);
+          Module._free(outPtr);
+        }
+
+        document.getElementById(resetBtnId).addEventListener('click', reset);
+        document.getElementById(updateBtnId).addEventListener('click', update);
+
+        // onRuntimeInitialized can fire before main() (and therefore
+        // grid_sim_init()) has actually run (see startLedPolling()'s comment
+        // above) - a plain one-shot reset() here can land while
+        // grid_sim_get_default_actionstring() still has no element/event
+        // list to read and silently returns "". Retry until it's actually
+        // populated instead of leaving the textarea blank on first load.
+        (function populateInitial() {
+          var def = getDefault(GRID_SIM_LCD_ELEMENT, event);
+          if (def) {
+            textarea.value = def;
+          } else {
+            setTimeout(populateInitial, 50);
+          }
+        })();
+      }
+
       Module.onRuntimeInitialized = () => {
         setupButtonRows();
         setupDial();
         startLedPolling();
         startUsbPolling();
         setupUsbSend();
+        setupUsbEvalSend();
+        setupLcdEventEditor(GRID_SIM_EVENT_INIT, 'lcd-init-code', 'lcd-init-reset', 'lcd-init-update');
+        setupLcdEventEditor(GRID_SIM_EVENT_DRAW, 'lcd-draw-code', 'lcd-draw-reset', 'lcd-draw-update');
       };
     </script>
     {{{ SCRIPT }}}
