@@ -26,6 +26,7 @@
 #include "grid_rp2350_led.h"
 #include "grid_rp2350_module_bu16.h"
 #include "grid_rp2350_module_ef44.h"
+#include "grid_rp2350_module_po16.h"
 #include "grid_rp2350_nvm.h"
 #include "grid_rp2350_uart.h"
 #include "grid_rp2350_usb.h"
@@ -233,6 +234,8 @@ int main() {
     grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
     grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_po16(&grid_sys_state)) {
+    grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else {
     printf("UI Init failed: Unknown Module %u\n", grid_sys_get_hwcfg(&grid_sys_state));
   }
@@ -272,6 +275,8 @@ int main() {
     grid_rp2350_module_bu16_init(&grid_sys_state, &grid_ui_state, &grid_rp2350_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
     grid_rp2350_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_rp2350_adc_state, &grid_rp2350_encoder_state, &grid_config_state, &grid_cal_state);
+  } else if (grid_hwcfg_module_is_po16(&grid_sys_state)) {
+    grid_rp2350_module_po16_init(&grid_sys_state, &grid_ui_state, &grid_rp2350_adc_state, &grid_config_state, &grid_cal_state);
   } else {
     printf("Module Init failed: Unknown Module %u\n", grid_sys_get_hwcfg(&grid_sys_state));
   }
