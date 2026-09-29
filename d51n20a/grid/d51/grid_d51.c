@@ -508,56 +508,42 @@ void grid_platform_printf_nonprint(const uint8_t* src, size_t size) {
   }
 }
 
-uint32_t grid_platform_get_id(uint32_t* return_array) {
+void grid_platform_get_id(uint32_t id[4]) {
 
-  return_array[0] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_0);
-  return_array[1] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_1);
-  return_array[2] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_2);
-  return_array[3] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_3);
-
-  return 1;
+  id[0] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_0);
+  id[1] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_1);
+  id[2] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_2);
+  id[3] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_3);
 }
 
 uint32_t grid_platform_get_hwcfg() {
-
-  // Read the register for the first time, then later just return the saved
-  // value
 
   gpio_set_pin_direction(HWCFG_SHIFT, GPIO_DIRECTION_OUT);
   gpio_set_pin_direction(HWCFG_CLOCK, GPIO_DIRECTION_OUT);
   gpio_set_pin_direction(HWCFG_DATA, GPIO_DIRECTION_IN);
 
-  // LOAD DATA
   gpio_set_pin_level(HWCFG_SHIFT, 0);
-  delay_ms(1);
+  gpio_set_pin_level(HWCFG_CLOCK, 1);
+
+  delay_us(40);
+
   gpio_set_pin_level(HWCFG_SHIFT, 1);
-  delay_ms(1);
-  gpio_set_pin_level(HWCFG_SHIFT, 0);
+
+  delay_us(10);
 
   uint8_t hwcfg_value = 0;
 
-  for (uint8_t i = 0; i < 8; i++) { // now we need to shift in the remaining 7 values
+  for (uint8_t i = 0; i < 8; i++) {
 
-    // SHIFT DATA
-    gpio_set_pin_level(HWCFG_SHIFT,
-                       1); // This outputs the first value to HWCFG_DATA
-    delay_ms(1);
+    gpio_set_pin_level(HWCFG_CLOCK, 0);
 
     if (gpio_get_pin_level(HWCFG_DATA)) {
-
       hwcfg_value |= (1 << i);
-    } else {
     }
 
-    if (i != 7) {
-
-      // Clock rise
-      gpio_set_pin_level(HWCFG_CLOCK, 1);
-
-      delay_ms(1);
-
-      gpio_set_pin_level(HWCFG_CLOCK, 0);
-    }
+    delay_us(10);
+    gpio_set_pin_level(HWCFG_CLOCK, 1);
+    delay_us(10);
   }
 
   return hwcfg_value;
@@ -611,48 +597,19 @@ void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir) {
   io_write(io_descr, usart_tx_buf[dir], size);
 }
 
-uint8_t grid_platform_disable_grid_transmitter(uint8_t direction) {
+uint8_t grid_platform_stop_grid_transmitter(uint8_t dir) {
 
-  if (direction == GRID_CONST_NORTH) {
-    usart_async_disable(&USART_NORTH);
-  } else if (direction == GRID_CONST_EAST) {
-    usart_async_disable(&USART_EAST);
-  } else if (direction == GRID_CONST_SOUTH) {
-    usart_async_disable(&USART_SOUTH);
-  } else if (direction == GRID_CONST_WEST) {
-    usart_async_disable(&USART_WEST);
-  } else {
-  }
+  assert(dir < GRID_PORT_DIR_COUNT);
+  grid_d51_uart_port_stop_dma(dir);
+
   return 0;
 }
 
-uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) {
+uint8_t grid_platform_reset_grid_transmitter(uint8_t dir) {
 
-  if (direction == GRID_CONST_NORTH) {
-    grid_d51_uart_port_reset_dma(DMA_NORTH_RX_CHANNEL);
-  } else if (direction == GRID_CONST_EAST) {
-    grid_d51_uart_port_reset_dma(DMA_EAST_RX_CHANNEL);
-  } else if (direction == GRID_CONST_SOUTH) {
-    grid_d51_uart_port_reset_dma(DMA_SOUTH_RX_CHANNEL);
-  } else if (direction == GRID_CONST_WEST) {
-    grid_d51_uart_port_reset_dma(DMA_WEST_RX_CHANNEL);
-  } else {
-  }
-  return 0;
-}
+  assert(dir < GRID_PORT_DIR_COUNT);
+  grid_d51_uart_port_reset_dma(dir);
 
-uint8_t grid_platform_enable_grid_transmitter(uint8_t direction) {
-
-  if (direction == GRID_CONST_NORTH) {
-    usart_async_enable(&USART_NORTH);
-  } else if (direction == GRID_CONST_EAST) {
-    usart_async_enable(&USART_EAST);
-  } else if (direction == GRID_CONST_SOUTH) {
-    usart_async_enable(&USART_SOUTH);
-  } else if (direction == GRID_CONST_WEST) {
-    usart_async_enable(&USART_WEST);
-  } else {
-  }
   return 0;
 }
 

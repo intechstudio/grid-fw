@@ -51,7 +51,7 @@ void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_b
   state->prev_time = state->curr_time = 0;
 }
 
-bool grid_ui_button_state_range_valid(struct grid_ui_button_state* state) {
+GRID_IRAM_ATTR bool grid_ui_button_state_range_valid(struct grid_ui_button_state* state) {
 
   bool interval_valid = state->limits.min < state->limits.max;
 
@@ -68,9 +68,9 @@ bool grid_ui_button_state_range_valid(struct grid_ui_button_state* state) {
   return interval_valid && three_eighths_less && range_valid;
 }
 
-static double lerp(double a, double b, double x) { return a * (1.0 - x) + (b * x); }
+GRID_IRAM_ATTR static double lerp(double a, double b, double x) { return a * (1.0 - x) + (b * x); }
 
-uint16_t grid_ui_button_state_get_low_trigger(struct grid_ui_button_state* state) {
+GRID_IRAM_ATTR uint16_t grid_ui_button_state_get_low_trigger(struct grid_ui_button_state* state) {
 
   double curr_threshold = state->threshold - state->hysteresis / 2;
 
@@ -79,7 +79,7 @@ uint16_t grid_ui_button_state_get_low_trigger(struct grid_ui_button_state* state
   return lerp(state->limits.min, state->limits.max, curr_threshold);
 }
 
-uint16_t grid_ui_button_state_get_high_trigger(struct grid_ui_button_state* state) {
+GRID_IRAM_ATTR uint16_t grid_ui_button_state_get_high_trigger(struct grid_ui_button_state* state) {
 
   double curr_threshold = state->threshold + state->hysteresis / 2;
 
@@ -88,7 +88,7 @@ uint16_t grid_ui_button_state_get_high_trigger(struct grid_ui_button_state* stat
   return lerp(state->limits.min, state->limits.max, curr_threshold) + 1;
 }
 
-void grid_ui_button_state_value_update(struct grid_ui_button_state* state, uint16_t value, uint64_t now) {
+GRID_IRAM_ATTR void grid_ui_button_state_value_update(struct grid_ui_button_state* state, uint16_t value, uint64_t now) {
 
   grid_cal_limits_value_update(&state->limits, value);
 
@@ -109,7 +109,7 @@ void grid_ui_button_state_value_update(struct grid_ui_button_state* state, uint1
   state->curr_in = value;
 }
 
-double grid_ui_button_state_derivate(struct grid_ui_button_state* state) {
+GRID_IRAM_ATTR double grid_ui_button_state_derivate(struct grid_ui_button_state* state) {
 
   double rise = (state->curr_in - (int32_t)state->prev_in) / (double)state->full_range;
 
@@ -122,7 +122,7 @@ double grid_ui_button_state_derivate(struct grid_ui_button_state* state) {
   return clampf64(deriv, 0., 1.);
 }
 
-bool grid_ui_button_state_get_with_hysteresis(struct grid_ui_button_state* state, uint8_t* out) {
+GRID_IRAM_ATTR bool grid_ui_button_state_get_with_hysteresis(struct grid_ui_button_state* state, uint8_t* out) {
 
   if (state->curr_in <= state->trig_lo) {
 
@@ -139,7 +139,7 @@ bool grid_ui_button_state_get_with_hysteresis(struct grid_ui_button_state* state
   return false;
 }
 
-bool grid_ui_button_state_process(struct grid_ui_button_state* state, int mode, uint16_t value) {
+GRID_IRAM_ATTR bool grid_ui_button_state_process(struct grid_ui_button_state* state, int mode, uint16_t value) {
 
   if (mode == -2) {
 
@@ -211,7 +211,7 @@ void grid_ui_element_button_template_parameter_init(struct grid_ui_template_buff
   template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = 0;
 }
 
-void grid_ui_button_store_input(struct grid_ui_button_state* state, uint16_t value) {
+GRID_IRAM_ATTR void grid_ui_button_store_input(struct grid_ui_button_state* state, uint16_t value) {
 
   struct grid_ui_element* ele = state->parent;
   int32_t* template_parameter_list = ele->template_parameter_list;
@@ -359,3 +359,5 @@ void grid_ui_button_store_input(struct grid_ui_button_state* state, uint16_t val
 
   grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
 }
+
+GRID_IRAM_ATTR inline struct grid_ui_button_state* grid_ui_button_get_state(struct grid_ui_element* ele) { return (struct grid_ui_button_state*)ele->primary_state; }

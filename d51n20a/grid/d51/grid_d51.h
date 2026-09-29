@@ -57,9 +57,6 @@ void grid_platform_delay_ms(uint32_t delay_milliseconds);
 
 uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length);
 
-uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
-uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
-
 uint8_t grid_platform_get_adc_bit_depth();
 
 void grid_platform_rtc_set_micros(uint64_t mic);

@@ -186,7 +186,44 @@ static void grid_esp32_setup_rom_log_scheme(void) {
   }
 }
 
+struct grid_utask_timer timer_led;
+
+struct grid_utask_timer timer_format;
+
+static bool grid_utask_format(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return false;
+  }
+
+  if (gpio_get_level(GRID_ESP32_PINS_MAPMODE) == 0) {
+
+    grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
+    grid_alert_all_set_frequency(&grid_led_state, 4);
+    grid_esp32_utask_led(&timer_led);
+    grid_platform_nvm_format_and_mount();
+    vTaskDelay(pdMS_TO_TICKS(500));
+    grid_esp32_utask_led(&timer_led);
+  }
+
+  return true;
+}
+
 void app_main(void) {
+
+  // Configure task timers
+  timer_led = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 9500, // 10000 really, but FreeRTOS is currently 100 Hz
+  };
+  timer_format = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_MAPMODE_TIMEOUT_us,
+  };
+  struct grid_utask_timer timer_t37 = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000000,
+  };
 
   // Allocate profiler & assign its interface
   vmp_buf_malloc(&vmp, 100, sizeof(struct vmp_evt_t));
@@ -196,16 +233,6 @@ void app_main(void) {
       .fwrite = vmp_fwrite,
   };
   bool vmp_flushed = false;
-
-  // Configure task timers
-  struct grid_utask_timer timer_led = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = 9500, // 10000 really, but FreeRTOS is currently 100 Hz
-  };
-  struct grid_utask_timer timer_t37 = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = 1000000,
-  };
 
   // set console baud rate
   ESP_ERROR_CHECK(uart_set_baudrate(UART_NUM_0, 2000000ul));
@@ -307,16 +334,6 @@ void app_main(void) {
   log_checkpoint("NVM START");
   grid_esp32_nvm_mount(&grid_esp32_nvm_state, false);
 
-  if (gpio_get_level(GRID_ESP32_PINS_MAPMODE) == 0) {
-
-    grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
-    grid_alert_all_set_frequency(&grid_led_state, 4);
-    grid_platform_nvm_format_and_mount();
-    grid_esp32_utask_led(&timer_led);
-    vTaskDelay(pdMS_TO_TICKS(500));
-    grid_esp32_utask_led(&timer_led);
-  }
-
   log_checkpoint("MSG START");
   grid_msg_model_init(&grid_msg_state);
 
@@ -370,6 +387,9 @@ void app_main(void) {
     grid_gui_init(&guis[1], &lcds[1], buf, size, width, height);
     grid_gui_clear(&guis[1], grid_gui_color_from_rgb(0, 0, 0));
     grid_gui_swap_set(&guis[1], true);
+  }
+
+  while (!grid_utask_format(&timer_format)) {
   }
 
   log_checkpoint("LOAD PAGE ZERO");

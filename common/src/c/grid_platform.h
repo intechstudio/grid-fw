@@ -6,6 +6,23 @@
 
 #define GRID_UI_CONFIG_PATH "config.toml"
 
+#ifdef GRID_RP2350
+
+#define GRID_IRAM_ATTR __attribute__((section(".time_critical.")))
+#define GRID_DRAM_ATTR
+
+#elif GRID_ESP32
+
+#define GRID_IRAM_ATTR IRAM_ATTR
+#define GRID_DRAM_ATTR DRAM_ATTR
+
+#else
+
+#define GRID_IRAM_ATTR
+#define GRID_DRAM_ATTR
+
+#endif
+
 extern void grid_platform_set_lfs(void* lfs);
 
 extern void* grid_platform_fopen(const char* pathname, const char* mode);
@@ -50,7 +67,7 @@ extern void grid_platform_printf(char const* fmt, ...);
 
 extern void grid_platform_printf_nonprint(const uint8_t* src, size_t size);
 
-extern uint32_t grid_platform_get_id(uint32_t* return_array);
+extern void grid_platform_get_id(uint32_t id[4]);
 
 extern uint32_t grid_platform_get_hwcfg();
 
@@ -74,7 +91,9 @@ extern uint32_t grid_platform_get_frame_len(uint8_t dir);
 
 extern void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir);
 
-extern uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
+extern uint8_t grid_platform_stop_grid_transmitter(uint8_t dir);
+
+extern uint8_t grid_platform_reset_grid_transmitter(uint8_t dir);
 
 extern void* grid_platform_allocate_volatile(size_t size);
 

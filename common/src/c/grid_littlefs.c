@@ -77,14 +77,34 @@ int grid_littlefs_mount_or_format(lfs_t* lfs, struct lfs_config* cfg, bool force
   return 0;
 }
 
-int grid_littlefs_unmount(lfs_t* lfs) {
+lfs_t* grid_littlefs_mount(struct lfs_config* cfg, bool force_format) {
 
-  // Unmount littlefs
-  int lfs_err = lfs_unmount(lfs);
+  lfs_t* lfs = malloc(sizeof(lfs_t));
+  if (!lfs) {
+    printf("failed to allocate littlefs\n");
+    return NULL;
+  }
+
+  if (grid_littlefs_mount_or_format(lfs, cfg, force_format)) {
+    free(lfs);
+    return NULL;
+  }
+
+  return lfs;
+}
+
+int grid_littlefs_unmount(lfs_t** lfs) {
+
+  assert(*lfs);
+
+  int lfs_err = lfs_unmount(*lfs);
   if (lfs_err != LFS_ERR_OK) {
     printf("littlefs unmount failed (%d): %s. exiting...\n", lfs_err, littlefs_errno(lfs_err));
     return 1;
   }
+
+  free(*lfs);
+  *lfs = NULL;
 
   return 0;
 }

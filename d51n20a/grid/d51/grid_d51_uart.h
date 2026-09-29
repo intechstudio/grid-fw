@@ -22,6 +22,7 @@ extern struct grid_uwsr_t usart_uwsr[4];
 extern uint8_t usart_tx_ready[4];
 extern uint8_t usart_tx_buf[4][GRID_PARAMETER_SPI_TRANSACTION_length];
 
+void grid_d51_uart_port_stop_dma(uint8_t dma_channel);
 void grid_d51_uart_port_reset_dma(uint8_t dma_channel);
 
 void grid_d51_uart_init();

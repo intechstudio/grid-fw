@@ -36,9 +36,11 @@ static void dma_transfer_complete_e_cb(struct _dma_resource* resource) { dma_tra
 static void dma_transfer_complete_s_cb(struct _dma_resource* resource) { dma_transfer_complete(usart_ports[2]); }
 static void dma_transfer_complete_w_cb(struct _dma_resource* resource) { dma_transfer_complete(usart_ports[3]); }
 
+void grid_d51_uart_port_stop_dma(uint8_t dma_channel) { hri_dmac_clear_CHCTRLA_ENABLE_bit(DMAC, dma_channel); }
+
 void grid_d51_uart_port_reset_dma(uint8_t dma_channel) {
 
-  hri_dmac_clear_CHCTRLA_ENABLE_bit(DMAC, dma_channel);
+  grid_d51_uart_port_stop_dma(dma_channel);
   _dma_enable_transaction(dma_channel, false);
 }
 

@@ -1,8 +1,10 @@
 #include "grid_asc.h"
 
-void grid_asc_set_factor(struct grid_asc* asc, uint8_t factor) { asc->factor = factor; }
+#include "grid_platform.h"
 
-bool grid_asc_process(struct grid_asc* asc, uint16_t rx, uint16_t* tx) {
+GRID_IRAM_ATTR void grid_asc_set_factor(struct grid_asc* asc, uint8_t factor) { asc->factor = factor; }
+
+GRID_IRAM_ATTR bool grid_asc_process(struct grid_asc* asc, uint16_t rx, uint16_t* tx) {
 
   struct grid_asc* entry = asc;
 

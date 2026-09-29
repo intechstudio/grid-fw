@@ -34,9 +34,9 @@ void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_b
 void grid_ui_element_button_init(struct grid_ui_element* ele);
 void grid_ui_element_button_template_parameter_init(struct grid_ui_template_buffer* buf);
 
-static inline struct grid_ui_button_state* grid_ui_button_get_state(struct grid_ui_element* ele) { return (struct grid_ui_button_state*)ele->primary_state; }
-
 void grid_ui_button_store_input(struct grid_ui_button_state* state, uint16_t value);
+
+struct grid_ui_button_state* grid_ui_button_get_state(struct grid_ui_element* ele);
 
 // ========================= BUTTON =========================== //
 

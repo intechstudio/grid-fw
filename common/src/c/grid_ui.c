@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "grid_config.h"
+#include "grid_led.h"
 #include "grid_platform.h"
 #include "grid_protocol.h"
 #include "grid_sys.h"

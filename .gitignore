@@ -24,6 +24,7 @@
 !esp32s3
 !grid_gui
 !rp2040
+!rp2350
 !test
 !tools
 !wasm
@@ -52,6 +53,9 @@
 !patch_esp_trace_include.sh
 !pico_build.sh
 !pre_commit.sh
+!rp2350_build.sh
+!rp2350_flash.sh
+!rp2350_monitor.sh
 !README.md
 !stylua.toml
 !test.sh
