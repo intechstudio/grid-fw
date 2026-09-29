@@ -36,11 +36,11 @@ GRID_IRAM_ATTR uint64_t grid_platform_rtc_get_diff(uint64_t t1, uint64_t t2) { r
 
 void grid_platform_delay_ms(uint32_t delay_milliseconds) { sleep_ms(delay_milliseconds); }
 
-// HWCFG strap read: GPIO1=SHIFT, GPIO2=CLOCK, GPIO3=DATA. Bit-bang.
+// HWCFG strap read: GPIO1=SHIFT, GPIO2=CLOCK, GPIO4=DATA. Bit-bang.
 // GPIO1 is tied to UART0 RX so that's disabled in rp2350/main/CMakeLists.txt
 #define RP2350_PIN_HWCFG_SHIFT 1
 #define RP2350_PIN_HWCFG_CLOCK 2
-#define RP2350_PIN_HWCFG_DATA 3
+#define RP2350_PIN_HWCFG_DATA 4
 
 uint32_t grid_platform_get_hwcfg() {
 
