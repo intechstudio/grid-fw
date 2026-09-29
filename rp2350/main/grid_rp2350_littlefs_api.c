@@ -3,16 +3,17 @@
 #include <string.h>
 
 #include "hardware/flash.h"
-#include "hardware/irq.h"             // PICO_HIGHEST_IRQ_PRIORITY, PICO_DEFAULT_IRQ_PRIORITY
-#include "hardware/regs/addressmap.h" // XIP_BASE
+#include "hardware/irq.h"
+#include "hardware/regs/addressmap.h"
 #include "hardware/sync.h"
 
-// BASEPRI masks everything but the boosted UART RX IRQ (DMA_IRQ_2) during
-// flash ops, so daisy-chain traffic isn't dropped. Single-core only -- needs flash_safe_execute() for core1.
+// Priority level for masking interrupts during flash ops. Currently, this is
+// configured to mask interrupts at the default level while leaving room for
+// some interrupts at higher priorities (such DMA_IRQ_2 used for UART RX) to
+// stay unmasked.
 enum { GRID_RP2350_FLASH_SAFE_BASEPRI = PICO_DEFAULT_IRQ_PRIORITY / 2 };
 
-// Raw BASEPRI mrs/msr, mirroring PRIMASK access in hardware/sync.h -- no
-// pico-sdk BASEPRI helper exists.
+// Access BASEPRI with MRS/MSR, we don't have a helper function for this.
 static inline uint32_t grid_rp2350_flash_safe_mask_begin(void) {
   uint32_t old_basepri;
   __asm volatile("mrs %0, basepri" : "=r"(old_basepri));
@@ -26,7 +27,7 @@ int littlefs_api_read(const struct lfs_config* c, lfs_block_t block, lfs_off_t o
 
   size_t offset = (block * c->block_size) + off;
 
-  // Read straight from the memory-mapped XIP window.
+  // Construct address by offsetting it from XIP_BASE
   memcpy(buffer, (const void*)(XIP_BASE + GRID_RP2350_FS_BASE + offset), size);
 
   return 0;

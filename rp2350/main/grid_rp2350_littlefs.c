@@ -21,10 +21,10 @@ void grid_rp2350_littlefs_init(struct rp2350_littlefs_t* rfs, const char* base_p
       .read_size = GRID_RP2350_FS_PAGE_SIZE,
       .prog_size = GRID_RP2350_FS_PAGE_SIZE,
       .block_size = GRID_RP2350_FS_BLOCK_SIZE,
-      .block_count = GRID_RP2350_FS_BLOCK_COUNT,
+      .block_count = GRID_RP2350_FS_SIZE / GRID_RP2350_FS_BLOCK_SIZE,
       .cache_size = GRID_RP2350_FS_PAGE_SIZE,
       .lookahead_size = 32,
-      .block_cycles = 500,
+      .block_cycles = 512,
   };
 
   {

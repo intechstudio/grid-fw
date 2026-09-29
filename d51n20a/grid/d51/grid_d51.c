@@ -508,14 +508,12 @@ void grid_platform_printf_nonprint(const uint8_t* src, size_t size) {
   }
 }
 
-uint32_t grid_platform_get_id(uint32_t* return_array) {
+void grid_platform_get_id(uint32_t id[4]) {
 
-  return_array[0] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_0);
-  return_array[1] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_1);
-  return_array[2] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_2);
-  return_array[3] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_3);
-
-  return 1;
+  id[0] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_0);
+  id[1] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_1);
+  id[2] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_2);
+  id[3] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_3);
 }
 
 uint32_t grid_platform_get_hwcfg() {
@@ -599,8 +597,6 @@ void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir) {
   io_write(io_descr, usart_tx_buf[dir], size);
 }
 
-// DMA_*_RX_CHANNEL == 0-3 in N/E/S/W order, matching enum grid_port_dir, so
-// dir is already the channel number.
 uint8_t grid_platform_stop_grid_transmitter(uint8_t dir) {
 
   assert(dir < GRID_PORT_DIR_COUNT);

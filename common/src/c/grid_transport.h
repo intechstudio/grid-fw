@@ -11,10 +11,9 @@
 
 enum { GRID_PORT_SWSR_SIZE = GRID_PARAMETER_SPI_TRANSACTION_length * 2 };
 
-// Fixed 6-port layout (USART x4, UI, USB) used by every platform.
 enum {
-  GRID_TRANSPORT_PORT_INDEX_UI = 4,
-  GRID_TRANSPORT_PORT_INDEX_USB = 5,
+  GRID_TRANSPORT_UI = 4,
+  GRID_TRANSPORT_USB = 5,
 };
 
 typedef bool (*grid_brc_between_t)(enum grid_port_type t1, enum grid_port_type t2);

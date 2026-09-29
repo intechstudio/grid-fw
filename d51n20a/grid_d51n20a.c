@@ -163,6 +163,27 @@ void grid_utask_led(struct grid_utask_timer* timer) {
   grid_d51_led_start_transfer(&grid_d51_led_state);
 }
 
+struct grid_utask_timer timer_format;
+
+static bool grid_utask_format(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return false;
+  }
+
+  if (gpio_get_pin_level(MAP_MODE) == 0) {
+
+    grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
+    grid_alert_all_set_frequency(&grid_led_state, 4);
+    grid_utask_led(&timer_led);
+    grid_platform_nvm_format_and_mount();
+    delay_ms(500);
+    grid_utask_led(&timer_led);
+  }
+
+  return true;
+}
+
 struct grid_utask_timer timer_midi_rx;
 
 void grid_utask_midi_rx(struct grid_utask_timer* timer) {
@@ -277,6 +298,40 @@ static void button_on_SYNC2_pressed(void) { sync2_received++; }
 
 int main(void) {
 
+  // Configure task timers
+  timer_sendfull = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000000,
+  };
+  timer_ping = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_PINGINTERVAL_us,
+  };
+  timer_heart = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_HEARTBEATINTERVAL_us,
+  };
+  timer_health_report = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000000,
+  };
+  timer_led = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 10000,
+  };
+  timer_format = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_MAPMODE_TIMEOUT_us,
+  };
+  timer_process_ui = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_UICOOLDOWN_us,
+  };
+  timer_midi_rx = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000,
+  };
+
   // Allocate profiler & assign its interface
   vmp_buf_malloc(&vmp, 2, sizeof(struct vmp_evt_t));
   struct vmp_reg_t reg = {
@@ -317,45 +372,18 @@ int main(void) {
   ext_irq_register(PIN_GRID_SYNC_1, button_on_SYNC1_pressed);
   ext_irq_register(PIN_GRID_SYNC_2, button_on_SYNC2_pressed);
 
-  struct grid_fingerprint_buf recent;
-  grid_fingerprint_buf_init(&recent, 64);
-
-  // Configure task timers
-  timer_sendfull = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = 1000000,
-  };
-  timer_ping = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = GRID_PARAMETER_PINGINTERVAL_us,
-  };
-  timer_heart = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = GRID_PARAMETER_HEARTBEATINTERVAL_us,
-  };
-  timer_health_report = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = 1000000,
-  };
-  timer_led = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = 10000,
-  };
-  timer_process_ui = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = GRID_PARAMETER_UICOOLDOWN_us,
-  };
-  timer_midi_rx = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = 1000,
-  };
-
-  struct grid_transport* xport = &grid_transport_state;
+  while (!grid_utask_format(&timer_format)) {
+  }
 
   // Load page zero
   grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, 0, 0, NULL);
   update_interrupt_mask_from_bulk_status();
   grid_ui_bulk_flush(&grid_ui_state);
+
+  struct grid_fingerprint_buf recent;
+  grid_fingerprint_buf_init(&recent, 64);
+
+  struct grid_transport* xport = &grid_transport_state;
 
   while (1) {
 
@@ -385,8 +413,6 @@ int main(void) {
       // grid_d51_nvic_debug_priorities();
     }
 
-    grid_usb_task();
-
     if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && grid_usb_connected()) {
 
       grid_platform_printf("USB CONNECTED\n");
@@ -408,10 +434,6 @@ int main(void) {
         // grid_ui_state.page_change_enabled = 1;
       }
     }
-
-    grid_usb_midi_rx_poll(&grid_usb_state.midi);
-    grid_usb_acm_rx_poll(&grid_usb_state.acm);
-    grid_usb_acm_rx_process(&grid_usb_state.acm);
 
     update_interrupt_mask_from_bulk_status();
     grid_ui_bulk_process(&grid_ui_state);
@@ -456,6 +478,12 @@ int main(void) {
     }
 
     grid_utask_health_report();
+
+    grid_usb_task();
+
+    grid_usb_midi_rx_poll(&grid_usb_state.midi);
+    grid_usb_acm_rx_poll(&grid_usb_state.acm);
+    grid_usb_acm_rx_process(&grid_usb_state.acm);
 
     grid_port_send_ui(port_ui);
 

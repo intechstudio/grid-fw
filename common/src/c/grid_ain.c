@@ -17,9 +17,9 @@
 
 struct grid_ain_model grid_ain_state;
 
-void grid_ain_channel_reset(struct ain_chan_t* chan) { chan->size = chan->beg = chan->end = chan->sum = chan->output = chan->delta = 0; }
+GRID_IRAM_ATTR void grid_ain_channel_reset(struct ain_chan_t* chan) { chan->size = chan->beg = chan->end = chan->sum = chan->output = chan->delta = 0; }
 
-void grid_ain_channel_init(struct ain_chan_t* chan, uint8_t capacity) {
+GRID_IRAM_ATTR void grid_ain_channel_init(struct ain_chan_t* chan, uint8_t capacity) {
 
   assert(capacity > 0);
   chan->capa = capacity;
@@ -31,7 +31,7 @@ void grid_ain_channel_init(struct ain_chan_t* chan, uint8_t capacity) {
   grid_ain_channel_reset(chan);
 }
 
-void grid_ain_init(struct grid_ain_model* ain, uint8_t channel_count, uint8_t capacity) {
+GRID_IRAM_ATTR void grid_ain_init(struct grid_ain_model* ain, uint8_t channel_count, uint8_t capacity) {
 
   assert(channel_count > 0);
   ain->channel_count = channel_count;
@@ -44,7 +44,7 @@ void grid_ain_init(struct grid_ain_model* ain, uint8_t channel_count, uint8_t ca
   }
 }
 
-void grid_ain_add_sample_raw(struct grid_ain_model* ain, uint8_t channel, uint16_t value) {
+GRID_IRAM_ATTR void grid_ain_add_sample_raw(struct grid_ain_model* ain, uint8_t channel, uint16_t value) {
 
   assert(channel < ain->channel_count);
   struct ain_chan_t* chan = &ain->channels[channel];
@@ -64,7 +64,7 @@ void grid_ain_add_sample_raw(struct grid_ain_model* ain, uint8_t channel, uint16
   chan->sum += value;
 }
 
-void grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t value, uint8_t src_res, uint8_t dst_res) {
+GRID_IRAM_ATTR void grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t value, uint8_t src_res, uint8_t dst_res) {
 
   grid_ain_add_sample_raw(ain, channel, value);
 
@@ -117,7 +117,7 @@ void grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t v
   }
 }
 
-bool grid_ain_stabilized(struct grid_ain_model* ain, uint8_t channel) {
+GRID_IRAM_ATTR bool grid_ain_stabilized(struct grid_ain_model* ain, uint8_t channel) {
 
   assert(channel < ain->channel_count);
   struct ain_chan_t* chan = &ain->channels[channel];
@@ -125,7 +125,7 @@ bool grid_ain_stabilized(struct grid_ain_model* ain, uint8_t channel) {
   return chan->size == chan->capa;
 }
 
-bool grid_ain_get_changed(struct grid_ain_model* ain, uint8_t channel) {
+GRID_IRAM_ATTR bool grid_ain_get_changed(struct grid_ain_model* ain, uint8_t channel) {
 
   assert(channel < ain->channel_count);
   struct ain_chan_t* chan = &ain->channels[channel];
@@ -133,9 +133,9 @@ bool grid_ain_get_changed(struct grid_ain_model* ain, uint8_t channel) {
   return chan->delta;
 }
 
-static double lerp(double a, double b, double x) { return a * (1.0 - x) + (b * x); }
+GRID_IRAM_ATTR static double lerp(double a, double b, double x) { return a * (1.0 - x) + (b * x); }
 
-int32_t grid_ain_get_average_scaled(struct grid_ain_model* ain, uint8_t channel, uint8_t src_res, uint8_t dst_res, int32_t min, int32_t max) {
+GRID_IRAM_ATTR int32_t grid_ain_get_average_scaled(struct grid_ain_model* ain, uint8_t channel, uint8_t src_res, uint8_t dst_res, int32_t min, int32_t max) {
 
   assert(channel < ain->channel_count);
   struct ain_chan_t* chan = &ain->channels[channel];
@@ -156,13 +156,13 @@ int32_t grid_ain_get_average_scaled(struct grid_ain_model* ain, uint8_t channel,
   return next;
 }
 
-static inline uint16_t endless_avg(uint16_t x, uint16_t y) {
+GRID_IRAM_ATTR static inline uint16_t endless_avg(uint16_t x, uint16_t y) {
 
   uint32_t cond = (x < 0x4000 && y >= 0xc000) || (y < 0x4000 && x >= 0xc000);
   return (x + (uint32_t)y + 0x10000 * cond) >> 1;
 }
 
-uint16_t grid_ain_endless_avg(struct grid_ain_model* ain, uint8_t channel) {
+GRID_IRAM_ATTR uint16_t grid_ain_endless_avg(struct grid_ain_model* ain, uint8_t channel) {
 
   assert(channel < ain->channel_count);
   struct ain_chan_t* chan = &ain->channels[channel];
