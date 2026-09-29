@@ -360,6 +360,7 @@ int grid_hwcfg_module_is_rev_h(struct grid_sys_model* sys) {
   case GRID_MODULE_PO16_RevH:
   case GRID_MODULE_PO16_CD_RevH:
   case GRID_MODULE_BU16_RevH:
+  case GRID_MODULE_BU16_RevI:
   case GRID_MODULE_PBF4_RevH:
   case GRID_MODULE_PBF4_CD_RevH:
   case GRID_MODULE_EN16_RevH:

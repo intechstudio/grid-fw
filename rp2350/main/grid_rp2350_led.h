@@ -14,7 +14,7 @@ struct grid_rp2350_led_model {
 
 extern struct grid_rp2350_led_model grid_rp2350_led_state;
 
-void grid_rp2350_led_init(struct grid_rp2350_led_model* rp_mod, struct grid_led_model* led_mod, uint8_t tx_pin, uint8_t tx_pin_func);
+void grid_rp2350_led_init(struct grid_rp2350_led_model* rp_mod, struct grid_led_model* led_mod);
 
 void grid_rp2350_led_generate_frame(struct grid_rp2350_led_model* rp_mod, struct grid_led_model* led_mod);
 

@@ -35,9 +35,6 @@ const struct luaL_Reg* grid_lua_api_gui_lib_reference = gui_lib;
 
 enum { GRID_RP2350_PORT_COUNT = 6 };
 
-// TODO BU16 should also use GPIO6, like the other variants do
-#define GRID_RP2350_GPIO6_FUNC_UART1_TX 11
-
 #define GRID_RP2350_MAPMODE_PIN 16
 
 static void grid_rp2350_checkpoint(const char* label) { printf("[checkpoint] %s\n", label); }
@@ -240,13 +237,8 @@ int main() {
     printf("UI Init failed: Unknown Module %u\n", grid_sys_get_hwcfg(&grid_sys_state));
   }
 
-  // TODO BU16 should also use GPIO6, like the other variants do
-  bool is_bu16 = grid_hwcfg_module_is_bu16(&grid_sys_state);
-  uint8_t led_tx_pin = is_bu16 ? 4 : 6;
-  uint8_t led_tx_pin_func = is_bu16 ? GPIO_FUNC_UART : GRID_RP2350_GPIO6_FUNC_UART1_TX;
-
   grid_rp2350_checkpoint("LED INIT");
-  grid_rp2350_led_init(&grid_rp2350_led_state, &grid_led_state, led_tx_pin, led_tx_pin_func);
+  grid_rp2350_led_init(&grid_rp2350_led_state, &grid_led_state);
 
   grid_rp2350_checkpoint("NVM MOUNT");
   grid_rp2350_nvm_mount(&grid_rp2350_nvm_state, false);
