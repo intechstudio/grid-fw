@@ -46,7 +46,6 @@ static void grid_rp2350_encoder_dma_irq(void) {
   memcpy(enc->rx_buffer2, enc->rx_buffer, enc->rx_length);
 
   // Drive SH/LDZ high to let the register shift
-  busy_wait_us(1);
   gpio_put(RP2350_PIN_ENCODER_CS, 1);
 
   grid_rp2350_encoder_arm_dma(enc);

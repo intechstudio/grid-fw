@@ -21,7 +21,7 @@
 #define GRID_IRAM_ATTR
 #define GRID_DRAM_ATTR
 
-#endif /* GRID_ESP32 */
+#endif
 
 extern void grid_platform_set_lfs(void* lfs);
 
