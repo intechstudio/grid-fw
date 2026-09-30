@@ -8,6 +8,7 @@ add_executable(grid_rp2350
     grid_rp2350_usb.c
     grid_rp2350_platform.c
     grid_rp2350_module_bu16.c
+    grid_rp2350_module_po16.c
     grid_rp2350_encoder.c
     grid_rp2350_module_ef44.c
     grid_rp2350_uart.c

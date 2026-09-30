@@ -26,6 +26,7 @@
 #include "grid_rp2350_led.h"
 #include "grid_rp2350_module_bu16.h"
 #include "grid_rp2350_module_ef44.h"
+#include "grid_rp2350_module_po16.h"
 #include "grid_rp2350_nvm.h"
 #include "grid_rp2350_uart.h"
 #include "grid_rp2350_usb.h"
@@ -34,9 +35,6 @@ const struct luaL_Reg gui_lib[] = {{NULL, NULL}};
 const struct luaL_Reg* grid_lua_api_gui_lib_reference = gui_lib;
 
 enum { GRID_RP2350_PORT_COUNT = 6 };
-
-// TODO BU16 should also use GPIO6, like the other variants do
-#define GRID_RP2350_GPIO6_FUNC_UART1_TX 11
 
 #define GRID_RP2350_MAPMODE_PIN 16
 
@@ -236,17 +234,14 @@ int main() {
     grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
     grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_po16(&grid_sys_state)) {
+    grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else {
     printf("UI Init failed: Unknown Module %u\n", grid_sys_get_hwcfg(&grid_sys_state));
   }
 
-  // TODO BU16 should also use GPIO6, like the other variants do
-  bool is_bu16 = grid_hwcfg_module_is_bu16(&grid_sys_state);
-  uint8_t led_tx_pin = is_bu16 ? 4 : 6;
-  uint8_t led_tx_pin_func = is_bu16 ? GPIO_FUNC_UART : GRID_RP2350_GPIO6_FUNC_UART1_TX;
-
   grid_rp2350_checkpoint("LED INIT");
-  grid_rp2350_led_init(&grid_rp2350_led_state, &grid_led_state, led_tx_pin, led_tx_pin_func);
+  grid_rp2350_led_init(&grid_rp2350_led_state, &grid_led_state);
 
   grid_rp2350_checkpoint("NVM MOUNT");
   grid_rp2350_nvm_mount(&grid_rp2350_nvm_state, false);
@@ -280,6 +275,8 @@ int main() {
     grid_rp2350_module_bu16_init(&grid_sys_state, &grid_ui_state, &grid_rp2350_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
     grid_rp2350_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_rp2350_adc_state, &grid_rp2350_encoder_state, &grid_config_state, &grid_cal_state);
+  } else if (grid_hwcfg_module_is_po16(&grid_sys_state)) {
+    grid_rp2350_module_po16_init(&grid_sys_state, &grid_ui_state, &grid_rp2350_adc_state, &grid_config_state, &grid_cal_state);
   } else {
     printf("Module Init failed: Unknown Module %u\n", grid_sys_get_hwcfg(&grid_sys_state));
   }

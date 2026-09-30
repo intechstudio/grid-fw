@@ -36,17 +36,11 @@ GRID_IRAM_ATTR uint64_t grid_platform_rtc_get_diff(uint64_t t1, uint64_t t2) { r
 
 void grid_platform_delay_ms(uint32_t delay_milliseconds) { sleep_ms(delay_milliseconds); }
 
-// HWCFG strap read: GPIO1=SHIFT, GPIO2=CLOCK, GPIO3=DATA, GPIO4=DATA2. Bit-bang
+// HWCFG strap read: GPIO1=SHIFT, GPIO2=CLOCK, GPIO4=DATA. Bit-bang.
 // GPIO1 is tied to UART0 RX so that's disabled in rp2350/main/CMakeLists.txt
-//
-// Two board variants place the shift register on different DATA lines; only
-// one is ever actually populated. Both DATA pins are pulled up internally so
-// an unpopulated line floats high and reads back as 255 (all bits set) --
-// whichever line reads something other than 255 is the real hwcfg value.
 #define RP2350_PIN_HWCFG_SHIFT 1
 #define RP2350_PIN_HWCFG_CLOCK 2
-#define RP2350_PIN_HWCFG_DATA 3
-#define RP2350_PIN_HWCFG_DATA2 4
+#define RP2350_PIN_HWCFG_DATA 4
 
 uint32_t grid_platform_get_hwcfg() {
 
@@ -60,10 +54,6 @@ uint32_t grid_platform_get_hwcfg() {
   gpio_set_dir(RP2350_PIN_HWCFG_DATA, GPIO_IN);
   gpio_pull_up(RP2350_PIN_HWCFG_DATA);
 
-  gpio_init(RP2350_PIN_HWCFG_DATA2);
-  gpio_set_dir(RP2350_PIN_HWCFG_DATA2, GPIO_IN);
-  gpio_pull_up(RP2350_PIN_HWCFG_DATA2);
-
   gpio_put(RP2350_PIN_HWCFG_SHIFT, 0);
   gpio_put(RP2350_PIN_HWCFG_CLOCK, 1);
 
@@ -74,7 +64,6 @@ uint32_t grid_platform_get_hwcfg() {
   sleep_us(10);
 
   uint8_t hwcfg_value = 0;
-  uint8_t hwcfg_value2 = 0;
 
   for (uint8_t i = 0; i < 8; i++) {
 
@@ -83,16 +72,13 @@ uint32_t grid_platform_get_hwcfg() {
     if (gpio_get(RP2350_PIN_HWCFG_DATA)) {
       hwcfg_value |= (1 << i);
     }
-    if (gpio_get(RP2350_PIN_HWCFG_DATA2)) {
-      hwcfg_value2 |= (1 << i);
-    }
 
     sleep_us(10);
     gpio_put(RP2350_PIN_HWCFG_CLOCK, 1);
     sleep_us(10);
   }
 
-  return hwcfg_value != 255 ? hwcfg_value : hwcfg_value2;
+  return hwcfg_value;
 }
 
 uint8_t grid_platform_get_random_8() { return (uint8_t)(get_rand_32() & 0xFF); }
