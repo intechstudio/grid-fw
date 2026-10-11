@@ -1426,6 +1426,21 @@ int l_grid_cat(lua_State* L) {
   return 1;
 }
 
+/*static*/ int l_grid_rtc_get_micros(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 0) {
+    // error
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
+    return 0;
+  }
+
+  lua_pushinteger(L, (lua_Integer)grid_platform_rtc_get_micros());
+
+  return 1;
+}
+
 /*static*/ int l_grid_position_x(lua_State* L) {
 
   int nargs = lua_gettop(L);
@@ -2253,6 +2268,7 @@ GRID_LUA_FNC_META_DEFI(ggen, l_grid_elementname_get)
     {GRID_LUA_FNC_G_HWCFG_HAS_LCD_short, GRID_LUA_FNC_G_HWCFG_HAS_LCD_fnptr},
 
     {GRID_LUA_FNC_G_RANDOM_short, GRID_LUA_FNC_G_RANDOM_fnptr},
+    {GRID_LUA_FNC_G_MICROS_short, GRID_LUA_FNC_G_MICROS_fnptr},
     {GRID_LUA_FNC_G_ELEMENTNAME_SEND_short, GRID_LUA_FNC_G_ELEMENTNAME_SEND_fnptr},
     {GRID_LUA_FNC_G_ELEMENTNAME_SET_short, GRID_LUA_FNC_G_ELEMENTNAME_SET_fnptr},
     {GRID_LUA_FNC_G_ELEMENTNAME_GET_short, GRID_LUA_FNC_G_ELEMENTNAME_GET_fnptr},
