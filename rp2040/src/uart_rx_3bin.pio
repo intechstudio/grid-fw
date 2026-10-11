@@ -1,0 +1,145 @@
+.program uart_rx_3bin
+; 4-bin RX + cooperative TX on ONE SM. One `out pins, 1` per 62-cy bit drives a
+; real TX bit (autopull pulls 11-bit coop frames from the TX FIFO; idle = all 1s,
+; line high). The CPU keeps the FIFO fed (frames or idle) so `out` never stalls.
+; (File/program name kept as uart_rx_3bin to avoid churn; it now uses 4 bins.)
+;
+; The RX pin input is INVERTED in init, so `jmp pin` (which only tests HIGH) reads
+; as "start bit / line low seen -> receive". Each of the 4 poll points is then a
+; single instruction: jump to rx_start if low, else delay and fall through to the
+; next poll; the last falls through .wrap back to scan. Sampled data is therefore
+; inverted and is un-inverted in uart_rx_3bin_frame_data().
+;
+; clkdiv = 62.5/62, so every 62-cycle loop is exactly 500 ns = one 2 Mbaud bit.
+; RX detection is 4-bin (~15 cy granularity, 4 polls per bit, ±8 cy).
+;
+; Full-frame capture: all 11 bits (start + 8 data + dummy + stop) are shifted into
+; the ISR and autopushed at 11. Software extracts the data byte and checks framing
+; (start==0, stop==1) — see uart_rx_3bin_frame_* helpers.
+;
+; FOUR bitloop variants (bin0..bin3) drive the TX `out` at 4 positions in the bit;
+; the detection bin selects one to continue the TX phase across the RX-start
+; transition (TX phase encoded in PC, not a register — ±~8 cy, within the neighbour's
+; ±31 cy margin). RX sampling is identical across variants. TX data is in the OSR,
+; so it survives the transition untouched; only the bit's phase shifts.
+;
+;   X = sample count        ISR = full frame (autopush @ 11, shift right)
+;   SET pins -> TX pin   IN/JMP pin -> RX pin (inverted)
+; Delays tagged "TUNE" may need a small hardware nudge.
+
+; ===== scan: idle. Preload sample count, drive one TX bit, 4 RX polls (62 cy). =====
+.wrap_target
+scan:
+    set x, 10                   ; cy0  preload 11-sample count for the variants
+    out pins, 1                 ; cy1  TX bit (idle/data, autopull from FIFO)
+    jmp pin bin0 [14]           ; cy2   bin0 (earliest): low(start) -> variant; else fall
+    jmp pin bin1 [14]           ; cy17  bin1
+    jmp pin bin2 [14]           ; cy32  bin2
+    jmp pin bin3 [14]           ; cy47  bin3 (latest)
+.wrap                           ; idle through all 4 -> wrap to scan (period 62 cy)
+
+; ===== 4 bitloop variants: same RX sampling, TX `out` at 4 positions =====
+; The detection bin encodes the TX phase (time since the scan TX bit at cy1).
+; So each bin selects the variant whose TX slot continues that phase: bin0 caught
+; the start EARLIEST -> the TX bit was most recent -> the next TX bit is due
+; LATEST -> TX slot late in the bit (cy54); bin3 caught latest -> TX slot early
+; (cy9). Positions quarter the 62-cy bit and are TUNE. RX `in` is the first
+; instruction of every variant, so the sample lands at the same time regardless
+; of variant -> decoding is unchanged (11-bit frame, parsed in SW).
+
+bin0:                           ; TX slot ~cy54 (late)
+    in pins, 1      [31]        ; sample RX (start..stop), 11x via x
+    nop             [21]        ; delay to TX slot
+    out pins, 1                 ; cy54 TX bit
+    jmp x-- bin0    [6]         ; -> 62 cy
+    jmp scan
+bin1:                           ; TX slot ~cy39
+    in pins, 1      [31]
+    nop             [6]
+    out pins, 1                 ; cy39
+    jmp x-- bin1    [21]        ; -> 62 cy
+    jmp scan
+bin2:                           ; TX slot ~cy24
+    in pins, 1      [23]
+    out pins, 1                 ; cy24
+    nop             [17]
+    jmp x-- bin2    [18]        ; -> 62 cy
+    jmp scan
+bin3:                           ; TX slot ~cy9 (early)
+    in pins, 1      [8]
+    out pins, 1                 ; cy9
+    nop             [31]
+    jmp x-- bin3    [19]        ; -> 62 cy
+    jmp scan
+
+% c-sdk {
+#include "hardware/clocks.h"
+#include "hardware/gpio.h"
+
+static inline void uart_rx_3bin_program_init(PIO pio, uint sm, uint offset, uint pin_rx, uint pin_tx) {
+    // RX pin: input with pull-up
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_rx, 1, false);
+    pio_gpio_init(pio, pin_rx);
+    gpio_pull_up(pin_rx);
+    // Invert the RX input so PIO's HIGH-only `jmp pin` triggers on a start bit
+    // (real line low). Sampled data is inverted -> complemented in getc().
+    gpio_set_inover(pin_rx, GPIO_OVERRIDE_INVERT);
+
+    // TX pin: output, start high (idle), driven by OUT
+    pio_sm_set_pins_with_mask(pio, sm, 1u << pin_tx, 1u << pin_tx);
+    pio_sm_set_pindirs_with_mask(pio, sm, 1u << pin_tx, 1u << pin_tx);
+    pio_gpio_init(pio, pin_tx);
+
+    pio_sm_config c = uart_rx_3bin_program_get_default_config(offset);
+
+    sm_config_set_in_pins(&c, pin_rx);   // IN  source
+    sm_config_set_jmp_pin(&c, pin_rx);   // JMP pin condition
+    sm_config_set_out_pins(&c, pin_tx, 1);   // OUT -> TX pin
+
+    sm_config_set_in_shift(&c, true, true, 11);   // shift right, autopush, full 11-bit RX frame
+    sm_config_set_out_shift(&c, true, true, 11);  // shift right, autopull, 11-bit TX frame
+
+    // 62-cycle loop == 500 ns == one 2 Mbaud bit, so the RX sample rate and the
+    // TX bit cadence both land exactly on the symbol grid.
+    sm_config_set_clkdiv(&c, 62.5f / 62.0f);
+
+    pio_sm_init(pio, sm, offset, &c);
+
+    // Prime the TX FIFO with idle frames so the first `out` doesn't stall before
+    // the feeder runs (idle = 11 ones = line high).
+    for (int i = 0; i < 4; i++) {
+        pio_sm_put(pio, sm, 0x7FFu);
+    }
+
+    pio_sm_set_enabled(pio, sm, true);
+}
+
+// 11-bit coop TX frame: start(0) + 8 data (LSB first) + dummy(0) + stop(1).
+// Matches the RX frame layout, so this firmware talks to itself back-to-back.
+static inline uint32_t uart_rx_3bin_tx_frame(char c) {
+    return ((uint32_t)(uint8_t)c << 1) | (1u << 10);
+}
+// Idle word: 11 ones -> line held high.
+#define UART_RX_3BIN_TX_IDLE 0x7FFu
+
+static inline bool uart_rx_3bin_available(PIO pio, uint sm) {
+    return !pio_sm_is_rx_fifo_empty(pio, sm);
+}
+
+// Pop one captured 11-bit frame word. Sampled with the RX pin inverted, so every
+// bit reads as the complement of the line. Layout after shift-right autopush @ 11:
+//   bit 21 = start, bits 22..29 = data d0..d7, bit 30 = dummy, bit 31 = stop.
+static inline uint32_t uart_rx_3bin_get_frame(PIO pio, uint sm) {
+    return pio->rxf[sm];
+}
+
+// Framing OK = real start 0 and real stop 1 -> inverted: start sample 1, stop sample 0.
+static inline bool uart_rx_3bin_frame_ok(uint32_t frame) {
+    return ((frame >> 21) & 1u) && !((frame >> 31) & 1u);
+}
+
+// Extract the data byte: un-invert the 8 data samples.
+static inline char uart_rx_3bin_frame_data(uint32_t frame) {
+    return (char)((~(frame >> 22)) & 0xFFu);
+}
+%}

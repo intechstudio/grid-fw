@@ -1,0 +1,89 @@
+.program uart_coop
+; v1: bounded-wait detection (exact RX) + TX-from-idle. 125 MHz, ~62 cy/bit.
+; Single precise RX path — detection is exact (~±2 cy), so no phase variants.
+;   X = timeout counter / RX bit count    Y = TX-FIFO peek scratch
+;   OSR = TX frame (autopull @11)   ISR = RX data (autopush @8)
+; Delays tagged "TUNE" may need a hardware nudge.
+
+; ===== detect: tight RX poll with a finite timeout; on timeout, service TX =====
+detect:
+    set x, 28               ; timeout ≈ one TX-bit period, in poll iterations (TUNE)
+dloop:
+    jmp pin didle           ; RX high → keep waiting
+    jmp rx_start            ; RX LOW → exact edge, go receive
+didle:
+    jmp x-- dloop           ; not timed out → keep tight-polling (2 cy/iter)
+    ; --- timeout: drive one TX bit if a frame is active/startable, then resume ---
+    jmp !osre tx_drive      ; OSR has bits → drive next bit
+    mov y, status           ; OSR empty → peek TX FIFO
+    jmp !y tx_drive         ;   data queued → start frame (OUT autopulls word)
+    jmp detect              ;   nothing → keep waiting
+tx_drive:
+    out pins, 1             ; drive one TX bit (62 cy cadence set by the timeout)
+    jmp detect
+
+; ===== rx_start: edge caught; one precise sample stream =====
+rx_start:
+    set x, 7        [31]    ; 8 data bits + align to bit-0 centre (TUNE)
+    nop             [31]    ; align (TUNE)
+    nop             [25]    ; align (TUNE)
+bitloop:                    ; 62 cy/bit, runs 8x; autopush delivers the byte at 8
+    in pins, 1
+    nop             [30]
+    jmp x-- bitloop [29]    ; → 62 cy
+    ; 8 bits sampled; wait through the dummy bit until the line idles (stop) high,
+    ; so detect doesn't re-trigger on the dummy.
+wait_idle:
+    jmp pin detect          ; line high (stop/idle) → back to detect
+    jmp wait_idle           ; line low (dummy) → wait
+
+% c-sdk {
+#include "hardware/clocks.h"
+#include "hardware/gpio.h"
+
+static inline void uart_coop_program_init(PIO pio, uint sm, uint offset, uint pin_rx, uint pin_tx) {
+    // RX pin: input with pull-up
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_rx, 1, false);
+    pio_gpio_init(pio, pin_rx);
+    gpio_pull_up(pin_rx);
+
+    // TX pin: output, idle high
+    pio_sm_set_pins_with_mask(pio, sm, 1u << pin_tx, 1u << pin_tx);
+    pio_sm_set_pindirs_with_mask(pio, sm, 1u << pin_tx, 1u << pin_tx);
+    pio_gpio_init(pio, pin_tx);
+
+    pio_sm_config c = uart_coop_program_get_default_config(offset);
+
+    sm_config_set_in_pins(&c, pin_rx);   // IN
+    sm_config_set_jmp_pin(&c, pin_rx);   // JMP pin
+    sm_config_set_out_pins(&c, pin_tx, 1);
+    sm_config_set_set_pins(&c, pin_tx, 1);
+
+    sm_config_set_in_shift(&c, true, true, 8);     // shift right, autopush, 8-bit byte
+    sm_config_set_out_shift(&c, true, true, 11);   // shift right, autopull, 11-bit frame
+
+    // mov y, status reflects TX FIFO < 1 (i.e. empty)
+    sm_config_set_mov_status(&c, STATUS_TX_LESSTHAN, 1);
+
+    // 125 MHz SM clock → ~62 cycles/bit at 2 Mbaud (clkdiv 1.0, default sysclk)
+    sm_config_set_clkdiv(&c, 1.0f);
+
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, true);
+}
+
+static inline void uart_coop_tx_putc(PIO pio, uint sm, char c) {
+    // Bake the 8n1 framing into the word: start(0) + 8 data + dummy(0) + stop(1).
+    uint32_t frame = ((uint32_t)(uint8_t)c << 1) | (1u << 10);
+    pio_sm_put_blocking(pio, sm, frame);
+}
+
+static inline bool uart_coop_rx_available(PIO pio, uint sm) {
+    return !pio_sm_is_rx_fifo_empty(pio, sm);
+}
+
+static inline char uart_coop_rx_getc(PIO pio, uint sm) {
+    io_rw_8 *rxfifo_shift = (io_rw_8 *)&pio->rxf[sm] + 3;
+    return (char)*rxfifo_shift;
+}
+%}

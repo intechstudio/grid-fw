@@ -1,0 +1,93 @@
+.program uart_coop
+; Step 1 (lossless track): single-SM UART, TX framing baked into the data word.
+; clkdiv = 1.0 → SM at 128 MHz → 64 cycles/bit at 2 Mbaud (64 = 32+32, clean grid)
+; IN/JMP pin: RX GPIO. OUT pin: TX GPIO. X: RX bit counter (TX no longer uses it).
+; TX runs only when the line is idle (RX not mid-frame). Concurrent TX+RX deferred.
+
+sched:
+    mov x, status           ; x = ~0 if TX FIFO empty, 0 if it has data (STATUS_TX_LESSTHAN,1)
+    jmp !x tx_start         ; TX FIFO non-empty → transmit a byte
+    jmp pin sched           ; line idle (high) → keep polling; line low → start bit, fall through
+
+    ; --- start bit detected: receive one 8n1 frame ---
+    set x, 7        [31]    ; 32 cy ─┐
+    nop             [31]    ; 32 cy  │ 93 cy → 1.5 bit (96) minus detect/sync latency
+    nop             [28]    ; 29 cy ─┘
+
+bitloop:                    ; 64 cy per iteration, runs 8x (bits 0..7)
+    in pins, 1              ;  1 cy
+    nop             [31]    ; 32 cy
+    jmp x-- bitloop [30]    ; 31 cy
+
+    ; The wire format carries a dummy 9th bit before the stop bit (see TX word).
+    ; Skip one full bit period to land jmp pin on the stop-bit centre.
+    nop             [31]    ; 32 cy ─┐ 64 cy skip
+    nop             [31]    ; 32 cy ─┘
+    jmp pin  good_stop      ; sample stop bit (must be high)
+    irq 4 rel               ; framing error: set sticky flag
+    jmp sched               ; recovery deferred — just return to scheduler
+
+good_stop:
+    push
+    jmp sched
+
+    ; --- transmit one frame: 11 bits, framing baked into the data word ---
+    ; word = (byte << 1) | (1<<10): bit0=start(0), 1..8=data, 9=dummy(0), 10=stop(1).
+    ; autopull (threshold 11) loads the word on the first OUT; we drive bits until
+    ; the shifter empties. No X counter, no set-pins for start/stop.
+tx_start:                   ; entered with TX FIFO non-empty
+txloop:                     ; 64 cy per bit
+    out pins, 1     [31]    ; 32 cy  drive next frame bit (autopull pulls the word)
+    jmp !osre txloop [31]   ; 32 cy  loop while OSR still has bits → 64 cy/bit
+    jmp sched               ; OSR empty → all 11 bits sent (stop bit held 64 cy), done
+
+% c-sdk {
+#include "hardware/clocks.h"
+#include "hardware/gpio.h"
+
+static inline void uart_coop_program_init(PIO pio, uint sm, uint offset, uint pin_rx, uint pin_tx) {
+    // RX pin: input with pull-up
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_rx, 1, false);
+    pio_gpio_init(pio, pin_rx);
+    gpio_pull_up(pin_rx);
+
+    // TX pin: output, idle high
+    pio_sm_set_pins_with_mask(pio, sm, 1u << pin_tx, 1u << pin_tx);
+    pio_sm_set_pindirs_with_mask(pio, sm, 1u << pin_tx, 1u << pin_tx);
+    pio_gpio_init(pio, pin_tx);
+
+    pio_sm_config c = uart_coop_program_get_default_config(offset);
+
+    sm_config_set_in_pins(&c, pin_rx);   // IN, WAIT
+    sm_config_set_jmp_pin(&c, pin_rx);   // JMP pin
+    sm_config_set_out_pins(&c, pin_tx, 1);
+    sm_config_set_set_pins(&c, pin_tx, 1);
+
+    sm_config_set_in_shift(&c, true, false, 32);   // shift right, no autopush
+    sm_config_set_out_shift(&c, true, true, 11);   // shift right, autopull, 11-bit frame
+
+    // mov x, status reflects TX FIFO < 1 (i.e. empty)
+    sm_config_set_mov_status(&c, STATUS_TX_LESSTHAN, 1);
+
+    // 128 MHz SM clock → 64 cycles/bit at 2 Mbaud
+    sm_config_set_clkdiv(&c, 1.0f);
+
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, true);
+}
+
+static inline void uart_coop_tx_putc(PIO pio, uint sm, char c) {
+    // Bake the 8n1 framing into the word: start(0) + 8 data + dummy(0) + stop(1).
+    uint32_t frame = ((uint32_t)(uint8_t)c << 1) | (1u << 10);
+    pio_sm_put_blocking(pio, sm, frame);
+}
+
+static inline bool uart_coop_rx_available(PIO pio, uint sm) {
+    return !pio_sm_is_rx_fifo_empty(pio, sm);
+}
+
+static inline char uart_coop_rx_getc(PIO pio, uint sm) {
+    io_rw_8 *rxfifo_shift = (io_rw_8 *)&pio->rxf[sm] + 3;
+    return (char)*rxfifo_shift;
+}
+%}
