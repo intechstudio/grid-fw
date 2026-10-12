@@ -7,6 +7,9 @@
 !src/lua
 !src/lua/*.lua
 
+!src/mxt
+!src/mxt/mxt144u_cfg.raw
+
 !dep
 
 !dep/littlefs

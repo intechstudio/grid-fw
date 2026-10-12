@@ -441,7 +441,7 @@ void app_main(void) {
 
     TaskHandle_t touch_task_hdl;
 
-    xTaskCreatePinnedToCore(grid_esp32_module_zona_update_task, "touch", 1024 * 2, NULL, MODULE_TASK_PRIORITY, &touch_task_hdl, 0);
+    xTaskCreatePinnedToCore(grid_esp32_module_zona_update_task, "touch", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &touch_task_hdl, 0);
   }
 
   // Initialize 1 kHz timer
@@ -490,12 +490,12 @@ void app_main(void) {
 
     // Check with zero timeout for a touch
     if (xTaskNotifyWait(0, (uint32_t)-1, NULL, 0)) {
-      grid_esp32_touch_process_msgs(&grid_esp32_touch_state);
+      grid_maxtouch_process_msgs(&grid_esp32_touch_state.data, grid_esp32_touch_state.msg_buf);
     }
 
     // Run microtasks
     grid_esp32_utask_led(&timer_led);
-    // grid_esp32_utask_touch_t37(&timer_t37);
+    // grid_maxtouch_utask_t37(&timer_t37, &grid_esp32_touch_state.data);
 
     // Run UI protothreads
     grid_ui_bulk_process(&grid_ui_state);
