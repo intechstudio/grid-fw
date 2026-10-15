@@ -148,6 +148,8 @@ struct mxt_data {
   uint8_t T6_status;
 
   struct mxt_dbg dbg;
+
+  uint8_t* msg_buf;
 };
 
 typedef void (*grid_process_touch_t)(struct touchinfo_t*);
@@ -171,7 +173,7 @@ struct mxt_object* maxtouch_get_object(struct mxt_data* data, uint8_t type);
 
 bool grid_maxtouch_read_info_block(struct mxt_data* data);
 
-void grid_maxtouch_process_msgs(struct mxt_data* data, uint8_t* msg_buf);
+void grid_maxtouch_process_msgs(struct mxt_data* data);
 
 void grid_maxtouch_debug_init(struct mxt_data* data);
 

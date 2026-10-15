@@ -277,7 +277,7 @@ void grid_maxtouch_proc_message(struct mxt_data* data, uint8_t* msg) {
   }
 }
 
-void grid_maxtouch_process_msgs(struct mxt_data* data, uint8_t* msg_buf) {
+void grid_maxtouch_process_msgs(struct mxt_data* data) {
 
   // Read the number of messages from T44
   uint8_t count;
@@ -290,13 +290,13 @@ void grid_maxtouch_process_msgs(struct mxt_data* data, uint8_t* msg_buf) {
   }
 
   // Read messages from T5
-  if (grid_platform_mxt_read(data->T5_address, data->T5_msg_size * count, msg_buf)) {
+  if (grid_platform_mxt_read(data->T5_address, data->T5_msg_size * count, data->msg_buf)) {
     return;
   }
 
   // Process messages
   for (uint8_t i = 0; i < count; ++i) {
-    grid_maxtouch_proc_message(data, msg_buf + i * data->T5_msg_size);
+    grid_maxtouch_proc_message(data, data->msg_buf + i * data->T5_msg_size);
   }
 
   return;
@@ -478,7 +478,7 @@ int grid_maxtouch_update_crc(struct mxt_data* data, uint8_t cmd, uint8_t val) {
   }
 
   while (!data->crc_completion) {
-    grid_platform_delay_ms(10);
+    grid_maxtouch_process_msgs(data);
   }
 
   return 0;
@@ -497,7 +497,7 @@ int grid_maxtouch_soft_reset(struct mxt_data* data) {
   grid_platform_delay_ms(100);
 
   while (!data->reset_completion) {
-    grid_platform_delay_ms(10);
+    grid_maxtouch_process_msgs(data);
   }
 
   return 0;
@@ -529,7 +529,7 @@ int maxtouch_prepare_cfg_mem(struct mxt_data* data, struct mxt_cfg* cfg) {
       // Skip object
       uint8_t val;
       for (int i = 0; i < size; ++i) {
-        ret = sscanf((char*)&cfg->raw[cfg->raw_pos], "%hhx %n", &val, &offset);
+        ret = sscanf((char*)&cfg->raw[cfg->raw_pos], "%02x %n", &val, &offset);
         if (ret != 1) {
           grid_platform_printf("mxt_prepare_cfg_mem: bad format in T%d at %d\n", type, i);
           return -EINVAL;
@@ -565,7 +565,7 @@ int maxtouch_prepare_cfg_mem(struct mxt_data* data, struct mxt_cfg* cfg) {
     uint8_t val;
     for (int i = 0; i < size; ++i) {
 
-      ret = sscanf((char*)&cfg->raw[cfg->raw_pos], "%hhx %n", &val, &offset);
+      ret = sscanf((char*)&cfg->raw[cfg->raw_pos], "%02x %n", &val, &offset);
       if (ret != 1) {
         grid_platform_printf("mxt_prepare_cfg_mem: bad format in T%d at %d\n", type, i);
         return -EINVAL;
@@ -645,7 +645,7 @@ int maxtouch_update_cfg(struct mxt_data* data, struct firmware* fw) {
   int offset;
   for (size_t i = 0; i < sizeof(struct mxt_info); ++i) {
 
-    if (sscanf((char*)&cfg.raw[cfg.raw_pos], "%hhx %n", (uint8_t*)&cfg.info + i, &offset) != 1) {
+    if (sscanf((char*)&cfg.raw[cfg.raw_pos], "%02x %n", (uint8_t*)&cfg.info + i, &offset) != 1) {
       goto mxt_update_cfg_error;
     }
     cfg.raw_pos += offset;

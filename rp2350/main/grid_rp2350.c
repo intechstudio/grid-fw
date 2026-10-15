@@ -29,6 +29,7 @@
 #include "grid_rp2350_module_po16.h"
 #include "grid_rp2350_module_zona.h"
 #include "grid_rp2350_nvm.h"
+#include "grid_rp2350_touch.h"
 #include "grid_rp2350_uart.h"
 #include "grid_rp2350_usb.h"
 
@@ -296,6 +297,10 @@ int main() {
   grid_rp2350_checkpoint("MAIN LOOP");
 
   while (true) {
+
+    if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
+      grid_rp2350_touch_poll(&grid_rp2350_touch_state);
+    }
 
     if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && grid_usb_connected()) {
 

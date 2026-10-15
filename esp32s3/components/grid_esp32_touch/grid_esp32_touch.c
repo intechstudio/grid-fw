@@ -135,7 +135,7 @@ bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
   }
 
   // Initialize debug diagnostics
-  grid_maxtouch_debug_init(&grid_esp32_touch_state.data);
+  grid_maxtouch_debug_init(&touch->data);
 
   // Allocate message buffer
   touch->msg_buf = grid_platform_allocate_volatile(touch->data.T5_msg_size * touch->data.max_reportid);

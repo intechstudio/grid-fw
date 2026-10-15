@@ -164,6 +164,14 @@ uint8_t grid_platform_reset_grid_transmitter(uint8_t dir) {
   return 0;
 }
 
-const grid_ui_element_state_any_t grid_ui_element_state_anys[GRID_PARAMETER_ELEMENT_COUNT] = {0};
+bool grid_ui_touch_state_any(void* state);
 
-const grid_ui_element_state_reset_t grid_ui_element_state_resets[GRID_PARAMETER_ELEMENT_COUNT] = {0};
+const grid_ui_element_state_any_t grid_ui_element_state_anys[GRID_PARAMETER_ELEMENT_COUNT] = {
+    [GRID_PARAMETER_ELEMENT_TOUCH] = grid_ui_touch_state_any,
+};
+
+void grid_ui_touch_state_reset(void* state);
+
+const grid_ui_element_state_reset_t grid_ui_element_state_resets[GRID_PARAMETER_ELEMENT_COUNT] = {
+    [GRID_PARAMETER_ELEMENT_TOUCH] = grid_ui_touch_state_reset,
+};
