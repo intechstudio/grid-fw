@@ -529,7 +529,7 @@ int maxtouch_prepare_cfg_mem(struct mxt_data* data, struct mxt_cfg* cfg) {
       // Skip object
       uint8_t val;
       for (int i = 0; i < size; ++i) {
-        ret = sscanf((char*)&cfg->raw[cfg->raw_pos], "%02x %n", &val, &offset);
+        ret = sscanf((char*)&cfg->raw[cfg->raw_pos], "%x %n", &val, &offset);
         if (ret != 1) {
           grid_platform_printf("mxt_prepare_cfg_mem: bad format in T%d at %d\n", type, i);
           return -EINVAL;
@@ -565,7 +565,7 @@ int maxtouch_prepare_cfg_mem(struct mxt_data* data, struct mxt_cfg* cfg) {
     uint8_t val;
     for (int i = 0; i < size; ++i) {
 
-      ret = sscanf((char*)&cfg->raw[cfg->raw_pos], "%02x %n", &val, &offset);
+      ret = sscanf((char*)&cfg->raw[cfg->raw_pos], "%x %n", &val, &offset);
       if (ret != 1) {
         grid_platform_printf("mxt_prepare_cfg_mem: bad format in T%d at %d\n", type, i);
         return -EINVAL;
@@ -645,7 +645,7 @@ int maxtouch_update_cfg(struct mxt_data* data, struct firmware* fw) {
   int offset;
   for (size_t i = 0; i < sizeof(struct mxt_info); ++i) {
 
-    if (sscanf((char*)&cfg.raw[cfg.raw_pos], "%02x %n", (uint8_t*)&cfg.info + i, &offset) != 1) {
+    if (sscanf((char*)&cfg.raw[cfg.raw_pos], "%x %n", (uint8_t*)&cfg.info + i, &offset) != 1) {
       goto mxt_update_cfg_error;
     }
     cfg.raw_pos += offset;

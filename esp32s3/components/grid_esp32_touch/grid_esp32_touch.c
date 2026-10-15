@@ -103,17 +103,22 @@ static void grid_esp32_touch_init_i2c(struct grid_esp32_touch_model* touch, i2c_
   ESP_ERROR_CHECK(i2c_master_bus_add_device(touch->bus_hndl, &dev_cfg, &DEV_HNDL));
 }
 
-static void IRAM_ATTR mxt_chg_isr(void* user) {
+bool CHG_EDGE_FALL = false;
 
-  struct grid_esp32_touch_model* touch = (struct grid_esp32_touch_model*)user;
+static void GRID_IRAM_ATTR mxt_chg_isr(void* user) { CHG_EDGE_FALL = true; }
 
-  xTaskNotifyFromISR(touch->task, 0, eNoAction, NULL);
+void grid_esp32_touch_poll(struct grid_esp32_touch_model* touch) {
+
+  if (!CHG_EDGE_FALL) {
+    return;
+  }
+
+  grid_maxtouch_process_msgs(&touch->data);
+
+  CHG_EDGE_FALL = false;
 }
 
-bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_port, gpio_num_t scl_gpio, gpio_num_t sda_gpio, gpio_num_t reset, gpio_num_t change, uint32_t i2c_freq_hz,
-                           TaskHandle_t task) {
-
-  touch->task = task;
+bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_port, gpio_num_t scl_gpio, gpio_num_t sda_gpio, gpio_num_t reset, gpio_num_t change, uint32_t i2c_freq_hz) {
 
   // Initialize I2C configuration
   grid_esp32_touch_init_i2c(touch, i2c_port, sda_gpio, scl_gpio, i2c_freq_hz);
@@ -138,17 +143,17 @@ bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
   grid_maxtouch_debug_init(&touch->data);
 
   // Allocate message buffer
-  touch->msg_buf = grid_platform_allocate_volatile(touch->data.T5_msg_size * touch->data.max_reportid);
-  assert(touch->msg_buf);
+  touch->data.msg_buf = grid_platform_allocate_volatile(touch->data.T5_msg_size * touch->data.max_reportid);
+  assert(touch->data.msg_buf);
 
   // Set up per-pin interrupt for CHG
   ESP_ERROR_CHECK(gpio_install_isr_service(0));
   ESP_ERROR_CHECK(gpio_set_intr_type(change, GPIO_INTR_NEGEDGE));
-  ESP_ERROR_CHECK(gpio_isr_handler_add(change, mxt_chg_isr, touch));
+  ESP_ERROR_CHECK(gpio_isr_handler_add(change, mxt_chg_isr, NULL));
   ESP_ERROR_CHECK(gpio_intr_enable(change));
 
   // Start communications with the device
-  mxt_chg_isr(touch);
+  grid_maxtouch_process_msgs(&touch->data);
 
   return true;
 }
