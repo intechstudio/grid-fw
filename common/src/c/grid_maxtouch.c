@@ -519,7 +519,7 @@ int sscanf_u8_space(const char* str, uint8_t* dest, int* offset) {
     return 0;
   }
 
-  if (str[2] != ' ' && str[2] != '\r' && str[2] != '\n') {
+  if (str[2] != ' ' && str[2] != '\n') {
     return 0;
   }
 
