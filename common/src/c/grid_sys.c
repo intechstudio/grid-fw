@@ -165,13 +165,7 @@ void grid_sys_set_bank(struct grid_sys_model* sys, uint8_t banknumber) {
       sys->bank_activebank_color_r = sys->bank_color_r[sys->bank_activebank_number];
       sys->bank_activebank_color_g = sys->bank_color_g[sys->bank_activebank_number];
       sys->bank_activebank_color_b = sys->bank_color_b[sys->bank_activebank_number];
-    } else {
-
-      // grid_debug_print_text("NOT ENABLED");
     }
-  } else {
-
-    // grid_debug_print_text("Invalid Bank Number");
   }
 }
 
@@ -194,6 +188,7 @@ int grid_hwcfg_module_is_bu16(struct grid_sys_model* sys) {
   case GRID_MODULE_BU16_RevC:
   case GRID_MODULE_BU16_RevD:
   case GRID_MODULE_BU16_RevH:
+  case GRID_MODULE_BU16_RevI:
     return 1;
   default:
     return 0;
@@ -206,8 +201,10 @@ int grid_hwcfg_module_is_ef44(struct grid_sys_model* sys) {
   case GRID_MODULE_EF44_RevA:
   case GRID_MODULE_EF44_RevD:
   case GRID_MODULE_EF44_RevH:
+  case GRID_MODULE_EF44_RevI:
   case GRID_MODULE_EF44_ND_RevD:
   case GRID_MODULE_EF44_ND_RevH:
+  case GRID_MODULE_EF44_ND_RevI:
     return 1;
   default:
     return 0;
@@ -240,6 +237,16 @@ int grid_hwcfg_module_is_octv(struct grid_sys_model* sys) {
   }
 }
 
+int grid_hwcfg_module_is_zona(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_ZONA_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
 int grid_hwcfg_module_is_pbf4(struct grid_sys_model* sys) {
 
   switch (grid_sys_get_hwcfg(sys)) {
@@ -261,6 +268,8 @@ int grid_hwcfg_module_is_po16(struct grid_sys_model* sys) {
   case GRID_MODULE_PO16_RevD:
   case GRID_MODULE_PO16_RevH:
   case GRID_MODULE_PO16_CD_RevH:
+  case GRID_MODULE_PO16_RevI:
+  case GRID_MODULE_PO16_CD_RevI:
     return 1;
   default:
     return 0;
@@ -352,7 +361,10 @@ int grid_hwcfg_module_is_rev_h(struct grid_sys_model* sys) {
   switch (grid_sys_get_hwcfg(sys)) {
   case GRID_MODULE_PO16_RevH:
   case GRID_MODULE_PO16_CD_RevH:
+  case GRID_MODULE_PO16_RevI:
+  case GRID_MODULE_PO16_CD_RevI:
   case GRID_MODULE_BU16_RevH:
+  case GRID_MODULE_BU16_RevI:
   case GRID_MODULE_PBF4_RevH:
   case GRID_MODULE_PBF4_CD_RevH:
   case GRID_MODULE_EN16_RevH:
@@ -377,6 +389,7 @@ int grid_hwcfg_module_encoder_is_detent(struct grid_sys_model* sys) {
   case GRID_MODULE_EF44_RevA:
   case GRID_MODULE_EF44_RevD:
   case GRID_MODULE_EF44_RevH:
+  case GRID_MODULE_EF44_RevI:
   case GRID_MODULE_EN16_RevA:
   case GRID_MODULE_EN16_RevD:
   case GRID_MODULE_EN16_RevH:

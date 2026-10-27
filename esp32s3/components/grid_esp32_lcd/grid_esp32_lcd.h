@@ -1,9 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-#pragma once
+#ifndef GRID_ESP32_LCD_H
+#define GRID_ESP32_LCD_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -27,10 +23,6 @@
 #include "esp_lcd_panel_rgb.h"
 #include "esp_lcd_panel_vendor.h"
 #include "esp_lcd_types.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define LCD_FRCTRL_39HZ 0x1f
 #define LCD_FRCTRL_40HZ 0x1e
@@ -87,6 +79,4 @@ bool grid_esp32_lcd_scan_in_range(int max_excl, int start, int length, int x);
 
 void grid_esp32_lcd_task(void* arg);
 
-#ifdef __cplusplus
-}
-#endif
+#endif /* GRID_ESP32_LCD_H */

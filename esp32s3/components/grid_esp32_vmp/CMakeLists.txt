@@ -6,4 +6,6 @@ idf_component_register(
     INCLUDE_DIRS
         "vmp"
         "../../../common/dep/vmp"
+    REQUIRES
+        "grid_common"
 )

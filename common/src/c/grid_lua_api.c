@@ -244,8 +244,6 @@ int l_grid_cat(lua_State* L) {
       // grid_platform_printf(" fnc ");
     } else if (lua_type(L, i) == LUA_TTABLE) {
       // grid_platform_printf(" table ");
-    } else {
-      // grid_platform_printf(" unknown data type ");
     }
   }
 
@@ -326,8 +324,6 @@ int l_grid_cat(lua_State* L) {
       // grid_platform_printf(" fnc ");
     } else if (lua_type(L, i) == LUA_TTABLE) {
       // grid_platform_printf(" table ");
-    } else {
-      // grid_platform_printf(" unknown data type ");
     }
   }
 
@@ -534,7 +530,7 @@ int l_grid_cat(lua_State* L) {
   return 0;
 }
 
-/*static*/ int l_grid_usb_keyboard_send(lua_State* L) {
+/*static*/ int l_grid_keyboard_send(lua_State* L) {
 
   int nargs = lua_gettop(L);
 

@@ -6,8 +6,10 @@
 #include <string.h>
 
 #include "grid_config.h"
+#include "grid_led.h"
 #include "grid_platform.h"
 #include "grid_protocol.h"
+#include "grid_sys.h"
 #include "grid_transport.h"
 #include "grid_usb.h"
 
@@ -108,11 +110,22 @@ void grid_ui_bulk_semaphore_release(struct grid_ui_model* ui) { grid_ui_semaphor
 
 bool grid_ui_bulk_semaphore_try(struct grid_ui_model* ui) { return grid_ui_semaphore_try(&ui->bulk_semaphore); }
 
+extern const grid_ui_element_state_reset_t grid_ui_element_state_resets[GRID_PARAMETER_ELEMENT_COUNT];
+
 void grid_ui_element_reset(struct grid_ui_element* ele) {
 
   ele->timer_event_helper = 0;
   ele->timer_source_is_midi = 0;
   ele->name[0] = '\0';
+
+  if (ele->type < GRID_PARAMETER_ELEMENT_COUNT) {
+
+    grid_ui_element_state_reset_t fun = grid_ui_element_state_resets[ele->type];
+
+    if (fun && ele->primary_state) {
+      fun(ele->primary_state);
+    }
+  }
 }
 
 struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index) {
@@ -133,6 +146,7 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   ele->parent = parent;
   ele->index = index;
 
+  ele->template_initializer = NULL;
   ele->template_parameter_list_length = 0;
   ele->template_parameter_list = NULL;
 
@@ -157,6 +171,13 @@ void grid_ui_event_reset(struct grid_ui_event* eve) {
   eve->state = GRID_EVE_STATE_INIT;
   eve->cfg_changed_flag = 0;
   eve->cfg_default_flag = 1;
+}
+
+void grid_ui_event_clear(struct grid_ui_event* eve) {
+
+  if (eve->parent && eve->parent->event_clear_cb) {
+    eve->parent->event_clear_cb(eve);
+  }
 }
 
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_script) {
@@ -237,10 +258,6 @@ void grid_ui_rtc_ms_mapmode_handler(struct grid_ui_model* ui, uint8_t new_mapmod
       struct grid_ui_element* sys_ele = &grid_ui_state.element_list[grid_ui_state.element_list_length - 1];
 
       struct grid_ui_event* eve = grid_ui_event_find(sys_ele, GRID_PARAMETER_EVENT_MAPMODE);
-
-      if (eve == NULL) {
-      } else {
-      }
 
       grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
     }
@@ -506,6 +523,33 @@ uint16_t grid_ui_event_count_istriggered(struct grid_ui_model* ui) {
   return count;
 }
 
+extern const grid_ui_element_state_any_t grid_ui_element_state_anys[GRID_PARAMETER_ELEMENT_COUNT];
+
+bool grid_ui_events_any(struct grid_ui_model* ui) {
+
+  if (grid_ui_event_count_istriggered(ui) > 0) {
+    return true;
+  }
+
+  for (uint8_t i = 0; i < ui->element_list_length; ++i) {
+
+    struct grid_ui_element* ele = &ui->element_list[i];
+
+    assert(ele->type < GRID_PARAMETER_ELEMENT_COUNT);
+
+    grid_ui_element_state_any_t fun = grid_ui_element_state_anys[ele->type];
+
+    if (fun && ele->primary_state) {
+
+      if (fun(ele->primary_state)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t element_number) {
 
   if (element_number < ui->element_list_length) {
@@ -559,6 +603,10 @@ void grid_ui_event_render_event(struct grid_ui_event* eve, struct grid_msg* msg)
   uint8_t event = eve->type;
   uint8_t param1 = 0;
   uint8_t param2 = 0;
+
+  if (eve->parent->type == GRID_PARAMETER_ELEMENT_TOUCH) {
+    return;
+  }
 
   if (eve->parent->template_parameter_list != NULL) {
     param1 = eve->parent->template_parameter_list[eve->parent->template_parameter_element_position_index_1];
@@ -686,10 +734,7 @@ static void grid_ui_clear_triggered(struct grid_ui_model* ui, struct grid_msg* m
       grid_ui_event_render_event(eve, msg);
       grid_ui_event_render_event_view(eve, msg);
 
-      if (ele->event_clear_cb) {
-        ele->event_clear_cb(eve);
-      }
-
+      grid_ui_event_clear(eve);
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
     }
   }
@@ -703,7 +748,7 @@ static void grid_ui_clear_triggered(struct grid_ui_model* ui, struct grid_msg* m
 
     if (change_length && editor_connected) {
 
-      char report[300] = {0};
+      char report[grid_led_get_led_count(&grid_led_state) * 8];
       uint16_t report_len = grid_protocol_led_change_report_generate(&grid_led_state, -1, report);
 
       grid_msg_add_frame(msg, GRID_CLASS_LEDPREVIEW_frame_start);
@@ -766,6 +811,29 @@ void grid_ui_process_triggered(struct grid_ui_model* ui) {
   grid_ui_clear_triggered(ui, &msg);
 
   grid_ui_bulk_semaphore_release(ui);
+}
+
+struct grid_ui_element* grid_ui_lua_element_address(lua_State* L, int arg) {
+
+  if (!lua_istable(L, arg)) {
+    luaL_error(L, "expected table");
+  }
+
+  lua_pushstring(L, "index");
+
+  lua_rawget(L, arg);
+
+  int element = luaL_checkinteger(L, -1);
+
+  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, element);
+
+  if (!ele) {
+    luaL_error(L, "element index out of range");
+  }
+
+  lua_pop(L, 1);
+
+  return ele;
 }
 
 uint8_t grid_ui_bulk_get_lastheader(struct grid_ui_model* ui) { return ui->bulk_lastheader_id; }
@@ -914,7 +982,19 @@ static void grid_ui_page_read(struct grid_ui_model* ui, uint8_t page) {
 
   grid_lua_semaphore_release(&grid_lua_state);
 
-  grid_usb_keyboard_enable(&grid_usb_keyboard_state);
+  // Clear all events
+  for (uint8_t i = 0; i < ui->element_list_length; i++) {
+
+    // Handle system element first then all the ui elements in ascending order
+    uint8_t element_index = (i == 0 ? ui->element_list_length - 1 : i - 1);
+
+    struct grid_ui_element* ele = &ui->element_list[element_index];
+
+    for (uint8_t j = 0; j < ele->event_list_length; j++) {
+
+      grid_ui_event_clear(&ele->event_list[j]);
+    }
+  }
 }
 
 #pragma GCC diagnostic push
@@ -1108,11 +1188,20 @@ PT_THREAD(grid_ui_bulk_page_clear(proto_pt_t* pt, struct grid_ui_model* ui)) {
   void* info;
   while ((info = grid_platform_dir_first(path))) {
 
-    char path2[6] = {0};
     const char* name = grid_platform_file_info_name(info);
-    assert(snprintf(path2, 6, "%s/%s", path, name) == 5);
 
-    grid_platform_remove(path2);
+    size_t path2_bytes = 3 + strlen(name) + 1;
+
+    char* path2 = malloc(path2_bytes);
+    if (!path2) {
+      continue;
+    }
+
+    if (snprintf(path2, path2_bytes, "%s/%s", path, name) < path2_bytes) {
+      grid_platform_remove(path2);
+    }
+
+    free(path2);
 
     PT_YIELD(pt);
   }

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRID_PICO_PINS_H
+#define GRID_PICO_PINS_H
 
 #define GRID_PICO_PIN_SPI_CS 17
 
@@ -24,3 +25,5 @@
 #define GRID_PICO_LCD_BACKLIGHT_PIN 10
 #define GRID_PICO_LCD_RESET_PIN 11
 #define GRID_PICO_PIN_INTERRUPT 22
+
+#endif /* GRID_PICO_PINS_H */

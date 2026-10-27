@@ -27,5 +27,8 @@
 !dep/vmp
 !dep/vmp/**
 
+!dep/tinyusb
+!dep/tinyusb/**
+
 !test/tests.h
 !test/*.c

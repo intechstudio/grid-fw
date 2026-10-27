@@ -23,6 +23,10 @@
 
 #include "grid_esp32_adc.h"
 #include "grid_esp32_pins.h"
+#include "grid_platform.h"
+
+#include "grid_protocol.h"
+#include "grid_ui.h"
 
 static const char* TAG = "grid_esp32_platform";
 
@@ -53,15 +57,6 @@ uint32_t IRAM_ATTR grid_platform_get_cycles() { return esp_cpu_get_cycle_count()
 
 uint32_t IRAM_ATTR grid_platform_get_cycles_per_us() { return CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ; }
 
-static char uint4_to_hex[16] = {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
-};
-
-static void uint8_to_hex(uint8_t u, char h[2]) {
-  h[0] = uint4_to_hex[u >> 4];
-  h[1] = uint4_to_hex[u & 0xf];
-}
-
 void IRAM_ATTR grid_platform_printf_nonprint(const uint8_t* src, size_t size) {
 
   for (size_t i = 0; i < size; ++i) {
@@ -69,7 +64,7 @@ void IRAM_ATTR grid_platform_printf_nonprint(const uint8_t* src, size_t size) {
     if (src[i] < 32) {
 
       char hex[2];
-      uint8_to_hex(src[i], hex);
+      grid_platform_byte_to_hex(src[i], hex);
       ets_printf("[%c%c]", hex[0], hex[1]);
 
     } else {
@@ -141,48 +136,21 @@ uint32_t grid_platform_get_hwcfg() {
   return hwcfg;
 }
 
-uint32_t grid_platform_get_id(uint32_t* return_array) {
-
-  /*
-
-      struct ESP_FUSE3
-      {
-          uint8_t crc;
-          uint8_t macAddr[6];
-          uint8_t reserved[8];
-          uint8_t version;
-      };
-  */
+void grid_platform_get_id(uint32_t id[4]) {
 
   uint8_t block[32] = {0};
 
   if (ESP_OK == esp_efuse_read_block(EFUSE_BLK1, block, 0, 6 * 8)) {
-    ESP_LOGI(TAG, "CPUID OK");
+    ESP_LOGI(TAG, "EFUSE_BLK1 READ OK");
+  } else {
+    ESP_LOGW(TAG, "EFUSE_BLK1 READ NOK");
+    return;
   }
 
-  uint8_t* mac_address = &block[0];
+  ESP_LOGI(TAG, "MAC: %02x:%02x:%02x:%02x:%02x:%02x", block[0], block[1], block[2], block[3], block[4], block[5]);
 
-  ESP_LOGI(TAG, "MAC: %02x:%02x:%02x:%02x:%02x:%02x", mac_address[0], mac_address[1], mac_address[2], mac_address[3], mac_address[4], mac_address[5]);
-
-  uint64_t cpuid = 0;
-
-  for (uint8_t i = 0; i < 6; i++) {
-
-    // ESP_LOGI(TAG, "CPUID: %016llx",cpuid);
-    cpuid |= ((uint64_t)mac_address[i]) << ((5 - i) * 8);
-  }
-
-  ESP_LOGI(TAG, "CPUID: %016llx", cpuid);
-
-  uint8_t* array = (uint8_t*)return_array;
-  array[0] = mac_address[0];
-  array[1] = mac_address[1];
-  array[2] = mac_address[2];
-  array[3] = mac_address[3];
-  array[4] = mac_address[4];
-  array[5] = mac_address[5];
-
-  return 0;
+  memset(id, 0, sizeof(uint32_t[4]));
+  memcpy(id, block, 6);
 }
 
 uint8_t grid_platform_get_random_8() {
@@ -217,11 +185,9 @@ uint8_t grid_platform_disable_grid_transmitter(uint8_t direction) {
   return 1;
 }
 
-uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) {
+uint8_t grid_platform_stop_grid_transmitter(uint8_t direction) { return 1; }
 
-  // ets_printf("grid_platform_reset_grid_transmitter NOT IMPLEMENTED!!!\r\n");
-  return 1;
-}
+uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) { return 1; }
 
 uint8_t grid_platform_enable_grid_transmitter(uint8_t direction) {
 
@@ -240,3 +206,15 @@ void IRAM_ATTR grid_platform_mux_write(uint8_t index) {
   grid_esp32_adc_state.mux_index = index;
   grid_esp32_adc_mux_update(&grid_esp32_adc_state);
 }
+
+bool grid_ui_touch_state_any(void* state);
+
+const grid_ui_element_state_any_t grid_ui_element_state_anys[GRID_PARAMETER_ELEMENT_COUNT] = {
+    [GRID_PARAMETER_ELEMENT_TOUCH] = grid_ui_touch_state_any,
+};
+
+void grid_ui_touch_state_reset(void* state);
+
+const grid_ui_element_state_reset_t grid_ui_element_state_resets[GRID_PARAMETER_ELEMENT_COUNT] = {
+    [GRID_PARAMETER_ELEMENT_TOUCH] = grid_ui_touch_state_reset,
+};

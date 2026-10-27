@@ -3,543 +3,135 @@
  *
  * Created: 7/6/2020 12:07:54 PM
  *  Author: suku
+ *
+ * USB functionality has been refactored into:
+ *   grid_usb_midi.c  - MIDI buffer/TX/RX/SysEx/RTM
+ *   grid_usb_hid.c   - HID keyboard model + gamepad + enable/disable
  */
+
+#include "tusb.h"
 
 #include "grid_usb.h"
 
-#include <assert.h>
-#include <stdlib.h>
+#include <string.h>
 
-#include "grid_msg.h"
-#include "grid_platform.h"
+#include "grid_protocol.h"
 #include "grid_swsr.h"
+#include "grid_usb_desc.h"
 
-struct grid_swsr_t grid_midi_tx;
-struct grid_swsr_t grid_midi_rx;
+struct grid_usb_model grid_usb_state = {0};
 
-// New buffers for SysEx and RTM
-struct grid_swsr_t grid_midi_sysex_rx;
-struct grid_swsr_t grid_midi_rtm_rx;
+bool grid_usb_connected(void) { return tud_mounted(); }
 
-// SysEx assembly buffer for accumulating bytes until complete message
-static uint8_t sysex_assembly_buffer[GRID_MIDI_SYSEX_RX_BUFFER_length];
-static uint16_t sysex_assembly_index = 0;
+void grid_usb_task(void) { tud_task_ext(0, false); }
 
-struct grid_usb_keyboard_model grid_usb_keyboard_state;
-
-void grid_usb_midi_buffer_init() {
-
-  size_t typesize = sizeof(struct grid_midi_event_desc);
-
-  assert(grid_swsr_malloc(&grid_midi_tx, GRID_MIDI_TX_BUFFER_length * typesize) == 0);
-  assert(grid_swsr_malloc(&grid_midi_rx, GRID_MIDI_RX_BUFFER_length * typesize) == 0);
-
-  // Initialize new buffers for SysEx and RTM (store raw bytes)
-  assert(grid_swsr_malloc(&grid_midi_sysex_rx, GRID_MIDI_SYSEX_RX_BUFFER_length) == 0);
-  assert(grid_swsr_malloc(&grid_midi_rtm_rx, GRID_MIDI_RTM_RX_BUFFER_length) == 0);
+void tud_mount_cb(void) {
+  grid_usb_midi_on_connect(&grid_usb_state.midi);
+  grid_usb_hid_on_connect(&grid_usb_state.hid);
+  grid_usb_acm_on_connect(&grid_usb_state.acm);
 }
 
-void grid_usb_keyboard_model_init(struct grid_usb_keyboard_model* kb, uint8_t buffer_length) {
-
-  kb->tx_rtc_lasttimestamp = grid_platform_rtc_get_micros();
-  kb->tx_write_index = 0;
-  kb->tx_read_index = 0;
-
-  kb->tx_buffer_length = buffer_length;
-
-  kb->tx_buffer = (struct grid_usb_keyboard_event_desc*)malloc(buffer_length * sizeof(struct grid_usb_keyboard_event_desc));
-
-  for (uint16_t i = 0; i < kb->tx_buffer_length; i++) {
-    kb->tx_buffer[i].ismodifier = 0;
-    kb->tx_buffer[i].keycode = 0;
-    kb->tx_buffer[i].ispressed = 0;
-    kb->tx_buffer[i].delay = 0;
-  }
-
-  for (uint8_t i = 0; i < GRID_KEYBOARD_KEY_maxcount; i++) {
-
-    kb->active_key_list[i].ismodifier = 0;
-    kb->active_key_list[i].keycode = 255;
-    kb->active_key_list[i].ispressed = 0;
-  }
-
-  kb->active_key_count = 0;
-
-  grid_usb_keyboard_enable(kb);
+void tud_umount_cb(void) {
+  grid_usb_midi_on_disconnect(&grid_usb_state.midi);
+  grid_usb_hid_on_disconnect(&grid_usb_state.hid);
+  grid_usb_acm_on_disconnect(&grid_usb_state.acm);
 }
 
-uint8_t grid_usb_keyboard_cleanup(struct grid_usb_keyboard_model* kb) {
+static tusb_desc_device_t s_device_desc = {
+    .bLength = sizeof(tusb_desc_device_t),
+    .bDescriptorType = TUSB_DESC_DEVICE,
+    .bcdUSB = 0x0200,
+    .bDeviceClass = TUSB_CLASS_MISC,
+    .bDeviceSubClass = MISC_SUBCLASS_COMMON,
+    .bDeviceProtocol = MISC_PROTOCOL_IAD,
+    .bMaxPacketSize0 = CFG_TUD_ENDPOINT0_SIZE,
+    .idVendor = 0,
+    .idProduct = 0,
+    .bcdDevice = 0x0100,
+    .iManufacturer = 0x01,
+    .iProduct = 0x02,
+    .iSerialNumber = 0x00,
+    .bNumConfigurations = 0x01,
+};
 
-  uint8_t changed_flag = 0;
+static const uint16_t s_lang_id[] = {0x0409};
 
-  // Remove all inactive (released) keys
-  for (uint8_t i = 0; i < kb->active_key_count; i++) {
+static const void* s_str_table[] = {
+    s_lang_id,          // 0: language ID
+    "Intech Studio",    // 1: Manufacturer
+    "Grid",             // 2: Product
+    NULL,               // 3: Serial (set at init)
+    "Intech Grid MIDI", // 4: MIDI interface
+    "Intech Grid CDC",  // 5: CDC interface
+};
 
-    if (kb->active_key_list[i].ispressed == false) {
+#define STR_TABLE_COUNT ((uint8_t)(sizeof(s_str_table) / sizeof(s_str_table[0])))
 
-      changed_flag = 1;
+#define GRID_USB_CFG_DESC_TOTAL_LEN (TUD_CONFIG_DESC_LEN + CFG_TUD_CDC * TUD_CDC_DESC_LEN + CFG_TUD_MIDI * TUD_MIDI_DESC_LEN + CFG_TUD_HID * TUD_HID_DESC_LEN)
 
-      kb->active_key_list[i].ismodifier = 0;
-      kb->active_key_list[i].ispressed = 0;
-      kb->active_key_list[i].keycode = 255;
+static const uint8_t s_cfg_desc[] = {
+    TUD_CONFIG_DESCRIPTOR(1, ITF_COUNT, 0, GRID_USB_CFG_DESC_TOTAL_LEN, 0, 500),
+#if CFG_TUD_CDC
+    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_NOTIFY, 5, (0x80 | EPNUM_CDC_NOTIFY), 8, EPNUM_CDC_DATA, (0x80 | EPNUM_CDC_DATA), 64),
+#endif
+#if CFG_TUD_MIDI
+    TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 64),
+#endif
+#if CFG_TUD_HID
+    TUD_HID_DESCRIPTOR(ITF_NUM_HID, 0, HID_ITF_PROTOCOL_NONE, GRID_HID_REPORT_DESC_SIZE, (0x80 | EPNUM_HID), 16, 10),
+#endif
+};
 
-      // Pop item, move each remaining after this forvard one index
-      for (uint8_t j = i + 1; j < kb->active_key_count; j++) {
+static uint8_t const* grid_usb_config_desc(void) { return s_cfg_desc; }
 
-        kb->active_key_list[j - 1] = kb->active_key_list[j];
+#define GRID_USB_STR_DESC_MAX_LEN 33
 
-        kb->active_key_list[j].ismodifier = 0;
-        kb->active_key_list[j].ispressed = 0;
-        kb->active_key_list[j].keycode = 255;
-      }
+static uint16_t const* grid_usb_string_desc(const void** str_table, uint8_t count, uint8_t index) {
 
-      kb->active_key_count--;
-      i--; // Retest this index, because it now points to a new item
+  static uint16_t desc_str[GRID_USB_STR_DESC_MAX_LEN];
+  uint8_t chr_count;
+
+  if (index == 0) {
+
+    memcpy(&desc_str[1], str_table[0], 2);
+    chr_count = 1;
+  } else if (index < count && str_table[index] != NULL) {
+
+    const char* str = (const char*)str_table[index];
+    chr_count = (uint8_t)strnlen(str, GRID_USB_STR_DESC_MAX_LEN - 1);
+
+    for (uint8_t i = 0; i < chr_count; i++) {
+      desc_str[1 + i] = (uint16_t)str[i];
     }
-  }
-
-  if (changed_flag == 1) {
-
-    //		uint8_t debugtext[100] = {0};
-    //		snprintf(debugtext, 99, "count: %d | activekeys: %d, %d, %d, %d,
-    //%d, %d", kb->active_key_count, kb->active_key_list[0].keycode,
-    // kb->active_key_list[1].keycode, kb->active_key_list[2].keycode,
-    // kb->active_key_list[3].keycode, kb->active_key_list[4].keycode,
-    // kb->active_key_list[5].keycode);
-    // grid_port_debug_print_text(debugtext);
-
-    // USB SEND
-  }
-
-  return changed_flag;
-}
-
-extern int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_event_desc* active_key_list, uint8_t keys_count);
-
-int32_t grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc* key) {
-
-  uint8_t item_index = 255;
-  uint8_t changed_flag = 0;
-
-  grid_usb_keyboard_cleanup(kb);
-
-  for (uint8_t i = 0; i < kb->active_key_count; i++) {
-
-    if (kb->active_key_list[i].keycode == key->keycode && kb->active_key_list[i].ismodifier == key->ismodifier) {
-      // key is already in the list
-      item_index = i;
-
-      if (kb->active_key_list[i].ispressed == true) {
-
-        if (key->ispressed == true) {
-          // OK nothing to do here
-        } else {
-          // Release the damn key
-          kb->active_key_list[i].ispressed = false;
-          changed_flag = 1;
-        }
-      }
-    }
-  }
-
-  grid_usb_keyboard_cleanup(kb);
-
-  if (item_index == 255) {
-
-    // item not in list
-
-    if (kb->active_key_count < GRID_KEYBOARD_KEY_maxcount) {
-
-      if (key->ispressed == true) {
-
-        kb->active_key_list[kb->active_key_count] = *key;
-        kb->active_key_count++;
-        changed_flag = 1;
-      }
-    } else {
-      // grid_port_debug_print_text("activekeys limit hit!");
-    }
-  }
-
-  if (changed_flag == 1) {
-
-    if (grid_usb_keyboard_isenabled(kb)) {
-
-      int32_t result = grid_platform_usb_keyboard_keys_state_change(kb->active_key_list, kb->active_key_count);
-      return result; // Return USB status (0=success, non-zero=busy/error)
-    } else {
-
-      grid_port_debug_print_text("KB IS DISABLED");
-
-      struct grid_msg msg;
-      uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-      grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
-
-      grid_msg_add_frame(&msg, GRID_CLASS_HIDKEYSTATUS_frame);
-      grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
-      grid_msg_set_parameter(&msg, CLASS_HIDKEYSTATUS_ISENABLED, kb->isenabled);
-
-      if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-        grid_transport_send_msg_to_all(&grid_transport_state, &msg);
-      }
-
-      return 0; // Keyboard disabled, but not an error
-    }
-  }
-
-  return 0; // No change, nothing to send
-}
-
-uint8_t grid_midi_tx_push(struct grid_midi_event_desc event) {
-
-  uint8_t dropped = 0;
-
-  if (!grid_swsr_writable(&grid_midi_tx, sizeof(struct grid_midi_event_desc))) {
-
-    // Pop as many bytes as we would like to push, to make space
-    // (this modifies the read address, and is done under the assumption that
-    // there are no concurrent reads and writes in the context of midi tx)
-    grid_swsr_read(&grid_midi_tx, NULL, sizeof(struct grid_midi_event_desc));
-
-    dropped = 1;
-  }
-
-  grid_swsr_write(&grid_midi_tx, &event, sizeof(struct grid_midi_event_desc));
-
-  return dropped;
-}
-
-void grid_midi_tx_pop() {
-
-  if (!grid_swsr_readable(&grid_midi_tx, sizeof(struct grid_midi_event_desc))) {
-    return;
-  }
-
-  if (grid_platform_usb_midi_write_status() == 1) {
-    return;
-  }
-
-  struct grid_midi_event_desc event;
-  grid_swsr_read(&grid_midi_tx, &event, sizeof(struct grid_midi_event_desc));
-
-  grid_platform_usb_midi_write(event.byte0, event.byte1, event.byte2, event.byte3);
-}
-
-bool grid_midi_tx_readable() { return grid_swsr_readable(&grid_midi_tx, sizeof(struct grid_midi_event_desc)); }
-
-static void grid_midi_rx_push_rtm(uint8_t rtm_byte) {
-  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM) & GRID_RX_MODE_FORWARD_FROM_USB)) {
-    return;
-  }
-  if (grid_swsr_writable(&grid_midi_rtm_rx, 1)) {
-    grid_swsr_write(&grid_midi_rtm_rx, &rtm_byte, 1);
-  }
-}
-
-static int grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
-
-  static uint8_t MIDI_RX_STATE_IS_SYSEX = 0;
-
-  bool is_sysex_start = (cin == GRID_MIDI_CIN_SYSEX_START && byte1 == GRID_MIDI_SYSEX_START);
-
-  if (!MIDI_RX_STATE_IS_SYSEX && !is_sysex_start) {
-    return 0;
-  }
-
-  MIDI_RX_STATE_IS_SYSEX = (cin == GRID_MIDI_CIN_SYSEX_START);
-
-  switch (cin) {
-  case GRID_MIDI_CIN_SYSEX_START:
-    return 3;
-  case GRID_MIDI_CIN_SYSEX_END_1BYTE:
-    return 1;
-  case GRID_MIDI_CIN_SYSEX_END_2BYTE:
-    return 2;
-  case GRID_MIDI_CIN_SYSEX_END_3BYTE:
-    return 3;
-  }
-
-  return 0;
-}
-
-static void grid_midi_rx_push_normal(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
-
-  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE) & GRID_RX_MODE_FORWARD_FROM_USB)) {
-    return;
-  }
-
-  struct grid_midi_event_desc event = {byte0, byte1, byte2, byte3};
-  if (grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
-    grid_swsr_write(&grid_midi_rx, &event, sizeof(struct grid_midi_event_desc));
-  }
-}
-
-void grid_midi_rx_push_sysex(uint8_t sysex_length, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
-
-  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX) & GRID_RX_MODE_FORWARD_FROM_USB)) {
-    return;
-  }
-
-  if (!grid_swsr_writable(&grid_midi_sysex_rx, sysex_length)) {
-    return;
-  }
-
-  uint8_t bytes[3] = {byte1, byte2, byte3};
-  grid_swsr_write(&grid_midi_sysex_rx, bytes, sysex_length);
-}
-
-void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
-
-  uint8_t cin = byte0 & 0x0F;
-
-  // 1. REAL-TIME MESSAGES: identified by status byte >= 0xF8, not CIN.
-  // Per MIDI spec these are single-byte and may be interleaved within SysEx.
-  if (byte1 >= GRID_MIDI_RTM_TIMING_CLOCK) {
-    grid_midi_rx_push_rtm(byte1);
-    return;
-  }
-
-  // 2. SYSEX MESSAGES
-  int sysex_length = grid_midi_rx_process_sysex(cin, byte1, byte2, byte3);
-  if (sysex_length) {
-    grid_midi_rx_push_sysex(sysex_length, byte1, byte2, byte3);
-    return;
-  }
-
-  // 3. NORMAL MIDI MESSAGES
-  grid_midi_rx_push_normal(byte0, byte1, byte2, byte3);
-}
-
-void grid_midi_sysex_rx_pop();
-
-void grid_midi_rx_pop() {
-
-  if (!grid_swsr_readable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
-    return;
-  }
-
-  struct grid_msg msg = {0};
-  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
-
-  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
-  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
-
-  // Combine up to 8 midi messages into a packet
-  for (uint8_t i = 0; i < 8; ++i) {
-
-    if (!grid_swsr_readable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
-      break;
-    }
-
-    struct grid_midi_event_desc event;
-    grid_swsr_read(&grid_midi_rx, &event, sizeof(struct grid_midi_event_desc));
-
-    grid_msg_add_frame(&msg, GRID_CLASS_MIDI_frame);
-    grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
-
-    grid_msg_set_parameter(&msg, CLASS_MIDI_CHANNEL, event.byte1 & 0x0f);
-    grid_msg_set_parameter(&msg, CLASS_MIDI_COMMAND, event.byte1 & 0xf0);
-    grid_msg_set_parameter(&msg, CLASS_MIDI_PARAM1, event.byte2);
-    grid_msg_set_parameter(&msg, CLASS_MIDI_PARAM2, event.byte3);
-  }
-
-  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-    uint8_t mode = grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE);
-    if (mode & GRID_RX_MODE_FORWARD_FROM_USB) {
-      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
-    } else {
-      grid_transport_send_msg_to_ui(&grid_transport_state, &msg);
-    }
-  }
-}
-
-bool grid_midi_rx_writable() { return grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc)); }
-
-void grid_midi_rtm_rx_pop(void) {
-
-  if (!grid_swsr_readable(&grid_midi_rtm_rx, 1)) {
-    return;
-  }
-
-  struct grid_msg msg = {0};
-  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
-
-  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
-  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
-
-  for (uint8_t i = 0; i < 16; ++i) {
-
-    if (!grid_swsr_readable(&grid_midi_rtm_rx, 1)) {
-      break;
-    }
-
-    uint8_t rtm_byte;
-    grid_swsr_read(&grid_midi_rtm_rx, &rtm_byte, 1);
-
-    grid_msg_add_frame(&msg, GRID_CLASS_MIDIRTM_frame);
-    grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
-    grid_msg_set_parameter(&msg, CLASS_MIDIRTM_BYTE, rtm_byte);
-  }
-
-  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-    uint8_t mode = grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM);
-    if (mode & GRID_RX_MODE_FORWARD_FROM_USB) {
-      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
-    } else {
-      grid_transport_send_msg_to_ui(&grid_transport_state, &msg);
-    }
-  }
-}
-
-static void grid_midi_sysex_process_complete(uint8_t* sysex_data, uint16_t length) {
-
-  if (length < 2 || sysex_data[0] != GRID_MIDI_SYSEX_START || sysex_data[length - 1] != GRID_MIDI_SYSEX_END) {
-    return; // Invalid SysEx message
-  }
-
-  struct grid_msg msg = {0};
-  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
-
-  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
-  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
-
-  grid_msg_add_frame(&msg, GRID_CLASS_MIDISYSEX_frame_start);
-  grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
-
-  grid_msg_set_parameter(&msg, CLASS_MIDISYSEX_LENGTH, length);
-
-  if (grid_msg_add_hex_bytes(&msg, sysex_data, length) < 0) {
-    return; // Data overrun, data loss occurred
-  }
-
-  grid_msg_add_frame(&msg, GRID_CLASS_MIDISYSEX_frame_end);
-
-  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-    uint8_t mode = grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX);
-    if (mode & GRID_RX_MODE_FORWARD_FROM_USB) {
-      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
-    } else {
-      grid_transport_send_msg_to_ui(&grid_transport_state, &msg);
-    }
-  }
-}
-
-void grid_midi_sysex_rx_pop() {
-
-  uint8_t byte = 0;
-  while (byte != GRID_MIDI_SYSEX_END) {
-
-    if (!grid_swsr_readable(&grid_midi_sysex_rx, 1)) {
-      return;
-    }
-
-    grid_swsr_read(&grid_midi_sysex_rx, &byte, 1);
-
-    if (sysex_assembly_index >= GRID_MIDI_SYSEX_RX_BUFFER_length) {
-      sysex_assembly_index = 0;
-    }
-
-    assert(sysex_assembly_index < GRID_MIDI_SYSEX_RX_BUFFER_length);
-    sysex_assembly_buffer[sysex_assembly_index++] = byte;
-  }
-
-  assert(byte == GRID_MIDI_SYSEX_END);
-  grid_midi_sysex_process_complete(sysex_assembly_buffer, sysex_assembly_index);
-  sysex_assembly_index = 0;
-}
-
-uint8_t grid_usb_keyboard_tx_push(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc keyboard_event) {
-
-  // printf("R: %d, W: %d\r\n", grid_midi_tx_read_index,
-  // grid_midi_tx_write_index); printf("kb tx R: %d, W: %d\r\n",
-  // kb->tx_read_index, kb->tx_write_index);
-
-  kb->tx_buffer[kb->tx_write_index] = keyboard_event;
-
-  kb->tx_write_index = (kb->tx_write_index + 1) % kb->tx_buffer_length;
-
-  uint32_t space_in_buffer = (kb->tx_read_index - kb->tx_write_index + kb->tx_buffer_length) % kb->tx_buffer_length;
-
-  uint8_t return_packet_was_dropped = 0;
-
-  if (space_in_buffer == 0) {
-    return_packet_was_dropped = 1;
-    // Increment the read index to drop latest packet and make space for a new
-    // one.
-    kb->tx_read_index = (kb->tx_read_index + 1) % kb->tx_buffer_length;
-  }
-
-  // printf("W: %d %d : %d\r\n", kb->tx_write_index, kb->tx_read_index,
-  // space_in_buffer);
-
-  return return_packet_was_dropped;
-}
-
-void grid_usb_keyboard_tx_pop(struct grid_usb_keyboard_model* kb) {
-
-  if (!grid_usb_keyboard_tx_readable(kb)) {
-    return;
-  }
-
-  struct grid_usb_keyboard_event_desc key;
-
-  key.ismodifier = kb->tx_buffer[kb->tx_read_index].ismodifier;
-  key.keycode = kb->tx_buffer[kb->tx_read_index].keycode;
-  key.ispressed = kb->tx_buffer[kb->tx_read_index].ispressed;
-  key.delay = 0;
-
-  // 0: no, 1: yes, 2: mousemove, 3: mousebutton, f: delay
-
-  if (key.ismodifier == 0 || key.ismodifier == 1) {
-    // Keyboard event
-    if (grid_usb_keyboard_keychange(&grid_usb_keyboard_state, &key)) {
-      return; // USB busy, keep event in buffer for retry
-    }
-  } else if (key.ismodifier == 2) {
-    // Mouse move
-    uint8_t axis = key.keycode;
-    int8_t position = key.ispressed - 128;
-    if (grid_platform_usb_mouse_move(position, axis)) {
-      return; // USB busy, keep event in buffer for retry
-    }
-  } else if (key.ismodifier == 3) {
-    // Mouse button
-    uint8_t state = key.ispressed;
-    uint8_t button = key.keycode;
-    if (grid_platform_usb_mouse_button_change(state, button)) {
-      return; // USB busy, keep event in buffer for retry
-    }
-  } else if (key.ismodifier == 0xf) {
-    // Delay event, nothing to do
   } else {
-    // Invalid event type, discard
+
+    return NULL;
   }
 
-  // Event successfully processed, advance read pointer
-  kb->tx_read_index = (kb->tx_read_index + 1) % kb->tx_buffer_length;
-  kb->tx_rtc_lasttimestamp = grid_platform_rtc_get_micros();
+  desc_str[0] = (uint16_t)((TUSB_DESC_STRING << 8) | (2u * chr_count + 2u));
+
+  return desc_str;
 }
 
-bool grid_usb_keyboard_tx_readable(struct grid_usb_keyboard_model* kb) {
-
-  if (kb->tx_read_index == kb->tx_write_index) {
-    return false;
-  }
-
-  uint64_t elapsed = grid_platform_rtc_get_elapsed_time(kb->tx_rtc_lasttimestamp);
-
-  return elapsed > kb->tx_buffer[kb->tx_read_index].delay * MS_TO_US;
+void grid_usb_init(uint16_t vid, uint16_t pid, const char* serial) {
+  s_device_desc.idVendor = vid;
+  s_device_desc.idProduct = pid;
+  s_str_table[3] = serial;
+  s_device_desc.iSerialNumber = (serial != NULL) ? 0x03 : 0x00;
+  grid_usb_acm_init(&grid_usb_state.acm, GRID_PARAMETER_SPI_TRANSACTION_length * 2);
+  grid_usb_midi_init(&grid_usb_state.midi, GRID_MIDI_TX_BUFFER_SIZE, GRID_MIDI_VOICE_RX_BUFFER_SIZE, GRID_MIDI_SYSEX_BUFFER_SIZE, GRID_MIDI_RTM_BUFFER_SIZE);
+  grid_usb_hid_init(&grid_usb_state.hid);
+  tusb_init();
 }
 
-void grid_usb_gamepad_axis_move(uint8_t axis, int32_t move) { grid_platform_usb_gamepad_axis_move(axis, move); }
+uint8_t const* tud_descriptor_device_cb(void) { return (uint8_t const*)&s_device_desc; }
 
-void grid_usb_gamepad_button_change(uint8_t button, uint8_t value) { grid_platform_usb_gamepad_button_change(button, value); }
+uint8_t const* tud_descriptor_configuration_cb(uint8_t index) {
+  (void)index;
+  return grid_usb_config_desc();
+}
 
-void grid_usb_keyboard_enable(struct grid_usb_keyboard_model* kb) { kb->isenabled = 1; }
-
-void grid_usb_keyboard_disable(struct grid_usb_keyboard_model* kb) { kb->isenabled = 0; }
-
-uint8_t grid_usb_keyboard_isenabled(struct grid_usb_keyboard_model* kb) { return kb->isenabled; }
+uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
+  (void)langid;
+  return grid_usb_string_desc(s_str_table, STR_TABLE_COUNT, index);
+}

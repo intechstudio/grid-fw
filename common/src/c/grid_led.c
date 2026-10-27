@@ -99,10 +99,11 @@ uint8_t* grid_led_get_framebuffer_pointer(struct grid_led_model* led) { return l
 /** Get led buffer size */
 uint32_t grid_led_get_framebuffer_size(struct grid_led_model* led) { return led->led_count * 3; }
 
-void grid_led_init(struct grid_led_model* led, uint32_t length) {
+void grid_led_init(struct grid_led_model* led, uint32_t length, grid_led_is_alert_all_t led_is_alert_all) {
 
   led->led_pin = -1;
   led->tick_lastrealtime = 0;
+  led->led_is_alert_all = led_is_alert_all;
 
   led->led_count = length;
 
@@ -195,54 +196,64 @@ void grid_led_tick(struct grid_led_model* led) {
 
       struct LED_layer* ledbuf = &led->led_smart_buffer[j + (led->led_count * i)];
 
-      if (ledbuf->timeout != 0) {
+      if (ledbuf->timeout) {
 
-        ledbuf->timeout--;
+        ledbuf->pha += ledbuf->fre;
 
-        if (ledbuf->timeout == 0) {
+        if (ledbuf->timeout == 1) {
           ledbuf->fre = 0;
         }
-      }
 
-      ledbuf->pha += ledbuf->fre; // PHASE + = FREQUENCY
+        --ledbuf->timeout;
+      }
     }
   }
 }
 
+static bool grid_led_is_alert_all(struct grid_led_model* led, uint8_t num) { return !led->led_is_alert_all || led->led_is_alert_all(num); }
+
 void grid_alert_all_set(struct grid_led_model* led, uint8_t r, uint8_t g, uint8_t b, uint16_t duration) {
 
   for (uint8_t i = 0; i < led->led_count; i++) {
-
-    grid_alert_one_set(led, i, r, g, b, duration);
+    if (grid_led_is_alert_all(led, i)) {
+      grid_alert_one_set(led, i, r, g, b, duration);
+    }
   }
 }
 
 void grid_alert_all_set_timeout_automatic(struct grid_led_model* led) {
 
   for (uint8_t i = 0; i < led->led_count; i++) {
-
-    grid_alert_one_set_timeout_automatic(led, i);
+    if (grid_led_is_alert_all(led, i)) {
+      grid_alert_one_set_timeout_automatic(led, i);
+    }
   }
 }
 
 void grid_alert_all_set_timeout(struct grid_led_model* led, uint8_t timeout) {
 
   for (uint8_t i = 0; i < led->led_count; i++) {
-    grid_alert_one_set_timeout(led, i, timeout);
+    if (grid_led_is_alert_all(led, i)) {
+      grid_alert_one_set_timeout(led, i, timeout);
+    }
   }
 }
 
 void grid_alert_all_set_frequency(struct grid_led_model* led, uint8_t frequency) {
 
   for (uint8_t i = 0; i < led->led_count; i++) {
-    grid_alert_one_set_frequency(led, i, frequency);
+    if (grid_led_is_alert_all(led, i)) {
+      grid_alert_one_set_frequency(led, i, frequency);
+    }
   }
 }
 
 void grid_alert_all_set_phase(struct grid_led_model* led, uint8_t phase) {
 
   for (uint8_t i = 0; i < led->led_count; i++) {
-    grid_alert_one_set_phase(led, i, phase);
+    if (grid_led_is_alert_all(led, i)) {
+      grid_alert_one_set_phase(led, i, phase);
+    }
   }
 }
 
@@ -516,7 +527,7 @@ void grid_protocol_led_preview_generate(struct grid_led_model* led) {
   uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
   grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
-  char report[300] = {0};
+  char report[grid_led_get_led_count(led) * 8];
   uint16_t report_len = grid_protocol_led_change_report_generate(&grid_led_state, -1, report);
 
   grid_msg_add_frame(&msg, GRID_CLASS_LEDPREVIEW_frame_start);

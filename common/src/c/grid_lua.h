@@ -106,6 +106,15 @@ int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, ui
 
 #define XAFTERX(macro, exp) macro(exp)
 
+#define GRID_LUA_FNC_GSV_NAME(idx) grid_lua_gsv_key_to_idx ## idx
+
+#define GRID_LUA_FNC_GSV_DEFI(idx) \
+  int XAFTERX(GRID_LUA_FNC_GSV_NAME, idx)(lua_State* L) { \
+    lua_pushinteger(L, idx); \
+    lua_insert(L, 2); \
+    return getset(L, lua_gettop(L) < 3 ? getters : setters); \
+  }
+
 #define GRID_LUA_FNC_GTV_NAME(idx) grid_lua_gtv_key_to_idx ## idx
 
 #define GRID_LUA_FNC_GTV_DEFI(idx) \
@@ -167,6 +176,22 @@ int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, ui
 #define GRID_LUA_EVENTS_CLEARER "_events_clear"
 #define GRID_LUA_EVENTS_ELEIDX "_events_eleidx"
 #define GRID_LUA_EVENTS_EVESTR "_events_evestr"
+
+#define GRID_LUA_FNC_ELEMENT_POP(name, T, mem1, mem2) \
+  static int name(lua_State* L) { \
+    T* tmp = grid_ui_lua_element_address(L, 1)->primary_state; \
+    assert(tmp); \
+    if (grid_swsr_readable(&tmp->mem1, sizeof(tmp->mem2))) { \
+      grid_swsr_read(&tmp->mem1, &tmp->mem2, sizeof(tmp->mem2)); \
+      lua_pushboolean(L, true); \
+    } else { \
+      lua_pushboolean(L, false); \
+    } \
+    return 1; \
+  }
+
+#define GRID_LUA_GETV_CASE(n, x) case n: lua_pushinteger(L, (x)); break;
+#define GRID_LUA_SETV_CASE(n, x) case n: (x) = luaL_checkinteger(L, 3); break;
 
 // clang-format on
 

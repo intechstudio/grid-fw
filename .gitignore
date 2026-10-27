@@ -1,14 +1,6 @@
 # block everything by default
 *
 
-# ignore vim files
-*~
-*.swp
-*.swo
-
-# ignore dependency files
-*.d
-
 !.archive
 !.archive/**
 
@@ -32,6 +24,7 @@
 !esp32s3
 !grid_gui
 !rp2040
+!rp2350
 !test
 !tools
 !wasm
@@ -55,13 +48,24 @@
 !LICENSE
 !lua_build.sh
 !merged_stream.sh
-!patch_esp_efuse_startup.sh
+!mxt_config.sh
 !patch_esp_spi_flash_hpm.sh
 !patch_esp_trace_include.sh
 !pico_build.sh
 !pre_commit.sh
+!rp2350_build.sh
+!rp2350_flash.sh
+!rp2350_monitor.sh
 !README.md
 !stylua.toml
 !test.sh
 !wasm_build.sh
 !wasm_server.py
+
+# ignore vim files
+*~
+*.swp
+*.swo
+
+# ignore dependency files
+*.d

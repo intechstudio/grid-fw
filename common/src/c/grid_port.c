@@ -6,8 +6,10 @@
 #include <string.h>
 
 #include "grid_decode.h"
+#include "grid_health.h"
 #include "grid_platform.h"
 #include "grid_protocol.h"
+#include "grid_usb.h"
 
 extern struct grid_decoder_collection* grid_decoder_to_ui_reference;
 extern struct grid_decoder_collection* grid_decoder_to_usb_reference;
@@ -166,6 +168,41 @@ void grid_port_softreset(struct grid_port* port) {
   grid_platform_reset_grid_transmitter(port->dir);
 }
 
+void grid_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, struct grid_fingerprint_buf* fpb) {
+
+  if (grid_uwsr_overflow(uwsr)) {
+
+    grid_platform_stop_grid_transmitter(port->dir);
+    grid_uwsr_init(uwsr, uwsr->reject);
+    grid_platform_reset_grid_transmitter(port->dir);
+  }
+
+  struct grid_msg msg;
+
+  if (!grid_msg_from_uwsr(&msg, uwsr)) {
+    return;
+  }
+
+  if (grid_frame_verify((uint8_t*)msg.data, msg.length) != 0) {
+    return;
+  }
+
+  grid_str_transform_brc_params((uint8_t*)msg.data, msg.length, port->dx, port->dy, port->partner.rot);
+
+  uint32_t fingerprint = grid_fingerprint_calculate(msg.data);
+
+  if (msg.data[1] == GRID_CONST_BRC) {
+
+    if (grid_fingerprint_buf_find(fpb, fingerprint)) {
+      return;
+    }
+
+    grid_fingerprint_buf_store(fpb, fingerprint);
+  }
+
+  grid_port_recv_msg(port, (uint8_t*)msg.data, msg.length);
+}
+
 void grid_port_recv_msg(struct grid_port* port, uint8_t* msg, size_t size) {
 
   switch (msg[1]) {
@@ -242,6 +279,10 @@ void grid_port_send_usb(struct grid_port* port) {
 
   assert(port->type == GRID_PORT_USB);
 
+  if (grid_usb_acm_tx_busy(&grid_usb_state.acm)) {
+    return;
+  }
+
   struct grid_swsr_t* tx = grid_port_get_tx(port);
 
   // Allocated statically due to the implementation of usb serial writes
@@ -253,9 +294,8 @@ void grid_port_send_usb(struct grid_port* port) {
   }
 
   grid_port_decode_msg(grid_decoder_to_usb_reference, &msg);
-
-  if (grid_platform_usb_serial_ready()) {
-    grid_platform_usb_serial_write(msg.data, msg.length);
+  if (grid_usb_acm_write(&grid_usb_state.acm, msg.data, msg.length) < (int32_t)msg.length) {
+    grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_CDC);
   }
 }
 

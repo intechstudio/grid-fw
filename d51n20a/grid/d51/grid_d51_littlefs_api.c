@@ -12,7 +12,7 @@ int littlefs_api_read(const struct lfs_config* c, lfs_block_t block, lfs_off_t o
 
   err = flash_read(dfs->flash, GRID_D51_NVM_BASE_ADDR + offset, buffer, size);
   if (err) {
-    printf("failed to read addr %08x, size %08x, err %d\n", offset, size, err);
+    printf("failed to read addr %08x, size %08lx, err %d\n", offset, size, err);
     return err;
   }
 
@@ -27,9 +27,9 @@ int littlefs_api_prog(const struct lfs_config* c, lfs_block_t block, lfs_off_t o
 
   int err;
 
-  err = flash_append(dfs->flash, GRID_D51_NVM_BASE_ADDR + offset, buffer, size);
+  err = flash_append(dfs->flash, GRID_D51_NVM_BASE_ADDR + offset, (uint8_t*)buffer, size);
   if (err) {
-    printf("failed to write addr %08x, size %08x, err %d\n", offset, size, err);
+    printf("failed to write addr %08x, size %08lx, err %d\n", offset, size, err);
     return err;
   }
 

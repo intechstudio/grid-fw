@@ -1,19 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-#pragma once
+#ifndef GRID_ESP32_NVM_H
+#define GRID_ESP32_NVM_H
 
 #include <stdint.h>
 
 #include "grid_ui.h"
 
 #include "grid_esp32_littlefs.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 struct grid_esp32_nvm_model {
   struct esp_littlefs_t efs;
@@ -25,6 +17,4 @@ void grid_esp32_nvm_mount(struct grid_esp32_nvm_model* nvm, bool force_format);
 
 void grid_esp32_nvm_task(void* arg);
 
-#ifdef __cplusplus
-}
-#endif
+#endif /* GRID_ESP32_NVM_H */

@@ -22,6 +22,7 @@ extern struct grid_uwsr_t usart_uwsr[4];
 extern uint8_t usart_tx_ready[4];
 extern uint8_t usart_tx_buf[4][GRID_PARAMETER_SPI_TRANSACTION_length];
 
+void grid_d51_uart_port_stop_dma(uint8_t dma_channel);
 void grid_d51_uart_port_reset_dma(uint8_t dma_channel);
 
 void grid_d51_uart_init();
@@ -33,29 +34,6 @@ extern struct io_descriptor* grid_sys_east_io;
 extern struct io_descriptor* grid_sys_south_io;
 extern struct io_descriptor* grid_sys_west_io;
 
-static void err_cb_USART_GRID_N(const struct usart_async_descriptor* const descr);
-static void err_cb_USART_GRID_E(const struct usart_async_descriptor* const descr);
-static void err_cb_USART_GRID_S(const struct usart_async_descriptor* const descr);
-static void err_cb_USART_GRID_W(const struct usart_async_descriptor* const descr);
-static void err_cb_USART_GRID(struct grid_port* const por);
-
-static void tx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr);
-static void tx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr);
-static void tx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr);
-static void tx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr);
-
-static void rx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr);
-static void rx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr);
-static void rx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr);
-static void rx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr);
-
-static void dma_transfer_complete_n_cb(struct _dma_resource* resource);
-static void dma_transfer_complete_e_cb(struct _dma_resource* resource);
-static void dma_transfer_complete_s_cb(struct _dma_resource* resource);
-static void dma_transfer_complete_w_cb(struct _dma_resource* resource);
-static void dma_transfer_complete(struct grid_port* por);
-
-void grid_d51_uart_dma_rx_init_one(struct usart_async_descriptor* usart, uint8_t channel, uint8_t* buffer, uint32_t length, void (*transfer_done_cb)(struct _dma_resource*));
-static void grid_d51_uart_dma_rx_init();
+void grid_d51_uart_dma_rx_init_one(struct usart_async_descriptor* usart, uint8_t channel, char* buffer, uint32_t length, void (*transfer_done_cb)(struct _dma_resource*));
 
 #endif /* GRID_D51_UART_H_ */

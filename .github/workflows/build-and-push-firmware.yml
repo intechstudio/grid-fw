@@ -17,6 +17,7 @@ jobs:
       image: ghcr.io/${{ github.repository_owner }}/grid-fw:latest
       d51-path: d51n20a
       esp-path: esp32s3
+      rp2350-path: rp2350
     outputs:
       timestamp: ${{ steps.set_out.outputs.timestamp }}
     steps:
@@ -25,6 +26,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: ${{ github.ref }}
+          submodules: recursive
 
       - name: Prepare image
         uses: ./.github/actions/prepare-image
@@ -36,12 +38,17 @@ jobs:
       - name: Build ESP32 firmware
         run: |
           docker run -v $PWD:/project -w /project ${{ env.image }} \
-          sh -c "./lua_build.sh && ./pico_build.sh && ./esp_build.sh"
+          sh -c "./lua_build.sh && ./pico_build.sh && ./mxt_config.sh && ./esp_build.sh"
 
       - name: Build D51 firmware
         run: |
           docker run -v $PWD:/project -w /project ${{ env.image }} \
           sh -c "./lua_build.sh && ./d51_build.sh"
+
+      - name: Build RP2350 firmware
+        run: |
+          docker run -v $PWD:/project -w /project ${{ env.image }} \
+          sh -c "./rp2350_build.sh"
 
       - name: Build wasm gui
         run: |
@@ -61,7 +68,11 @@ jobs:
           cp ${{ env.esp-path }}/build/grid_esp32s3.uf2 grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
           cp ${{ env.d51-path }}/gcc/build/grid_d51n20a.uf2 grid_d51_release_${{ env.ACTION_DATE }}.uf2
           cp ${{ env.d51-path }}/gcc/build/grid_d51n20a.uf2 grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
-          cp .github/workflows/INSTRUCTIONS.txt INSTRUCTIONS.txt
+          cp ${{ env.rp2350-path }}/build/main/grid_rp2350.uf2 grid_rp2350_release_${{ env.ACTION_DATE }}.uf2
+          cp ${{ env.rp2350-path }}/build/main/grid_rp2350.uf2 grid_rp2350_nightly_${{ env.ACTION_DATE }}.uf2
+          cat ${{ env.d51-path }}/gcc/build/grid_d51n20a.uf2 ${{ env.esp-path }}/build/grid_esp32s3.uf2 ${{ env.rp2350-path }}/build/main/grid_rp2350.uf2 \
+            > grid_multiarch_nightly_${{ env.ACTION_DATE }}.uf2
+          cp grid_multiarch_nightly_${{ env.ACTION_DATE }}.uf2 grid_multiarch_release_${{ env.ACTION_DATE }}.uf2
           cp wasm/build/index.html index.html
           cp wasm/build/index.js index.js
           cp wasm/build/index.wasm index.wasm
@@ -73,6 +84,8 @@ jobs:
           path: |
             grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
             grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
+            grid_rp2350_nightly_${{ env.ACTION_DATE }}.uf2
+            grid_multiarch_nightly_${{ env.ACTION_DATE }}.uf2
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v6
@@ -81,7 +94,8 @@ jobs:
           path: |
             grid_esp32_release_${{ env.ACTION_DATE }}.uf2
             grid_d51_release_${{ env.ACTION_DATE }}.uf2
-            INSTRUCTIONS.txt
+            grid_rp2350_release_${{ env.ACTION_DATE }}.uf2
+            grid_multiarch_release_${{ env.ACTION_DATE }}.uf2
 
       - name: Upload gui artifacts
         uses: actions/upload-artifact@v6

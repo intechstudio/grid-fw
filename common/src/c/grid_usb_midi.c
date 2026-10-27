@@ -1,0 +1,297 @@
+#include "grid_usb_midi.h"
+
+#include <assert.h>
+
+#include "tusb.h"
+
+#include "grid_math.h"
+#include "grid_msg.h"
+#include "grid_platform.h"
+#include "grid_swsr.h"
+#include "grid_sys.h"
+#include "grid_transport.h"
+#include "grid_usb.h"
+
+void grid_usb_midi_on_connect(struct grid_usb_midi_model* midi) { (void)midi; }
+
+void grid_usb_midi_on_disconnect(struct grid_usb_midi_model* midi) { grid_swsr_read(&midi->tx, NULL, grid_swsr_size(&midi->tx)); }
+
+void grid_usb_midi_init(struct grid_usb_midi_model* midi, uint16_t tx_buffer_size, uint16_t rx_buffer_size, uint16_t sysex_buffer_size, uint16_t rtm_buffer_size) {
+
+  assert(grid_swsr_malloc(&midi->tx, tx_buffer_size) == 0);
+  assert(grid_swsr_malloc(&midi->voice_rx, rx_buffer_size) == 0);
+
+  assert(grid_swsr_malloc(&midi->sysex_rx, sysex_buffer_size) == 0);
+  assert(grid_swsr_malloc(&midi->rtm_rx, rtm_buffer_size) == 0);
+}
+
+uint8_t grid_usb_midi_tx_push(struct grid_usb_midi_model* midi, struct grid_midi_event_desc event) {
+
+  if (!grid_usb_connected()) {
+    return 1;
+  }
+
+  uint8_t dropped = 0;
+
+  if (!grid_swsr_writable(&midi->tx, sizeof(struct grid_midi_event_desc))) {
+
+    grid_swsr_read(&midi->tx, NULL, sizeof(struct grid_midi_event_desc));
+
+    dropped = 1;
+  }
+
+  grid_swsr_write(&midi->tx, &event, sizeof(struct grid_midi_event_desc));
+
+  return dropped;
+}
+
+void grid_usb_midi_tx_flush(struct grid_usb_midi_model* midi) {
+
+  if (!tud_midi_mounted()) {
+    return;
+  }
+
+  uint32_t readable = grid_swsr_size(&midi->tx);
+  uint32_t writable = tud_midi_tx_available();
+
+  uint32_t packets = MIN(readable, writable) / 4;
+  if (!packets) {
+    return;
+  }
+
+  uint8_t buf[CFG_TUD_MIDI_TX_BUFSIZE];
+  grid_swsr_read(&midi->tx, buf, packets * 4);
+  tud_midi_packet_write_n(buf, packets);
+}
+
+bool grid_usb_midi_tx_available(struct grid_usb_midi_model* midi) { return grid_swsr_readable(&midi->tx, 4); }
+
+static void grid_usb_midi_rx_queue_rtm(struct grid_usb_midi_model* midi, uint8_t rtm_byte) {
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM) & GRID_RX_MODE_FORWARD_FROM_USB)) {
+    return;
+  }
+  assert(grid_swsr_writable(&midi->rtm_rx, 1));
+  grid_swsr_write(&midi->rtm_rx, &rtm_byte, 1);
+}
+
+static int grid_midi_rx_process_sysex(struct grid_usb_midi_model* midi, uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+
+  bool is_sysex_start = (cin == GRID_MIDI_CIN_SYSEX_START && byte1 == GRID_MIDI_SYSEX_START);
+
+  if (!midi->sysex_in_progress && !is_sysex_start) {
+    return 0;
+  }
+
+  midi->sysex_in_progress = (cin == GRID_MIDI_CIN_SYSEX_START);
+
+  switch (cin) {
+  case GRID_MIDI_CIN_SYSEX_START:
+    return 3;
+  case GRID_MIDI_CIN_SYSEX_END_1BYTE:
+    return 1;
+  case GRID_MIDI_CIN_SYSEX_END_2BYTE:
+    return 2;
+  case GRID_MIDI_CIN_SYSEX_END_3BYTE:
+    return 3;
+  }
+
+  return 0;
+}
+
+static void grid_usb_midi_rx_queue_voice(struct grid_usb_midi_model* midi, uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE) & GRID_RX_MODE_FORWARD_FROM_USB)) {
+    return;
+  }
+
+  struct grid_midi_event_desc event = {byte0, byte1, byte2, byte3};
+  assert(grid_swsr_writable(&midi->voice_rx, sizeof(struct grid_midi_event_desc)));
+  grid_swsr_write(&midi->voice_rx, &event, sizeof(struct grid_midi_event_desc));
+}
+
+static void grid_usb_midi_rx_queue_sysex(struct grid_usb_midi_model* midi, uint8_t sysex_length, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX) & GRID_RX_MODE_FORWARD_FROM_USB)) {
+    return;
+  }
+
+  assert(grid_swsr_writable(&midi->sysex_rx, sysex_length));
+  uint8_t bytes[3] = {byte1, byte2, byte3};
+  grid_swsr_write(&midi->sysex_rx, bytes, sysex_length);
+}
+
+void grid_usb_midi_rx_queue(struct grid_usb_midi_model* midi, uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+
+  uint8_t cin = byte0 & 0x0F;
+
+  if (byte1 >= GRID_MIDI_RTM_TIMING_CLOCK) {
+    grid_usb_midi_rx_queue_rtm(midi, byte1);
+    return;
+  }
+
+  int sysex_length = grid_midi_rx_process_sysex(midi, cin, byte1, byte2, byte3);
+  if (sysex_length) {
+    grid_usb_midi_rx_queue_sysex(midi, sysex_length, byte1, byte2, byte3);
+    return;
+  }
+
+  grid_usb_midi_rx_queue_voice(midi, byte0, byte1, byte2, byte3);
+}
+
+void grid_usb_midi_rx_voice_process(struct grid_usb_midi_model* midi) {
+
+  if (!grid_swsr_readable(&midi->voice_rx, sizeof(struct grid_midi_event_desc))) {
+    return;
+  }
+
+  struct grid_msg msg = {0};
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
+
+  for (uint8_t i = 0; i < GRID_MIDI_VOICE_BATCH_MAX; ++i) {
+
+    if (!grid_swsr_readable(&midi->voice_rx, sizeof(struct grid_midi_event_desc))) {
+      break;
+    }
+
+    struct grid_midi_event_desc event;
+    grid_swsr_read(&midi->voice_rx, &event, sizeof(struct grid_midi_event_desc));
+
+    grid_msg_add_frame(&msg, GRID_CLASS_MIDI_frame);
+    grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
+
+    grid_msg_set_parameter(&msg, CLASS_MIDI_CHANNEL, event.byte1 & 0x0f);
+    grid_msg_set_parameter(&msg, CLASS_MIDI_COMMAND, event.byte1 & 0xf0);
+    grid_msg_set_parameter(&msg, CLASS_MIDI_PARAM1, event.byte2);
+    grid_msg_set_parameter(&msg, CLASS_MIDI_PARAM2, event.byte3);
+  }
+
+  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+    uint8_t mode = grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE);
+    if (mode & GRID_RX_MODE_FORWARD_FROM_USB) {
+      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+    } else {
+      grid_transport_send_msg_to_ui(&grid_transport_state, &msg);
+    }
+  }
+}
+
+bool grid_usb_midi_rx_writable(struct grid_usb_midi_model* midi) {
+  return grid_swsr_writable(&midi->voice_rx, sizeof(struct grid_midi_event_desc)) && grid_swsr_writable(&midi->sysex_rx, 3) && grid_swsr_writable(&midi->rtm_rx, 1);
+}
+
+void grid_usb_midi_rx_rtm_process(struct grid_usb_midi_model* midi) {
+
+  if (!grid_swsr_readable(&midi->rtm_rx, 1)) {
+    return;
+  }
+
+  struct grid_msg msg = {0};
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
+
+  for (uint8_t i = 0; i < GRID_MIDI_RTM_BATCH_MAX; ++i) {
+
+    if (!grid_swsr_readable(&midi->rtm_rx, 1)) {
+      break;
+    }
+
+    uint8_t rtm_byte;
+    grid_swsr_read(&midi->rtm_rx, &rtm_byte, 1);
+
+    grid_msg_add_frame(&msg, GRID_CLASS_MIDIRTM_frame);
+    grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
+    grid_msg_set_parameter(&msg, CLASS_MIDIRTM_BYTE, rtm_byte);
+  }
+
+  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+    uint8_t mode = grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM);
+    if (mode & GRID_RX_MODE_FORWARD_FROM_USB) {
+      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+    } else {
+      grid_transport_send_msg_to_ui(&grid_transport_state, &msg);
+    }
+  }
+}
+
+static void grid_midi_sysex_process_complete(struct grid_usb_midi_model* midi) {
+
+  uint8_t* sysex_data = midi->sysex_assembly_buffer;
+  uint16_t length = midi->sysex_assembly_index;
+
+  if (length < 2 || sysex_data[0] != GRID_MIDI_SYSEX_START || sysex_data[length - 1] != GRID_MIDI_SYSEX_END) {
+    return;
+  }
+
+  struct grid_msg msg = {0};
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
+
+  grid_msg_add_frame(&msg, GRID_CLASS_MIDISYSEX_frame_start);
+  grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
+
+  grid_msg_set_parameter(&msg, CLASS_MIDISYSEX_LENGTH, length);
+
+  if (grid_msg_add_hex_bytes(&msg, sysex_data, length) < 0) {
+    return;
+  }
+
+  grid_msg_add_frame(&msg, GRID_CLASS_MIDISYSEX_frame_end);
+
+  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+    uint8_t mode = grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX);
+    if (mode & GRID_RX_MODE_FORWARD_FROM_USB) {
+      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+    } else {
+      grid_transport_send_msg_to_ui(&grid_transport_state, &msg);
+    }
+  }
+}
+
+void grid_usb_midi_rx_sysex_process(struct grid_usb_midi_model* midi) {
+
+  uint8_t byte = 0;
+  while (byte != GRID_MIDI_SYSEX_END) {
+
+    if (!grid_swsr_readable(&midi->sysex_rx, 1)) {
+      return;
+    }
+
+    grid_swsr_read(&midi->sysex_rx, &byte, 1);
+
+    if (midi->sysex_assembly_index >= GRID_MIDI_SYSEX_BUFFER_SIZE) {
+      midi->sysex_assembly_index = 0;
+    }
+
+    assert(midi->sysex_assembly_index < GRID_MIDI_SYSEX_BUFFER_SIZE);
+    midi->sysex_assembly_buffer[midi->sysex_assembly_index++] = byte;
+  }
+
+  assert(byte == GRID_MIDI_SYSEX_END);
+  grid_midi_sysex_process_complete(midi);
+  midi->sysex_assembly_index = 0;
+}
+
+void tud_midi_rx_cb(uint8_t itf) {
+  (void)itf;
+
+  uint8_t packet[4];
+
+  while (grid_usb_midi_rx_writable(&grid_usb_state.midi) && tud_midi_packet_read(packet)) {
+    grid_usb_midi_rx_queue(&grid_usb_state.midi, packet[0], packet[1], packet[2], packet[3]);
+  }
+}
+
+void grid_usb_midi_rx_poll(struct grid_usb_midi_model* midi) {
+  (void)midi;
+  tud_midi_rx_cb(0);
+}

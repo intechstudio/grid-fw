@@ -43,9 +43,6 @@ void grid_d51_boundary_scan_report(uint32_t* result_bitmap);
 uint32_t grid_d51_dwt_enable();
 uint32_t grid_d51_dwt_cycles_read();
 
-uint8_t grid_fusb302_read_id(struct io_descriptor* i2c_io);
-uint8_t grid_mxt144u_read_id(struct io_descriptor* i2c_io);
-
 void grid_d51_nvic_debug_priorities(void);
 
 void grid_d51_nvic_set_interrupt_priority(IRQn_Type irqn, uint32_t priority);
@@ -59,9 +56,6 @@ uint32_t grid_d51_nvic_get_interrupt_priority_mask(void);
 void grid_platform_delay_ms(uint32_t delay_milliseconds);
 
 uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length);
-
-uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
-uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
 
 uint8_t grid_platform_get_adc_bit_depth();
 
