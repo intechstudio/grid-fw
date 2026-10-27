@@ -589,12 +589,15 @@ uint8_t grid_decode_immediate_to_ui(char* header, char* chunk) {
 
   char* script = &chunk[GRID_CLASS_IMMEDIATE_ACTIONSTRING_offset];
 
+  if (script[length] != GRID_CONST_ETX) {
+    return 1;
+  }
+
   if (!grid_ui_bulk_semaphore_try(&grid_ui_state)) {
     return 1;
   }
 
   grid_lua_clear_stdo(&grid_lua_state);
-  assert(script[length] == GRID_CONST_ETX);
   script[length] = '\0';
   grid_lua_dostring_begin(&grid_lua_state, script);
   script[length] = GRID_CONST_ETX;
@@ -642,6 +645,10 @@ uint8_t grid_decode_evaluate_to_ui(char* header, char* chunk) {
 
   char* script = (char*)&first[GRID_CLASS_EVALUATE_ELEMENT_DATA_offset];
 
+  if (script[length] != GRID_CONST_ETX) {
+    return 1;
+  }
+
   uint8_t id = grid_msg_get_parameter_raw((uint8_t*)header, BRC_ID);
 
   struct grid_msg msg;
@@ -665,7 +672,6 @@ uint8_t grid_decode_evaluate_to_ui(char* header, char* chunk) {
   }
 
   grid_lua_clear_stdo(&grid_lua_state);
-  assert(script[length] == GRID_CONST_ETX);
   script[length] = '\0';
   bool status = grid_lua_dostring_begin(&grid_lua_state, script);
   script[length] = GRID_CONST_ETX;
