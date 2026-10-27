@@ -1,2 +1,5 @@
 !uf2conv
 !uf2conv/*
+!piosim
+!piosim/*
+piosim/__pycache__

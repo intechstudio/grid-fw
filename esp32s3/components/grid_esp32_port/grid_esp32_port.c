@@ -163,8 +163,12 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
   grid_rollid_recv(&rollid, spi_rx_buf[GRID_PARAMETER_SPI_ROLLING_ID_index]);
 
-  size_t length = strnlen((const char*)spi_rx_buf, GRID_PARAMETER_SPI_TRANSACTION_length);
-  grid_transport_recv_usart(&grid_transport_state, spi_rx_buf, length);
+  if (spi_rx_buf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] & 0x80) {
+    ets_printf("pico: %s\n", (char*)spi_rx_buf);
+  } else {
+    size_t length = strnlen((const char*)spi_rx_buf, GRID_PARAMETER_SPI_TRANSACTION_length);
+    grid_transport_recv_usart(&grid_transport_state, spi_rx_buf, length);
+  }
 
   portENTER_CRITICAL(&spinlock);
   {

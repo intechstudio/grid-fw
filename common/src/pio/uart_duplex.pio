@@ -1,0 +1,160 @@
+.program uart_duplex
+; Shared by rp2040/ and rp2350/ (clkdiv is computed from clk_sys, nothing here is
+; chip specific). 4-bin RX + cooperative TX on ONE SM. One
+; `out pins, 1` per 62-cy bit drives a real TX bit (autopull pulls 11-bit coop
+; frames from the TX FIFO; idle = all 1s, line high). DMA keeps the FIFO fed
+; (frames, then idle words) so `out` never stalls -- a stall would freeze RX too.
+;
+; The RX pin input is INVERTED in init, so `jmp pin` (which only tests HIGH) reads
+; as "start bit / line low seen -> receive". Each poll is `set x, 10` + `jmp pin`:
+; jump to a variant if low, else delay and fall through to the next poll; the last
+; falls through .wrap back to scan. Sampled data is therefore inverted and is
+; un-inverted in uart_duplex_frame_data().
+;
+; clkdiv = clk_sys / (62 * baud), so every 62-cycle loop is exactly one bit time.
+; RX detection is 4-bin (~15 cy granularity, 4 polls per bit).
+;
+; Full-frame capture: all 11 bits (start + 8 data + dummy + stop) are shifted into
+; the ISR and autopushed at 11. Software extracts the data byte and checks framing
+; (start==0, stop==1) -- see uart_duplex_frame_* helpers.
+;
+; FOUR bitloop variants (bin0..bin3) drive the TX `out` at 4 positions in the bit;
+; the detection bin selects the one that keeps the TX bit grid continuous across
+; the RX-start transition (TX phase lives in the PC, not a register -- there is no
+; third scratch register). RX sampling is identical across variants. TX data is in
+; the OSR, so it survives the transition untouched.
+;
+;   X = sample count        ISR = full frame (autopush @ 11, shift right)
+;   OUT pins -> TX pin   IN/JMP pin -> RX pin (inverted)
+; Timings were checked in a cycle-accurate simulation against an ideal UART and a
+; second copy of this program, full duplex, back-to-back frames, +-5000 ppm.
+
+; ===== scan: idle. Drive one TX bit, then 4 RX polls (62 cy per pass). =====
+; Every poll first (re)loads X with the sample count, so a variant can be entered
+; from any poll -- including the first polls after a frame, see below.
+.wrap_target
+scan:
+    out pins, 1                 ; cy0   TX bit (idle/data, autopull from FIFO)
+p0:
+    set x, 10                   ; cy1
+    jmp pin bin0 [13]           ; cy2   bin0 (earliest): low(start) -> variant; else fall
+p1:
+    set x, 10                   ; cy16
+    jmp pin bin1 [13]           ; cy17  bin1
+p2:
+    set x, 10                   ; cy31
+    jmp pin bin2 [13]           ; cy32  bin2
+p3:
+    set x, 10                   ; cy46
+    jmp pin bin3 [14]           ; cy47  bin3 (latest)
+.wrap                           ; idle through all 4 -> wrap to scan (period 62 cy)
+
+; ===== 4 bitloop variants: same RX sampling, TX `out` at 4 positions =====
+; Entering at poll N starts the variant at scan cy 16/31/46/62 (poll + 14).
+; The first `out` of each variant lands on scan cy 62/63 -- exactly one bit after
+; the scan `out` -- so the TX bit grid is continuous across the transition and
+; the variants differ only in where in the iteration the `out` sits.
+;
+; The 11th sample leaves immediately (`jmp !x`, x == 0) instead of finishing the
+; iteration, and re-enters the scan at the poll that puts the scan `out` exactly
+; one TX bit after the last variant `out` (the 11th TX slot, which the final
+; iteration skipped). Returning to the polls within ~15 cy of the last sample is
+; what lets back-to-back frames be received: the next start edge is only ~35 cy
+; after the stop sample, and a late return walked the sample point further into
+; each following frame until it fell off the end of the bit.
+
+bin0:                           ; out at iteration cy46
+    in pins, 1                  ; sample RX (start..stop), 11x via x
+    jmp !x, p2      [13]        ; last sample -> scan poll p2 (scan out lands at cy46)
+    nop             [30]
+    out pins, 1                 ; cy46 TX bit
+    jmp x-- bin0    [14]        ; -> 62 cy
+bin1:                           ; out at iteration cy31
+    in pins, 1
+    jmp !x, p3      [13]        ; -> scan poll p3 (scan out at cy31)
+    nop             [15]
+    out pins, 1                 ; cy31
+    jmp x-- bin1    [29]        ; -> 62 cy
+bin2:                           ; out at iteration cy16
+    in pins, 1
+    jmp !x, scan    [14]        ; -> scan out at cy16
+    out pins, 1     [13]        ; cy16
+    jmp x-- bin2    [31]        ; -> 62 cy
+bin3:                           ; out at iteration cy1
+    in pins, 1
+    out pins, 1                 ; cy1  (before the exit test: the 11th TX slot is here)
+    jmp !x, p1      [14]        ; -> scan out one bit after this out
+    nop             [31]
+    jmp x-- bin3    [12]        ; -> 62 cy
+
+% c-sdk {
+#include "hardware/clocks.h"
+#include "hardware/gpio.h"
+
+static inline void uart_duplex_program_init(PIO pio, uint sm, uint offset, uint pin_rx, uint pin_tx, uint baud) {
+    // RX pin: input with pull-up
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_rx, 1, false);
+    pio_gpio_init(pio, pin_rx);
+    gpio_pull_up(pin_rx);
+    // Invert the RX input so PIO's HIGH-only `jmp pin` triggers on a start bit
+    // (real line low). Sampled data is inverted -> complemented in getc().
+    gpio_set_inover(pin_rx, GPIO_OVERRIDE_INVERT);
+
+    // TX pin: output, start high (idle), driven by OUT
+    pio_sm_set_pins_with_mask(pio, sm, 1u << pin_tx, 1u << pin_tx);
+    pio_sm_set_pindirs_with_mask(pio, sm, 1u << pin_tx, 1u << pin_tx);
+    pio_gpio_init(pio, pin_tx);
+
+    pio_sm_config c = uart_duplex_program_get_default_config(offset);
+
+    sm_config_set_in_pins(&c, pin_rx);   // IN  source
+    sm_config_set_jmp_pin(&c, pin_rx);   // JMP pin condition
+    sm_config_set_out_pins(&c, pin_tx, 1);   // OUT -> TX pin
+
+    sm_config_set_in_shift(&c, true, true, 11);   // shift right, autopush, full 11-bit RX frame
+    sm_config_set_out_shift(&c, true, true, 11);  // shift right, autopull, 11-bit TX frame
+
+    // 62-cycle loop == one bit, so the RX sample rate and the TX bit cadence
+    // both land exactly on the symbol grid.
+    sm_config_set_clkdiv(&c, (float)clock_get_hz(clk_sys) / (62.0f * baud));
+
+    pio_sm_init(pio, sm, offset, &c);
+
+    // Prime the TX FIFO with idle frames so the first `out` doesn't stall before
+    // DMA starts (idle = 11 ones = line high).
+    for (int i = 0; i < 4; i++) {
+        pio_sm_put(pio, sm, 0x7FFu);
+    }
+
+    pio_sm_set_enabled(pio, sm, true);
+}
+
+// 11-bit coop TX frame: start(0) + 8 data (LSB first) + dummy(0) + stop(1).
+// Matches the RX frame layout, so this firmware talks to itself back-to-back.
+static inline uint32_t uart_duplex_tx_frame(char c) {
+    return ((uint32_t)(uint8_t)c << 1) | (1u << 10);
+}
+// Idle word: 11 ones -> line held high.
+#define UART_DUPLEX_TX_IDLE 0x7FFu
+
+static inline bool uart_duplex_available(PIO pio, uint sm) {
+    return !pio_sm_is_rx_fifo_empty(pio, sm);
+}
+
+// Pop one captured 11-bit frame word. Sampled with the RX pin inverted, so every
+// bit reads as the complement of the line. Layout after shift-right autopush @ 11:
+//   bit 21 = start, bits 22..29 = data d0..d7, bit 30 = dummy, bit 31 = stop.
+static inline uint32_t uart_duplex_get_frame(PIO pio, uint sm) {
+    return pio->rxf[sm];
+}
+
+// Framing OK = real start 0 and real stop 1 -> inverted: start sample 1, stop sample 0.
+static inline bool uart_duplex_frame_ok(uint32_t frame) {
+    return ((frame >> 21) & 1u) && !((frame >> 31) & 1u);
+}
+
+// Extract the data byte: un-invert the 8 data samples.
+static inline char uart_duplex_frame_data(uint32_t frame) {
+    return (char)((~(frame >> 22)) & 0xFFu);
+}
+%}
