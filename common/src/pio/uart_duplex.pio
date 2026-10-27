@@ -1,6 +1,6 @@
 .program uart_duplex
-; Derived from rp2040/src/uart_rx_3bin.pio, with the variant entry/exit rewritten
-; (see the bin0..bin3 comment). 4-bin RX + cooperative TX on ONE SM. One
+; Shared by rp2040/ and rp2350/ (clkdiv is computed from clk_sys, nothing here is
+; chip specific). 4-bin RX + cooperative TX on ONE SM. One
 ; `out pins, 1` per 62-cy bit drives a real TX bit (autopull pulls 11-bit coop
 ; frames from the TX FIFO; idle = all 1s, line high). DMA keeps the FIFO fed
 ; (frames, then idle words) so `out` never stalls -- a stall would freeze RX too.

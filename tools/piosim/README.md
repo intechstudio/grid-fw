@@ -12,10 +12,10 @@ The program argument is either a `.pio` (assembled with `pioasm`: `$PIOASM`, the
 `rp2350/build/pioasm/pioasm`, then `PATH`) or a pioasm-generated `.pio.h`.
 
 ```
-python3 tools/piosim/piosim.py  rp2350/main/uart_duplex.pio      # two copies, full duplex, random phase / skew
-python3 tools/piosim/duplex.py  rp2350/main/uart_duplex.pio      # both directions at once, phase sweeping (exit 1 on any error)
-python3 tools/piosim/burst.py   rp2350/main/uart_duplex.pio      # decode rate by position in a back-to-back burst
-python3 tools/piosim/ideal.py   rp2350/main/uart_duplex.pio 0 5000   # against an ideal UART at given ppm errors
+python3 tools/piosim/piosim.py  common/src/pio/uart_duplex.pio      # two copies, full duplex, random phase / skew
+python3 tools/piosim/duplex.py  common/src/pio/uart_duplex.pio      # both directions at once, phase sweeping (exit 1 on any error)
+python3 tools/piosim/burst.py   common/src/pio/uart_duplex.pio      # decode rate by position in a back-to-back burst
+python3 tools/piosim/ideal.py   common/src/pio/uart_duplex.pio 0 5000   # against an ideal UART at given ppm errors
 ```
 
 `duplex.py` is the most complete test: both SMs send bursts of back-to-back frames (random length and

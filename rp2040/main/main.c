@@ -13,11 +13,9 @@
 
 #include "grid_pico_spi.h"
 
-#include "uart_coop.pio.h"
-#include "uart_rx_3bin.pio.h"
+#include "uart_duplex.pio.h"
 
-// 3-bin RX + 2 MHz/50% square wave on the TX pin, one SM per direction on pio1.
-// There is no real UART TX here — the TX pin emits the square wave instead.
+// Single-SM duplex UART (RX + cooperative TX), one SM per direction on pio1.
 const PIO GRID_RX_PIO = pio1;
 
 #include "grid_pico_pins.h"
@@ -222,12 +220,12 @@ void grid_pico_task_uart_tx(struct grid_pico_uart_port* port, struct grid_pico_t
     }
 
     if (!port->uart_tx_bucket) {
-      pio_sm_put(GRID_RX_PIO, port->index, UART_RX_3BIN_TX_IDLE);
+      pio_sm_put(GRID_RX_PIO, port->index, UART_DUPLEX_TX_IDLE);
       continue;
     }
 
     char c = pico_bkt_next(port->uart_tx_bucket);
-    pio_sm_put(GRID_RX_PIO, port->index, uart_rx_3bin_tx_frame(c));
+    pio_sm_put(GRID_RX_PIO, port->index, uart_duplex_tx_frame(c));
 
     if (pico_bkt_terminated(port->uart_tx_bucket)) {
       grid_pico_uart_port_detach_tx(port);
@@ -565,7 +563,7 @@ void grid_pico_task_uart_rx_1(struct grid_pico_uart_port* port, struct grid_pico
     return;
   }
 
-  if (!uart_rx_3bin_available(GRID_RX_PIO, port->index)) {
+  if (!uart_duplex_available(GRID_RX_PIO, port->index)) {
     return;
   }
 
@@ -573,12 +571,12 @@ void grid_pico_task_uart_rx_1(struct grid_pico_uart_port* port, struct grid_pico
     return;
   }
 
-  uint32_t frame = uart_rx_3bin_get_frame(GRID_RX_PIO, port->index);
-  if (!uart_rx_3bin_frame_ok(frame)) {
+  uint32_t frame = uart_duplex_get_frame(GRID_RX_PIO, port->index);
+  if (!uart_duplex_frame_ok(frame)) {
     dbg_framing_err[port->index]++;
     return;
   }
-  char c = uart_rx_3bin_frame_data(frame);
+  char c = uart_duplex_frame_data(frame);
   pico_swsr_write(&port->swsr, c);
   dbg_rx_bytes[port->index]++;
   if (port->index == 1) {
@@ -663,12 +661,12 @@ int main() {
   grid_pico_uart_port_init(&uart_ports[3], 3);
 
   // One SM per direction on pio1: 4-bin RX on the RX pin + cooperative TX (`out`)
-  // on the TX pin, fed 8N1 frames / idle by grid_pico_task_uart_tx.
-  offset_rx = pio_add_program(GRID_RX_PIO, &uart_rx_3bin_program);
-  uart_rx_3bin_program_init(GRID_RX_PIO, 0, offset_rx, GRID_PICO_PIN_NORTH_RX, GRID_PICO_PIN_NORTH_TX);
-  uart_rx_3bin_program_init(GRID_RX_PIO, 1, offset_rx, GRID_PICO_PIN_EAST_RX, GRID_PICO_PIN_EAST_TX);
-  uart_rx_3bin_program_init(GRID_RX_PIO, 2, offset_rx, GRID_PICO_PIN_SOUTH_RX, GRID_PICO_PIN_SOUTH_TX);
-  uart_rx_3bin_program_init(GRID_RX_PIO, 3, offset_rx, GRID_PICO_PIN_WEST_RX, GRID_PICO_PIN_WEST_TX);
+  // on the TX pin, fed frames / idle by grid_pico_task_uart_tx.
+  offset_rx = pio_add_program(GRID_RX_PIO, &uart_duplex_program);
+  uart_duplex_program_init(GRID_RX_PIO, 0, offset_rx, GRID_PICO_PIN_NORTH_RX, GRID_PICO_PIN_NORTH_TX, GRID_PARAMETER_UART_baudrate);
+  uart_duplex_program_init(GRID_RX_PIO, 1, offset_rx, GRID_PICO_PIN_EAST_RX, GRID_PICO_PIN_EAST_TX, GRID_PARAMETER_UART_baudrate);
+  uart_duplex_program_init(GRID_RX_PIO, 2, offset_rx, GRID_PICO_PIN_SOUTH_RX, GRID_PICO_PIN_SOUTH_TX, GRID_PARAMETER_UART_baudrate);
+  uart_duplex_program_init(GRID_RX_PIO, 3, offset_rx, GRID_PICO_PIN_WEST_RX, GRID_PICO_PIN_WEST_TX, GRID_PARAMETER_UART_baudrate);
 
   // Initialize bucket pool
   pico_pool_init(&pool);

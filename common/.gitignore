@@ -32,3 +32,6 @@
 
 !test/tests.h
 !test/*.c
+
+!src/pio
+!src/pio/*.pio
