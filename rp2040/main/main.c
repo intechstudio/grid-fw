@@ -479,19 +479,11 @@ void grid_pico_task_spi_tx(struct grid_pico_task_timer* timer) {
       // b=bytes decoded (framing OK) f=framing-fails v=valid-msgs ov=valid-during-TX
       // c=corrupt ct=corrupt-during-TX. Loopback: b climbing + v=0 -> frames decode but
       // msg boundaries don't (self-interference); f climbing + b=0 -> frames don't decode.
-      snprintf((char*)spi_tx_buf, 220, "b %u,%u,%u,%u f %u,%u,%u,%u v %u,%u,%u,%u ov %u,%u,%u,%u c %u,%u,%u,%u ct %u,%u,%u,%u",
-               (unsigned)dbg_rx_bytes[0], (unsigned)dbg_rx_bytes[1],
-               (unsigned)dbg_rx_bytes[2], (unsigned)dbg_rx_bytes[3],
-               (unsigned)dbg_framing_err[0], (unsigned)dbg_framing_err[1],
-               (unsigned)dbg_framing_err[2], (unsigned)dbg_framing_err[3],
-               (unsigned)dbg_rx_valid[0], (unsigned)dbg_rx_valid[1],
-               (unsigned)dbg_rx_valid[2], (unsigned)dbg_rx_valid[3],
-               (unsigned)dbg_overlap[0], (unsigned)dbg_overlap[1],
-               (unsigned)dbg_overlap[2], (unsigned)dbg_overlap[3],
-               (unsigned)dbg_rx_corrupt[0], (unsigned)dbg_rx_corrupt[1],
-               (unsigned)dbg_rx_corrupt[2], (unsigned)dbg_rx_corrupt[3],
-               (unsigned)dbg_corrupt_tx[0], (unsigned)dbg_corrupt_tx[1],
-               (unsigned)dbg_corrupt_tx[2], (unsigned)dbg_corrupt_tx[3]);
+      snprintf((char*)spi_tx_buf, 220, "b %u,%u,%u,%u f %u,%u,%u,%u v %u,%u,%u,%u ov %u,%u,%u,%u c %u,%u,%u,%u ct %u,%u,%u,%u", (unsigned)dbg_rx_bytes[0], (unsigned)dbg_rx_bytes[1],
+               (unsigned)dbg_rx_bytes[2], (unsigned)dbg_rx_bytes[3], (unsigned)dbg_framing_err[0], (unsigned)dbg_framing_err[1], (unsigned)dbg_framing_err[2], (unsigned)dbg_framing_err[3],
+               (unsigned)dbg_rx_valid[0], (unsigned)dbg_rx_valid[1], (unsigned)dbg_rx_valid[2], (unsigned)dbg_rx_valid[3], (unsigned)dbg_overlap[0], (unsigned)dbg_overlap[1], (unsigned)dbg_overlap[2],
+               (unsigned)dbg_overlap[3], (unsigned)dbg_rx_corrupt[0], (unsigned)dbg_rx_corrupt[1], (unsigned)dbg_rx_corrupt[2], (unsigned)dbg_rx_corrupt[3], (unsigned)dbg_corrupt_tx[0],
+               (unsigned)dbg_corrupt_tx[1], (unsigned)dbg_corrupt_tx[2], (unsigned)dbg_corrupt_tx[3]);
       source_flags = 0x80;
     } else {
       sprintf(spi_tx_buf, "DUMMY OK");
