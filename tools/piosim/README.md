@@ -13,11 +13,19 @@ The program argument is either a `.pio` (assembled with `pioasm`: `$PIOASM`, the
 
 ```
 python3 tools/piosim/piosim.py  rp2350/main/uart_duplex.pio      # two copies, full duplex, random phase / skew
+python3 tools/piosim/duplex.py  rp2350/main/uart_duplex.pio      # both directions at once, phase sweeping (exit 1 on any error)
 python3 tools/piosim/burst.py   rp2350/main/uart_duplex.pio      # decode rate by position in a back-to-back burst
 python3 tools/piosim/ideal.py   rp2350/main/uart_duplex.pio 0 5000   # against an ideal UART at given ppm errors
 ```
 
-Good result: `burst.py` all 1.0, `ideal.py` every frame good in both directions.
+`duplex.py` is the most complete test: both SMs send bursts of back-to-back frames (random length and
+idle gap) while receiving, carrying a counting sequence so any lost or corrupted frame is detected.
+After each transmission on side B, B is paused `--step` cycles (default 1), so the phase between the
+two SMs, and the TX/RX phase inside each, creeps through every alignment of the 682-cycle frame.
+Errors are reported bucketed by that relative phase. Options: `--every frame` (sweep per frame instead
+of per burst), `--step`, `--cycles`, `--max-burst`, `--max-gap`, `--seed`.
+
+Good result: `duplex.py` no errors over several full sweeps (try `--cycles 20000000`), `burst.py` all 1.0, `ideal.py` every frame good in both directions.
 The pre-fix program (before commit 3ac00820) decodes `[1.0, 1.0, 0.0, ...]` in `burst.py` and
 about 40% of frames in `ideal.py`.
 
