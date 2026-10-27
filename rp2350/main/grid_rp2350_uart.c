@@ -3,6 +3,12 @@
 #include <assert.h>
 #include <string.h>
 
+#if GRID_RP2350_UART_DEBUG
+#include <stdio.h>
+
+#include "pico/time.h"
+#endif
+
 #include "hardware/dma.h"
 #include "hardware/pio.h"
 #include "hardware/sync.h"
@@ -23,7 +29,9 @@
 #define GRID_RP2350_UART_RX_RING_BITS 13
 #define GRID_RP2350_UART_RX_RING_WORDS (1u << (GRID_RP2350_UART_RX_RING_BITS - 2))
 
-#define GRID_RP2350_UART_DMA_ENDLESS (DMA_CH0_TRANS_COUNT_MODE_VALUE_ENDLESS << DMA_CH0_TRANS_COUNT_MODE_LSB)
+// Endless mode never decrements the count, but a trigger with count 0 is a
+// zero-length transfer and halts immediately -- keep the count non-zero.
+#define GRID_RP2350_UART_DMA_ENDLESS ((DMA_CH0_TRANS_COUNT_MODE_VALUE_ENDLESS << DMA_CH0_TRANS_COUNT_MODE_LSB) | 1u)
 
 // GPIO9 (WEST RX) doubles as stdio console RX (harmless, nothing reads stdin).
 static const uint8_t grid_rp2350_uart_tx_pin[GRID_RP2350_UART_DIR_COUNT] = {22, 20, 10, 8};
@@ -37,8 +45,9 @@ static uint32_t grid_rp2350_uart_tx_frames[GRID_RP2350_UART_DIR_COUNT][GRID_PARA
 
 static uint32_t grid_rp2350_uart_rx_ring[GRID_RP2350_UART_DIR_COUNT][GRID_RP2350_UART_RX_RING_WORDS] __attribute__((aligned(1u << GRID_RP2350_UART_RX_RING_BITS)));
 
-// Constant source for the idle DMA channel (11 ones = line held high).
-static const uint32_t grid_rp2350_uart_idle_frame = UART_DUPLEX_TX_IDLE;
+// Constant source for the idle DMA channel (11 ones = line held high). Kept in
+// RAM, not flash, so flash operations can't stall the TX FIFO feed.
+static uint32_t grid_rp2350_uart_idle_frame = UART_DUPLEX_TX_IDLE;
 
 static uint grid_rp2350_uart_sm[GRID_RP2350_UART_DIR_COUNT];
 static int grid_rp2350_uart_tx_dma_chan[GRID_RP2350_UART_DIR_COUNT];
@@ -51,8 +60,17 @@ static uint32_t grid_rp2350_uart_rx_read[GRID_RP2350_UART_DIR_COUNT];
 static int grid_rp2350_uart_uwsr_write[GRID_RP2350_UART_DIR_COUNT];
 static bool grid_rp2350_uart_rx_stopped[GRID_RP2350_UART_DIR_COUNT];
 
-// Debug: RX frames dropped for bad framing.
+#if GRID_RP2350_UART_DEBUG
+// Debug: RX frames dropped for bad framing, good frames, and the deepest frame
+// backlog seen by rx_poll (ring is RING_WORDS deep).
 volatile uint32_t grid_rp2350_uart_framing_err[GRID_RP2350_UART_DIR_COUNT];
+volatile uint32_t grid_rp2350_uart_rx_ok[GRID_RP2350_UART_DIR_COUNT];
+volatile uint32_t grid_rp2350_uart_rx_backlog_max[GRID_RP2350_UART_DIR_COUNT];
+volatile uint32_t grid_rp2350_uart_tx_count[GRID_RP2350_UART_DIR_COUNT];
+volatile uint32_t grid_rp2350_uart_err_start[GRID_RP2350_UART_DIR_COUNT];
+volatile uint32_t grid_rp2350_uart_err_stop[GRID_RP2350_UART_DIR_COUNT];
+volatile uint32_t grid_rp2350_uart_bad_frame[GRID_RP2350_UART_DIR_COUNT][3];
+#endif
 
 static inline uint32_t grid_rp2350_uart_rx_write_index(uint8_t dir) {
   uint32_t addr = dma_hw->ch[grid_rp2350_uart_rx_dma_chan[dir]].write_addr;
@@ -111,16 +129,31 @@ void grid_rp2350_uart_rx_poll(uint8_t dir) {
   uint32_t write = grid_rp2350_uart_rx_write_index(dir);
   uint32_t read = grid_rp2350_uart_rx_read[dir];
 
+#if GRID_RP2350_UART_DEBUG
+  uint32_t backlog = (write - read) % GRID_RP2350_UART_RX_RING_WORDS;
+  if (backlog > grid_rp2350_uart_rx_backlog_max[dir]) {
+    grid_rp2350_uart_rx_backlog_max[dir] = backlog;
+  }
+#endif
+
   while (read != write) {
 
     uint32_t frame = grid_rp2350_uart_rx_ring[dir][read];
     read = (read + 1) % GRID_RP2350_UART_RX_RING_WORDS;
 
     if (!uart_duplex_frame_ok(frame)) {
-      ++grid_rp2350_uart_framing_err[dir];
+#if GRID_RP2350_UART_DEBUG
+      uint32_t n = grid_rp2350_uart_framing_err[dir]++;
+      grid_rp2350_uart_err_start[dir] += !((frame >> 21) & 1u);
+      grid_rp2350_uart_err_stop[dir] += (frame >> 31) & 1u;
+      grid_rp2350_uart_bad_frame[dir][n % 3] = frame;
+#endif
       continue;
     }
 
+#if GRID_RP2350_UART_DEBUG
+    ++grid_rp2350_uart_rx_ok[dir];
+#endif
     uwsr->data[grid_rp2350_uart_uwsr_write[dir]] = uart_duplex_frame_data(frame);
     grid_rp2350_uart_uwsr_write[dir] = (grid_rp2350_uart_uwsr_write[dir] + 1) % uwsr->capacity;
   }
@@ -136,6 +169,10 @@ void __not_in_flash_func(grid_rp2350_uart_tx_start)(uint8_t dir, uint32_t size) 
   for (uint32_t i = 0; i < size; ++i) {
     grid_rp2350_uart_tx_frames[dir][i] = uart_duplex_tx_frame(grid_rp2350_uart_tx_buf[dir][i]);
   }
+
+#if GRID_RP2350_UART_DEBUG
+  ++grid_rp2350_uart_tx_count[dir];
+#endif
 
   int chan = grid_rp2350_uart_tx_dma_chan[dir];
   int idle = grid_rp2350_uart_idle_dma_chan[dir];
@@ -216,3 +253,32 @@ void grid_rp2350_uart_init(void) {
     dma_channel_start(idle_chan);
   }
 }
+
+#if GRID_RP2350_UART_DEBUG
+static void grid_rp2350_uart_debug_print(uint8_t dir) {
+
+  uint sm = grid_rp2350_uart_sm[dir];
+  int idle = grid_rp2350_uart_idle_dma_chan[dir];
+
+  printf("uart%u bad_start=%lu bad_stop=%lu last_bad=%08lx %08lx %08lx\n", dir, (unsigned long)grid_rp2350_uart_err_start[dir], (unsigned long)grid_rp2350_uart_err_stop[dir],
+         (unsigned long)grid_rp2350_uart_bad_frame[dir][0], (unsigned long)grid_rp2350_uart_bad_frame[dir][1], (unsigned long)grid_rp2350_uart_bad_frame[dir][2]);
+  printf("uart%u ok=%lu err=%lu backlog_max=%lu tx=%lu | pc=%u txlvl=%u rxlvl=%u rxdma_w=%lu idle_busy=%d idle_cnt=%08lx\n", dir, (unsigned long)grid_rp2350_uart_rx_ok[dir],
+         (unsigned long)grid_rp2350_uart_framing_err[dir], (unsigned long)grid_rp2350_uart_rx_backlog_max[dir], (unsigned long)grid_rp2350_uart_tx_count[dir],
+         (unsigned)pio_sm_get_pc(GRID_RP2350_UART_PIO, sm), (unsigned)pio_sm_get_tx_fifo_level(GRID_RP2350_UART_PIO, sm), (unsigned)pio_sm_get_rx_fifo_level(GRID_RP2350_UART_PIO, sm),
+         (unsigned long)grid_rp2350_uart_rx_write_index(dir), (int)dma_channel_is_busy(idle), (unsigned long)dma_hw->ch[idle].transfer_count);
+}
+
+void grid_rp2350_uart_debug_poll(void) {
+
+  static uint32_t last_ms;
+  uint32_t now_ms = to_ms_since_boot(get_absolute_time());
+  if (now_ms - last_ms < 1000) {
+    return;
+  }
+  last_ms = now_ms;
+
+  for (uint8_t dir = 0; dir < GRID_RP2350_UART_DIR_COUNT; ++dir) {
+    grid_rp2350_uart_debug_print(dir);
+  }
+}
+#endif

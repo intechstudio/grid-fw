@@ -1,77 +1,91 @@
 .program uart_duplex
-; Ported from rp2040/src/uart_rx_3bin.pio (validated lossless on RP2040 hardware).
-; 4-bin RX + cooperative TX on ONE SM. One `out pins, 1` per 62-cy bit drives a
-; real TX bit (autopull pulls 11-bit coop frames from the TX FIFO; idle = all 1s,
-; line high). The CPU keeps the FIFO fed (frames or idle) so `out` never stalls.
-; (File/program name kept as uart_duplex to avoid churn; it now uses 4 bins.)
+; Derived from rp2040/src/uart_rx_3bin.pio, with the variant entry/exit rewritten
+; (see the bin0..bin3 comment). 4-bin RX + cooperative TX on ONE SM. One
+; `out pins, 1` per 62-cy bit drives a real TX bit (autopull pulls 11-bit coop
+; frames from the TX FIFO; idle = all 1s, line high). DMA keeps the FIFO fed
+; (frames, then idle words) so `out` never stalls -- a stall would freeze RX too.
 ;
 ; The RX pin input is INVERTED in init, so `jmp pin` (which only tests HIGH) reads
-; as "start bit / line low seen -> receive". Each of the 4 poll points is then a
-; single instruction: jump to rx_start if low, else delay and fall through to the
-; next poll; the last falls through .wrap back to scan. Sampled data is therefore
-; inverted and is un-inverted in uart_duplex_frame_data().
+; as "start bit / line low seen -> receive". Each poll is `set x, 10` + `jmp pin`:
+; jump to a variant if low, else delay and fall through to the next poll; the last
+; falls through .wrap back to scan. Sampled data is therefore inverted and is
+; un-inverted in uart_duplex_frame_data().
 ;
 ; clkdiv = clk_sys / (62 * baud), so every 62-cycle loop is exactly one bit time.
-; RX detection is 4-bin (~15 cy granularity, 4 polls per bit, ±8 cy).
+; RX detection is 4-bin (~15 cy granularity, 4 polls per bit).
 ;
 ; Full-frame capture: all 11 bits (start + 8 data + dummy + stop) are shifted into
 ; the ISR and autopushed at 11. Software extracts the data byte and checks framing
-; (start==0, stop==1) — see uart_duplex_frame_* helpers.
+; (start==0, stop==1) -- see uart_duplex_frame_* helpers.
 ;
 ; FOUR bitloop variants (bin0..bin3) drive the TX `out` at 4 positions in the bit;
-; the detection bin selects one to continue the TX phase across the RX-start
-; transition (TX phase encoded in PC, not a register — ±~8 cy, within the neighbour's
-; ±31 cy margin). RX sampling is identical across variants. TX data is in the OSR,
-; so it survives the transition untouched; only the bit's phase shifts.
+; the detection bin selects the one that keeps the TX bit grid continuous across
+; the RX-start transition (TX phase lives in the PC, not a register -- there is no
+; third scratch register). RX sampling is identical across variants. TX data is in
+; the OSR, so it survives the transition untouched.
 ;
 ;   X = sample count        ISR = full frame (autopush @ 11, shift right)
-;   SET pins -> TX pin   IN/JMP pin -> RX pin (inverted)
-; Delays tagged "TUNE" may need a small hardware nudge.
+;   OUT pins -> TX pin   IN/JMP pin -> RX pin (inverted)
+; Timings were checked in a cycle-accurate simulation against an ideal UART and a
+; second copy of this program, full duplex, back-to-back frames, +-5000 ppm.
 
-; ===== scan: idle. Preload sample count, drive one TX bit, 4 RX polls (62 cy). =====
+; ===== scan: idle. Drive one TX bit, then 4 RX polls (62 cy per pass). =====
+; Every poll first (re)loads X with the sample count, so a variant can be entered
+; from any poll -- including the first polls after a frame, see below.
 .wrap_target
 scan:
-    set x, 10                   ; cy0  preload 11-sample count for the variants
-    out pins, 1                 ; cy1  TX bit (idle/data, autopull from FIFO)
-    jmp pin bin0 [14]           ; cy2   bin0 (earliest): low(start) -> variant; else fall
-    jmp pin bin1 [14]           ; cy17  bin1
-    jmp pin bin2 [14]           ; cy32  bin2
+    out pins, 1                 ; cy0   TX bit (idle/data, autopull from FIFO)
+p0:
+    set x, 10                   ; cy1
+    jmp pin bin0 [13]           ; cy2   bin0 (earliest): low(start) -> variant; else fall
+p1:
+    set x, 10                   ; cy16
+    jmp pin bin1 [13]           ; cy17  bin1
+p2:
+    set x, 10                   ; cy31
+    jmp pin bin2 [13]           ; cy32  bin2
+p3:
+    set x, 10                   ; cy46
     jmp pin bin3 [14]           ; cy47  bin3 (latest)
 .wrap                           ; idle through all 4 -> wrap to scan (period 62 cy)
 
 ; ===== 4 bitloop variants: same RX sampling, TX `out` at 4 positions =====
-; The detection bin encodes the TX phase (time since the scan TX bit at cy1).
-; So each bin selects the variant whose TX slot continues that phase: bin0 caught
-; the start EARLIEST -> the TX bit was most recent -> the next TX bit is due
-; LATEST -> TX slot late in the bit (cy54); bin3 caught latest -> TX slot early
-; (cy9). Positions quarter the 62-cy bit and are TUNE. RX `in` is the first
-; instruction of every variant, so the sample lands at the same time regardless
-; of variant -> decoding is unchanged (11-bit frame, parsed in SW).
+; Entering at poll N starts the variant at scan cy 16/31/46/62 (poll + 14).
+; The first `out` of each variant lands on scan cy 62/63 -- exactly one bit after
+; the scan `out` -- so the TX bit grid is continuous across the transition and
+; the variants differ only in where in the iteration the `out` sits.
+;
+; The 11th sample leaves immediately (`jmp !x`, x == 0) instead of finishing the
+; iteration, and re-enters the scan at the poll that puts the scan `out` exactly
+; one TX bit after the last variant `out` (the 11th TX slot, which the final
+; iteration skipped). Returning to the polls within ~15 cy of the last sample is
+; what lets back-to-back frames be received: the next start edge is only ~35 cy
+; after the stop sample, and a late return walked the sample point further into
+; each following frame until it fell off the end of the bit.
 
-bin0:                           ; TX slot ~cy54 (late)
-    in pins, 1      [31]        ; sample RX (start..stop), 11x via x
-    nop             [21]        ; delay to TX slot
-    out pins, 1                 ; cy54 TX bit
-    jmp x-- bin0    [6]         ; -> 62 cy
-    jmp scan
-bin1:                           ; TX slot ~cy39
-    in pins, 1      [31]
-    nop             [6]
-    out pins, 1                 ; cy39
-    jmp x-- bin1    [21]        ; -> 62 cy
-    jmp scan
-bin2:                           ; TX slot ~cy24
-    in pins, 1      [23]
-    out pins, 1                 ; cy24
-    nop             [17]
-    jmp x-- bin2    [18]        ; -> 62 cy
-    jmp scan
-bin3:                           ; TX slot ~cy9 (early)
-    in pins, 1      [8]
-    out pins, 1                 ; cy9
+bin0:                           ; out at iteration cy46
+    in pins, 1                  ; sample RX (start..stop), 11x via x
+    jmp !x, p2      [13]        ; last sample -> scan poll p2 (scan out lands at cy46)
+    nop             [30]
+    out pins, 1                 ; cy46 TX bit
+    jmp x-- bin0    [14]        ; -> 62 cy
+bin1:                           ; out at iteration cy31
+    in pins, 1
+    jmp !x, p3      [13]        ; -> scan poll p3 (scan out at cy31)
+    nop             [15]
+    out pins, 1                 ; cy31
+    jmp x-- bin1    [29]        ; -> 62 cy
+bin2:                           ; out at iteration cy16
+    in pins, 1
+    jmp !x, scan    [14]        ; -> scan out at cy16
+    out pins, 1     [13]        ; cy16
+    jmp x-- bin2    [31]        ; -> 62 cy
+bin3:                           ; out at iteration cy1
+    in pins, 1
+    out pins, 1                 ; cy1  (before the exit test: the 11th TX slot is here)
+    jmp !x, p1      [14]        ; -> scan out one bit after this out
     nop             [31]
-    jmp x-- bin3    [19]        ; -> 62 cy
-    jmp scan
+    jmp x-- bin3    [12]        ; -> 62 cy
 
 % c-sdk {
 #include "hardware/clocks.h"
