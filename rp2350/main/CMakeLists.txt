@@ -98,9 +98,9 @@ add_executable(grid_rp2350
     ../../common/dep/tinyusb/src/portable/raspberrypi/rp2040/rp2040_usb.c
 )
 
-# PIO programs for the 4-way USART daisy-chain, copied from rp2040/src/.
-pico_generate_pio_header(grid_rp2350 ${CMAKE_CURRENT_LIST_DIR}/uart_tx.pio)
-pico_generate_pio_header(grid_rp2350 ${CMAKE_CURRENT_LIST_DIR}/uart_rx.pio)
+# Single-SM full-duplex PIO UART for the 4-way USART daisy-chain, ported from
+# rp2040/src/uart_rx_3bin.pio.
+pico_generate_pio_header(grid_rp2350 ${CMAKE_CURRENT_LIST_DIR}/uart_duplex.pio)
 
 # Needed for grid_led/littlefs/usb headers, littlefs's own includes, TinyUSB's
 # public headers, and this dir's tusb_config.h (resolved via include path).

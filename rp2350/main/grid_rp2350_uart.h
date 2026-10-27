@@ -12,7 +12,12 @@ enum { GRID_RP2350_UART_DIR_COUNT = 4 };
 extern struct grid_uwsr_t grid_rp2350_uart_uwsr[GRID_RP2350_UART_DIR_COUNT];
 extern uint8_t grid_rp2350_uart_tx_buf[GRID_RP2350_UART_DIR_COUNT][GRID_PARAMETER_SPI_TRANSACTION_length];
 
+extern volatile uint32_t grid_rp2350_uart_framing_err[GRID_RP2350_UART_DIR_COUNT];
+
 void grid_rp2350_uart_init(void);
+
+// Convert received PIO frames into uwsr bytes; call before reading the uwsr.
+void grid_rp2350_uart_rx_poll(uint8_t dir);
 
 void grid_rp2350_uart_port_stop_dma(uint8_t dir);
 
