@@ -13,7 +13,7 @@
 #define RP2350_PIN_ZONA_SCL 15
 #define RP2350_PIN_ZONA_RST 17
 #define RP2350_PIN_ZONA_INT 18
-#define RP2350_ZONA_I2C_FREQ_HZ 100000
+#define RP2350_ZONA_I2C_FREQ_HZ 200000
 
 static struct grid_ui_model* ui_ptr = NULL;
 
