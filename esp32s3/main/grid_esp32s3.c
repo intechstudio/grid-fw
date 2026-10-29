@@ -398,12 +398,6 @@ void app_main(void) {
   grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, 0, 0, NULL);
   grid_ui_bulk_flush(&grid_ui_state);
 
-  log_checkpoint("PORT TASK INIT");
-
-  TaskHandle_t port_task_hdl;
-
-  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 1024 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
-
   log_checkpoint("MODULE INIT");
 
   if (grid_hwcfg_module_is_po16(&grid_sys_state)) {
@@ -425,6 +419,12 @@ void app_main(void) {
   } else {
     ets_printf("Task Init failed: Unknown Module %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
   }
+
+  log_checkpoint("PORT TASK INIT");
+
+  TaskHandle_t port_task_hdl;
+
+  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 1024 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
 
   log_checkpoint("UI TASK DONE");
 

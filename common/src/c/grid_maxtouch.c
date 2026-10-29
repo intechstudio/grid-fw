@@ -304,6 +304,9 @@ void grid_maxtouch_process_blocking(struct mxt_data* data) {
   return;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+
 PT_THREAD(grid_maxtouch_process_async(struct mxt_data* data)) {
 
   proto_pt_t* pt = &grid_maxtouch_state.touch_pt;
@@ -335,6 +338,8 @@ PT_THREAD(grid_maxtouch_process_async(struct mxt_data* data)) {
 
   PT_END(pt);
 }
+
+#pragma GCC diagnostic pop
 
 void grid_maxtouch_chg_cb(void* state) {
 

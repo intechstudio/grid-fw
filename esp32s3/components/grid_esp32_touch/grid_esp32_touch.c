@@ -103,19 +103,15 @@ static void grid_esp32_touch_init_i2c(struct grid_esp32_touch_model* touch, i2c_
   ESP_ERROR_CHECK(i2c_master_bus_add_device(touch->bus_hndl, &dev_cfg, &DEV_HNDL));
 }
 
-bool CHG_EDGE_FALL = false;
-
-static void GRID_IRAM_ATTR mxt_chg_isr(void* user) { CHG_EDGE_FALL = true; }
+GRID_IRAM_ATTR static void grid_rp2350_touch_chg_irq(void* user) {}
 
 void grid_esp32_touch_poll(struct grid_esp32_touch_model* touch) {
 
-  if (!CHG_EDGE_FALL) {
+  if (gpio_get_level(touch->chg)) {
     return;
   }
 
-  grid_maxtouch_process_msgs(&touch->data);
-
-  CHG_EDGE_FALL = false;
+  grid_maxtouch_process_blocking(&touch->data);
 }
 
 bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_port, gpio_num_t scl_gpio, gpio_num_t sda_gpio, gpio_num_t reset, gpio_num_t change, uint32_t i2c_freq_hz) {
@@ -147,13 +143,10 @@ bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
   assert(touch->data.msg_buf);
 
   // Set up per-pin interrupt for CHG
-  ESP_ERROR_CHECK(gpio_install_isr_service(0));
-  ESP_ERROR_CHECK(gpio_set_intr_type(change, GPIO_INTR_NEGEDGE));
-  ESP_ERROR_CHECK(gpio_isr_handler_add(change, mxt_chg_isr, NULL));
-  ESP_ERROR_CHECK(gpio_intr_enable(change));
-
-  // Start communications with the device
-  grid_maxtouch_process_msgs(&touch->data);
+  // ESP_ERROR_CHECK(gpio_install_isr_service(0));
+  // ESP_ERROR_CHECK(gpio_set_intr_type(change, GPIO_INTR_NEGEDGE));
+  // ESP_ERROR_CHECK(gpio_isr_handler_add(change, grid_rp2350_touch_chg_irq, NULL));
+  // ESP_ERROR_CHECK(gpio_intr_enable(change));
 
   return true;
 }
