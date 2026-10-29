@@ -341,10 +341,6 @@ int main() {
     grid_transport_rx_broadcast_tx(xport, port_ui, NULL);
     grid_transport_rx_broadcast_tx(xport, port_usb, NULL);
 
-    if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
-      grid_rp2350_touch_poll(&grid_rp2350_touch_state);
-    }
-
     grid_utask_led(&timer_led);
     grid_utask_ping(&timer_ping);
     grid_utask_heart(&timer_heart);

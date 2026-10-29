@@ -152,11 +152,19 @@ struct mxt_data {
   uint8_t* msg_buf;
 };
 
+typedef void (*grid_maxtouch_chg_cb_t)(void* user);
+
+typedef void (*grid_maxtouch_async_cb_t)(bool success, void* user);
+
 typedef void (*grid_process_touch_t)(struct touchinfo_t*);
 
 struct grid_maxtouch_model {
 
+  struct mxt_data data;
+
   grid_process_touch_t process_touch;
+
+  proto_pt_t touch_pt;
 };
 
 extern struct grid_maxtouch_model grid_maxtouch_state;
@@ -173,7 +181,11 @@ struct mxt_object* maxtouch_get_object(struct mxt_data* data, uint8_t type);
 
 bool grid_maxtouch_read_info_block(struct mxt_data* data);
 
-void grid_maxtouch_process_msgs(struct mxt_data* data);
+void grid_maxtouch_process_blocking(struct mxt_data* data);
+
+void grid_maxtouch_chg_cb(void* state);
+
+void grid_maxtouch_async_cb(bool success, void* state);
 
 void grid_maxtouch_debug_init(struct mxt_data* data);
 

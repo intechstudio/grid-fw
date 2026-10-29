@@ -17,6 +17,8 @@ void grid_maxtouch_init(struct grid_maxtouch_model* maxtouch, grid_process_touch
   assert(process_touch);
 
   maxtouch->process_touch = process_touch;
+
+  PT_INIT(&maxtouch->touch_pt);
 }
 
 static void mxt_calc_crc24(uint32_t* crc, uint8_t firstbyte, uint8_t secondbyte) {
@@ -277,7 +279,7 @@ void grid_maxtouch_proc_message(struct mxt_data* data, uint8_t* msg) {
   }
 }
 
-void grid_maxtouch_process_msgs(struct mxt_data* data) {
+void grid_maxtouch_process_blocking(struct mxt_data* data) {
 
   // Read the number of messages from T44
   uint8_t count;
@@ -300,6 +302,59 @@ void grid_maxtouch_process_msgs(struct mxt_data* data) {
   }
 
   return;
+}
+
+PT_THREAD(grid_maxtouch_process_async(struct mxt_data* data)) {
+
+  proto_pt_t* pt = &grid_maxtouch_state.touch_pt;
+
+  PT_BEGIN(pt);
+
+  static uint8_t count;
+  if (grid_platform_mxt_read_async(data->T44_address, 1, &count)) {
+    PT_EXIT(pt);
+  }
+
+  PT_YIELD(pt);
+
+  if (!count) {
+    PT_EXIT(pt);
+  }
+
+  // Read messages from T5
+  if (grid_platform_mxt_read_async(data->T5_address, data->T5_msg_size * count, data->msg_buf)) {
+    PT_EXIT(pt);
+  }
+
+  PT_YIELD(pt);
+
+  // Process messages
+  for (uint8_t i = 0; i < count; ++i) {
+    grid_maxtouch_proc_message(data, data->msg_buf + i * data->T5_msg_size);
+  }
+
+  PT_END(pt);
+}
+
+void grid_maxtouch_chg_cb(void* state) {
+
+  struct grid_maxtouch_model* maxtouch = (struct grid_maxtouch_model*)state;
+
+  PT_INIT(&maxtouch->touch_pt);
+
+  grid_maxtouch_process_async(&maxtouch->data);
+}
+
+void grid_maxtouch_async_cb(bool success, void* state) {
+
+  if (!success) {
+    grid_platform_printf("grid_maxtouch_async_cb: transfer failed\n");
+    return;
+  }
+
+  struct grid_maxtouch_model* maxtouch = (struct grid_maxtouch_model*)state;
+
+  grid_maxtouch_process_async(&maxtouch->data);
 }
 
 void grid_maxtouch_debug_init(struct mxt_data* data) {
@@ -478,7 +533,7 @@ int grid_maxtouch_update_crc(struct mxt_data* data, uint8_t cmd, uint8_t val) {
   }
 
   while (!data->crc_completion) {
-    grid_maxtouch_process_msgs(data);
+    grid_maxtouch_process_blocking(data);
   }
 
   return 0;
@@ -497,7 +552,7 @@ int grid_maxtouch_soft_reset(struct mxt_data* data) {
   grid_platform_delay_ms(100);
 
   while (!data->reset_completion) {
-    grid_maxtouch_process_msgs(data);
+    grid_maxtouch_process_blocking(data);
   }
 
   return 0;

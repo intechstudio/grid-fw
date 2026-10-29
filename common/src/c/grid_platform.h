@@ -141,4 +141,6 @@ extern int grid_platform_mxt_read(uint16_t addr, uint16_t size, uint8_t* dest);
 
 extern int grid_platform_mxt_write(uint16_t addr, uint16_t size, uint8_t* src);
 
+extern int grid_platform_mxt_read_async(uint16_t addr, uint16_t size, uint8_t* dest);
+
 #endif /* GRID_PLATFORM_H */
