@@ -14,10 +14,12 @@ static int grid_rp2350_touch_dma_rx_chan;
 static void grid_rp2350_touch_arm_dma_rx(struct grid_rp2350_touch_model* touch, uint16_t size, uint8_t* dest) {
 
   dma_channel_set_write_addr(grid_rp2350_touch_dma_rx_chan, dest, false);
-  dma_channel_set_trans_count(grid_rp2350_touch_dma_rx_chan, size, true);
+  dma_channel_set_trans_count(grid_rp2350_touch_dma_rx_chan, size, false);
 
   dma_channel_set_read_addr(grid_rp2350_touch_dma_tx_chan, touch->tx_buffer, false);
-  dma_channel_set_trans_count(grid_rp2350_touch_dma_tx_chan, 2 + size, true);
+  dma_channel_set_trans_count(grid_rp2350_touch_dma_tx_chan, 2 + size, false);
+
+  dma_start_channel_mask((1u << grid_rp2350_touch_dma_tx_chan) | (1u << grid_rp2350_touch_dma_rx_chan));
 }
 
 static int grid_rp2350_touch_realloc_i2c(struct grid_rp2350_touch_model* touch, uint16_t rx_length) {
@@ -95,8 +97,11 @@ GRID_IRAM_ATTR static void grid_rp2350_touch_dma_rx_irq(void) {
     touch->async_cb(success, touch->async_cb_user);
   }
 
-  // Clear channel interrupt by writing a bitmask
-  dma_hw->ints1 = 1u << grid_rp2350_touch_dma_rx_chan;
+  if (status) {
+
+    // Clear channel interrupt by writing a bitmask
+    dma_hw->ints1 = 1u << grid_rp2350_touch_dma_rx_chan;
+  }
 }
 
 int grid_platform_mxt_read(uint16_t addr, uint16_t size, uint8_t* dest) {
