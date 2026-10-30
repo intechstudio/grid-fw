@@ -10,16 +10,15 @@ struct grid_rp2350_led_model {
   uint32_t led_count;
   uint32_t framebuffer_size;
   uint8_t* framebuffer;
+  uint8_t divider;
 };
 
 extern struct grid_rp2350_led_model grid_rp2350_led_state;
 
-void grid_rp2350_led_init(struct grid_rp2350_led_model* rp_mod, struct grid_led_model* led_mod);
+void grid_rp2350_led_init(struct grid_rp2350_led_model* led, uint8_t divider);
 
-void grid_rp2350_led_generate_frame(struct grid_rp2350_led_model* rp_mod, struct grid_led_model* led_mod);
+void grid_rp2350_led_generate_frame(struct grid_rp2350_led_model* led);
 
-void grid_rp2350_led_start_transfer(struct grid_rp2350_led_model* rp_mod);
-
-void grid_rp2350_led_set_color(struct grid_rp2350_led_model* mod, uint32_t led_index, uint8_t r, uint8_t g, uint8_t b);
+void grid_rp2350_led_start_transfer(struct grid_rp2350_led_model* led);
 
 #endif /* GRID_RP2350_LED_H */

@@ -66,7 +66,7 @@ static void grid_utask_led(struct grid_utask_timer* timer) {
 
   grid_led_tick(&grid_led_state);
   grid_led_render_framebuffer(&grid_led_state);
-  grid_rp2350_led_generate_frame(&grid_rp2350_led_state, &grid_led_state);
+  grid_rp2350_led_generate_frame(&grid_rp2350_led_state);
   grid_rp2350_led_start_transfer(&grid_rp2350_led_state);
 }
 
@@ -245,7 +245,11 @@ int main() {
   }
 
   grid_rp2350_checkpoint("LED INIT");
-  grid_rp2350_led_init(&grid_rp2350_led_state, &grid_led_state);
+  if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
+    grid_rp2350_led_init(&grid_rp2350_led_state, 3);
+  } else {
+    grid_rp2350_led_init(&grid_rp2350_led_state, 1);
+  }
 
   grid_rp2350_checkpoint("NVM MOUNT");
   grid_rp2350_nvm_mount(&grid_rp2350_nvm_state, false);
