@@ -98,6 +98,8 @@ void grid_usb_macro_tx_flush(struct grid_macro_model* macro) {
     int8_t delta[3] = {0};
     uint8_t buttons = macro->mouse->buttons;
 
+    uint8_t changed = macro->next.type == GRID_MACRO_EVENT_TYPE_MOUSE_BUTTON ? macro->next.keycode : 0;
+
     grid_usb_macro_mouse_apply_event(delta, &buttons, &macro->next);
 
     macro->has_next = false;
@@ -106,7 +108,12 @@ void grid_usb_macro_tx_flush(struct grid_macro_model* macro) {
       struct grid_macro_event_desc peek;
       grid_swsr_read(&macro->tx, &peek, sizeof(struct grid_macro_event_desc));
 
-      if ((peek.type == GRID_MACRO_EVENT_TYPE_MOUSE_MOVE || peek.type == GRID_MACRO_EVENT_TYPE_MOUSE_BUTTON) && peek.delay == 0) {
+      bool same_button = peek.type == GRID_MACRO_EVENT_TYPE_MOUSE_BUTTON && (peek.keycode & changed);
+
+      if ((peek.type == GRID_MACRO_EVENT_TYPE_MOUSE_MOVE || peek.type == GRID_MACRO_EVENT_TYPE_MOUSE_BUTTON) && peek.delay == 0 && !same_button) {
+        if (peek.type == GRID_MACRO_EVENT_TYPE_MOUSE_BUTTON) {
+          changed |= peek.keycode;
+        }
         grid_usb_macro_mouse_apply_event(delta, &buttons, &peek);
       } else {
         macro->next = peek;
@@ -122,6 +129,10 @@ void grid_usb_macro_tx_flush(struct grid_macro_model* macro) {
       grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_MOUSE);
       return;
     }
+
+    // the event that ended the merge stays queued as next
+    macro->tx_rtc_lasttimestamp = grid_platform_rtc_get_micros();
+    return;
   } break;
   default:
     break;
