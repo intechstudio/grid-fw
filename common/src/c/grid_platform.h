@@ -63,6 +63,10 @@ extern uint8_t grid_platform_file_info_type(void* info);
 
 extern uint32_t grid_platform_file_info_size(void* info);
 
+extern void grid_platform_delay_ms(uint32_t ms);
+
+extern void grid_platform_delay_us(uint32_t ms);
+
 extern void grid_platform_printf(char const* fmt, ...);
 
 extern void grid_platform_printf_nonprint(const uint8_t* src, size_t size);
@@ -132,5 +136,11 @@ extern void grid_platform_mux_write(uint8_t index);
 extern void grid_platform_id_to_hex(const uint8_t* id, uint8_t byte_count, char* out);
 
 extern void grid_platform_byte_to_hex(uint8_t byte, char out[2]);
+
+extern int grid_platform_mxt_read(uint16_t addr, uint16_t size, uint8_t* dest);
+
+extern int grid_platform_mxt_write(uint16_t addr, uint16_t size, uint8_t* src);
+
+extern int grid_platform_mxt_read_async(uint16_t addr, uint16_t size, uint8_t* dest);
 
 #endif /* GRID_PLATFORM_H */

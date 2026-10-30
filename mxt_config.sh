@@ -1,11 +1,14 @@
 #!/bin/sh
 
-SRCDIR=esp32s3/components/grid_esp32_touch
+SRCDIR=./common/src/mxt
+DESTDIR=./common/build/mxt
 
-cd "$SRCDIR" || exit 1
+sed -i 's/\r$//' "$SRCDIR"/mxt144u_cfg.raw
 
-if ! xxd -i ./mxt144u_cfg.raw > ./mxt144u_cfg.h ; then
+mkdir -p "$DESTDIR"
+
+if ! xxd -i "$SRCDIR"/mxt144u_cfg.raw > "$DESTDIR"/mxt144u_cfg.h ; then
 	exit 1
 fi
 
-sed -i '1i\const \\' ./mxt144u_cfg.h
+sed -i "1i\const \\" "$DESTDIR"/mxt144u_cfg.h
