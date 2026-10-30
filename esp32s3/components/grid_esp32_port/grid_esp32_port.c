@@ -25,7 +25,6 @@
 #include "grid_esp32_lcd.h"
 #include "grid_esp32_pins.h"
 #include "grid_esp32_platform.h"
-#include "grid_esp32_touch.h"
 #include "grid_health.h"
 #include "grid_led.h"
 #include "grid_rollid.h"
@@ -494,10 +493,6 @@ void grid_esp32_port_task(void* arg) {
     }
     grid_transport_rx_broadcast_tx(xport, port_ui, grid_esp32_broadcast_between);
     grid_transport_rx_broadcast_tx(xport, port_usb, grid_esp32_broadcast_between);
-
-    if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
-      grid_esp32_touch_poll(&grid_esp32_touch_state);
-    }
 
     grid_utask_sendfull(&timer_sendfull);
     grid_utask_ping(&timer_ping);
