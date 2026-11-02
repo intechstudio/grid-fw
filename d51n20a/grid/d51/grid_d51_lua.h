@@ -1,9 +1,12 @@
 #ifndef GRID_D51_LUA_H_INCLUDED
 #define GRID_D51_LUA_H_INCLUDED
 
-int _gettimeofday(void);
+#include <sys/time.h>
+#include <sys/times.h>
+
+int _gettimeofday(struct timeval* tv, void* tz);
 int _open(void);
-int _times(void);
+clock_t _times(struct tms* buf);
 int _unlink(void);
 int _link(void);
 

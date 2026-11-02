@@ -87,4 +87,9 @@
 #include "autovalue.h"
 #define GRID_LUA_FNC_G_AUTOVALUE_source common_src_lua_autovalue_lua
 
+#include "require.h"
+#define GRID_LUA_FNC_G_REQUIRE_source common_src_lua_require_lua
+#define GRID_LUA_FNC_G_REQUIRE_short "gr"
+#define GRID_LUA_FNC_G_REQUIRE_human "library_load"
+
 #endif

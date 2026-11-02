@@ -549,6 +549,7 @@ void grid_lua_start_vm(struct grid_lua_model* lua, const struct luaL_Reg* lua_li
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_SIMPLECOLOR_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_SIMPLEMIDI_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_AUTOVALUE_source);
+  grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_REQUIRE_source);
 
   grid_lua_gc_full_unsafe(lua);
 

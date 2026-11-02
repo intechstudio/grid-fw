@@ -17,7 +17,7 @@
 
 #define GRID_PROTOCOL_VERSION_MAJOR 1
 #define GRID_PROTOCOL_VERSION_MINOR 5
-#define GRID_PROTOCOL_VERSION_PATCH 5
+#define GRID_PROTOCOL_VERSION_PATCH 6
 
 // must not change because it would break profiles
 #define GRID_PARAMETER_ELEMENT_SYSTEM 0
@@ -86,6 +86,7 @@
 #define GRID_MODULE_OCTV_ND_RevH 219
 
 #define GRID_MODULE_ZONA_RevH 161
+#define GRID_MODULE_ZONA_RevI 166
 
 #define GRID_MODULE_TEK1_RevA 225
 #define GRID_MODULE_TEK2_RevA 17
@@ -323,6 +324,10 @@
 #define GRID_LUA_FNC_G_RANDOM_short "grnd"
 #define GRID_LUA_FNC_G_RANDOM_human "random8"
 #define GRID_LUA_FNC_G_RANDOM_fnptr l_grid_random8
+
+#define GRID_LUA_FNC_G_MICROS_short "gmicros"
+#define GRID_LUA_FNC_G_MICROS_human "micros"
+#define GRID_LUA_FNC_G_MICROS_fnptr l_grid_rtc_get_micros
 
 #define GRID_LUA_FNC_G_HWCFG_short "ghwcfg"
 #define GRID_LUA_FNC_G_HWCFG_human "hardware_configuration"

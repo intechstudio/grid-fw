@@ -7,6 +7,7 @@
 
 struct test_entry_t tests[] = {
     TEST_ENTRY(grid_ui_encoder_relative),
+    TEST_ENTRY(grid_lua_precision),
 };
 
 int main() {
