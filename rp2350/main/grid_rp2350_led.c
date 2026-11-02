@@ -109,7 +109,8 @@ void grid_rp2350_led_generate_frame(struct grid_rp2350_led_model* led) {
   const uint32_t framebuf_size = grid_led_get_framebuffer_size(&grid_led_state);
 
   for (uint32_t i = 0; i < framebuf_size; i += 3) {
-    grid_rp2350_led_set_color(led, i / 3, framebuf[i + 0], framebuf[i + 1], framebuf[i + 2]);
+    // the common framebuffer is G, R, B; set_color takes r, g, b
+    grid_rp2350_led_set_color(led, i / 3, framebuf[i + 1], framebuf[i + 0], framebuf[i + 2]);
   }
 }
 
