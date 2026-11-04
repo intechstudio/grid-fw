@@ -419,7 +419,7 @@ void app_main(void) {
   } else if (grid_hwcfg_module_is_octv(&grid_sys_state)) {
     grid_esp32_module_octv_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
-    grid_esp32_module_zona_init(&grid_sys_state, &grid_ui_state, xTaskGetCurrentTaskHandle());
+    grid_esp32_module_zona_init(&grid_sys_state, &grid_ui_state);
   } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
     grid_esp32_module_vsnx_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
   } else {
@@ -435,13 +435,6 @@ void app_main(void) {
     xTaskCreatePinnedToCore(grid_esp32_lcd_task, "lcd", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &lcd_task_hdl, 0);
 
     log_checkpoint("LCD TASK DONE");
-  }
-
-  if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
-
-    TaskHandle_t touch_task_hdl;
-
-    xTaskCreatePinnedToCore(grid_esp32_module_zona_update_task, "touch", 1024 * 2, NULL, MODULE_TASK_PRIORITY, &touch_task_hdl, 0);
   }
 
   // Initialize 1 kHz timer
@@ -488,17 +481,15 @@ void app_main(void) {
       vmp_flushed = true;
     }
 
-    // Check with zero timeout for a touch
-    if (xTaskNotifyWait(0, (uint32_t)-1, NULL, 0)) {
-      grid_esp32_touch_process_msgs(&grid_esp32_touch_state);
-    }
-
     // Run microtasks
     grid_esp32_utask_led(&timer_led);
-    // grid_esp32_utask_touch_t37(&timer_t37);
 
     // Run UI protothreads
     grid_ui_bulk_process(&grid_ui_state);
+
+    if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
+      grid_esp32_touch_poll(&grid_esp32_touch_state);
+    }
 
     vTaskDelay(1);
   }

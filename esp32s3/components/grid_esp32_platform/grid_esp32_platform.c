@@ -158,9 +158,9 @@ uint8_t grid_platform_get_random_8() {
   return random_number % 256;
 }
 
-void grid_platform_delay_ms(uint32_t delay_milliseconds) { ets_delay_us(delay_milliseconds * 1000); }
+void grid_platform_delay_ms(uint32_t ms) { ets_delay_us(ms * 1000); }
 
-void grid_platform_delay_us(uint32_t delay_microseconds) { ets_delay_us(delay_microseconds); }
+void grid_platform_delay_us(uint32_t us) { ets_delay_us(us); }
 
 uint8_t grid_platform_get_reset_cause() { return 0; }
 

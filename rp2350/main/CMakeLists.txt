@@ -8,9 +8,11 @@ add_executable(grid_rp2350
     grid_rp2350_usb.c
     grid_rp2350_platform.c
     grid_rp2350_module_bu16.c
-    grid_rp2350_module_po16.c
-    grid_rp2350_encoder.c
     grid_rp2350_module_ef44.c
+    grid_rp2350_module_po16.c
+    grid_rp2350_module_zona.c
+    grid_rp2350_encoder.c
+    grid_rp2350_touch.c
     grid_rp2350_uart.c
     ../../common/src/c/grid_led.c
     ../../common/src/c/grid_littlefs.c
@@ -37,6 +39,7 @@ add_executable(grid_rp2350
     ../../common/src/c/grid_lua.c
     ../../common/src/c/grid_lua_api.c
     ../../common/src/c/grid_math.c
+    ../../common/src/c/grid_maxtouch.c
     ../../common/src/c/grid_module.c
     ../../common/src/c/grid_msg.c
     ../../common/src/c/grid_noflash.c
@@ -112,6 +115,7 @@ target_include_directories(grid_rp2350 PRIVATE
     ../../common/dep/littlefs
     ../../common/dep/tinyusb/src
     ../../common/build/lua
+    ../../common/build/mxt
 )
 
 # RP2354 has 2 MB of internal stacked flash; the pico2 board otherwise assumes
@@ -124,7 +128,7 @@ target_compile_options(grid_rp2350 PRIVATE -UNDEBUG -DSEGGER_RTT_SECTION=".rtt" 
 
 # hardware_resets is needed by TinyUSB's rp2040 DCD; pico_unique_id backs
 # grid_platform_get_id().
-target_link_libraries(grid_rp2350 PRIVATE pico_stdlib hardware_uart hardware_dma hardware_adc hardware_spi hardware_pio hardware_irq hardware_flash hardware_sync hardware_resets hardware_watchdog pico_unique_id pico_rand)
+target_link_libraries(grid_rp2350 PRIVATE pico_stdlib hardware_uart hardware_dma hardware_adc hardware_spi hardware_pio hardware_i2c hardware_irq hardware_flash hardware_sync hardware_resets hardware_watchdog pico_unique_id pico_rand)
 
 # USB CDC is the Grid protocol channel (grid_usb.c), not stdio, matching
 # D51/ESP32-S3. RTT-over-SWD is the only console -- UART0 stays off since every RX pin conflicts (HWCFG strap or a daisy-chain PIO line).

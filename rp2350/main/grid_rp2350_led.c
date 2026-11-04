@@ -47,7 +47,29 @@ static uint8_t encode3_to_uart(uint8_t d1, uint8_t d2, uint8_t d3) {
 // Lookup table to map 6 data bits to a pair of UART bytes.
 static uint8_t grid_led_color_code[64][2];
 
-void grid_rp2350_led_init(struct grid_rp2350_led_model* rp_mod, struct grid_led_model* led_mod) {
+void grid_rp2350_led_set_color(struct grid_rp2350_led_model* led, uint32_t index, uint8_t r, uint8_t g, uint8_t b) {
+
+  r /= led->divider;
+  g /= led->divider;
+  b /= led->divider;
+
+  uint32_t bits = (uint32_t)g << 16 | (uint32_t)r << 8 | b; // GRB, MSB first
+  uint8_t* out = &led->framebuffer[index * GRID_RP2350_LED_BYTES_PER_LED];
+
+  // Pack 4 groups of 6 bits each into 24 / 3 = 8 transmit bytes
+  for (int i = 0; i < 4; ++i) {
+    uint8_t v = (bits >> (18 - i * 6)) & 0x3f;
+    out[i * 2 + 0] = grid_led_color_code[v][0];
+    out[i * 2 + 1] = grid_led_color_code[v][1];
+  }
+}
+
+void grid_rp2350_led_init(struct grid_rp2350_led_model* led, uint8_t divider) {
+
+  assert(divider > 0 && divider <= 4);
+  led->divider = divider;
+
+  struct grid_led_model* common = &grid_led_state;
 
   // Generate the lookup table for fast rendering.
   for (int v = 0; v < 64; v++) {
@@ -55,13 +77,13 @@ void grid_rp2350_led_init(struct grid_rp2350_led_model* rp_mod, struct grid_led_
     grid_led_color_code[v][1] = encode3_to_uart((v >> 2) & 1u, (v >> 1) & 1u, v & 1u);
   }
 
-  rp_mod->led_count = led_mod->led_count;
+  led->led_count = common->led_count;
 
-  rp_mod->framebuffer_size = led_mod->led_count * GRID_RP2350_LED_BYTES_PER_LED;
-  rp_mod->framebuffer = (uint8_t*)malloc(rp_mod->framebuffer_size * sizeof(uint8_t));
+  led->framebuffer_size = common->led_count * GRID_RP2350_LED_BYTES_PER_LED;
+  led->framebuffer = (uint8_t*)malloc(led->framebuffer_size * sizeof(uint8_t));
 
-  for (uint32_t i = 0; i < led_mod->led_count; ++i) {
-    grid_rp2350_led_set_color(rp_mod, i, 0, 0, 0);
+  for (uint32_t i = 0; i < led->led_count; ++i) {
+    grid_rp2350_led_set_color(led, i, 0, 0, 0);
   }
 
   // UART1 TX on GRID_LED_TX_PIN, inverted so idle/start/stop levels match WS2812.
@@ -78,36 +100,22 @@ void grid_rp2350_led_init(struct grid_rp2350_led_model* rp_mod, struct grid_led_
   channel_config_set_read_increment(&c, true);
   channel_config_set_write_increment(&c, false);
   channel_config_set_dreq(&c, uart_get_dreq(GRID_LED_UART, true));
-  dma_channel_configure(grid_led_dma_chan, &c, &uart_get_hw(GRID_LED_UART)->dr, rp_mod->framebuffer, rp_mod->framebuffer_size, false);
+  dma_channel_configure(grid_led_dma_chan, &c, &uart_get_hw(GRID_LED_UART)->dr, led->framebuffer, led->framebuffer_size, false);
 }
 
-void grid_rp2350_led_set_color(struct grid_rp2350_led_model* mod, uint32_t led_index, uint8_t r, uint8_t g, uint8_t b) {
+void grid_rp2350_led_generate_frame(struct grid_rp2350_led_model* led) {
 
-  uint32_t bits = (uint32_t)g << 16 | (uint32_t)r << 8 | b; // GRB, MSB first
-  uint8_t* out = &mod->framebuffer[led_index * GRID_RP2350_LED_BYTES_PER_LED];
+  const uint8_t* framebuf = grid_led_get_framebuffer_pointer(&grid_led_state);
+  const uint32_t framebuf_size = grid_led_get_framebuffer_size(&grid_led_state);
 
-  // Pack 4 groups of 6 bits each into 24 / 3 = 8 transmit bytes
-  for (int i = 0; i < 4; ++i) {
-    uint8_t v = (bits >> (18 - i * 6)) & 0x3f;
-    out[i * 2 + 0] = grid_led_color_code[v][0];
-    out[i * 2 + 1] = grid_led_color_code[v][1];
+  for (uint32_t i = 0; i < framebuf_size; i += 3) {
+    // the common framebuffer is G, R, B; set_color takes r, g, b
+    grid_rp2350_led_set_color(led, i / 3, framebuf[i + 1], framebuf[i + 0], framebuf[i + 2]);
   }
 }
 
-void grid_rp2350_led_generate_frame(struct grid_rp2350_led_model* rp_mod, struct grid_led_model* led_mod) {
-
-  for (uint32_t i = 0; i < rp_mod->led_count; i++) {
-
-    uint8_t gre = led_mod->led_frame_buffer[i * 3 + 0];
-    uint8_t red = led_mod->led_frame_buffer[i * 3 + 1];
-    uint8_t blu = led_mod->led_frame_buffer[i * 3 + 2];
-
-    grid_rp2350_led_set_color(rp_mod, i, red, gre, blu);
-  }
-}
-
-void grid_rp2350_led_start_transfer(struct grid_rp2350_led_model* rp_mod) {
+void grid_rp2350_led_start_transfer(struct grid_rp2350_led_model* led) {
 
   dma_channel_wait_for_finish_blocking(grid_led_dma_chan);
-  dma_channel_transfer_from_buffer_now(grid_led_dma_chan, rp_mod->framebuffer, rp_mod->framebuffer_size);
+  dma_channel_transfer_from_buffer_now(grid_led_dma_chan, led->framebuffer, led->framebuffer_size);
 }
