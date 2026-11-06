@@ -20,6 +20,13 @@ struct touchvalue_t {
   int32_t y;
 };
 
+struct gesture1info_t {
+  uint8_t id;
+  uint8_t event;
+  uint16_t x;
+  uint16_t y;
+};
+
 struct grid_ui_touch_state {
   struct grid_ui_element* parent;
   uint8_t adc_bit_depth;
@@ -30,8 +37,10 @@ struct grid_ui_touch_state {
   int32_t y_min;
   int32_t x_max;
   int32_t y_max;
-  struct touchvalue_t value;
-  struct grid_swsr_t swsr;
+  struct touchvalue_t touch_value;
+  struct grid_swsr_t touch_swsr;
+  struct gesture1info_t gesture1_info;
+  struct grid_swsr_t gesture1_swsr;
 };
 
 void grid_ui_touch_state_init(struct grid_ui_touch_state* state, uint8_t adc_bit_depth);
@@ -45,6 +54,7 @@ void grid_ui_element_touch_template_parameter_init(struct grid_ui_template_buffe
 static inline struct grid_ui_touch_state* grid_ui_touch_get_state(struct grid_ui_element* ele) { return (struct grid_ui_touch_state*)ele->primary_state; }
 
 void grid_ui_touch_store_input(struct grid_ui_touch_state* state, struct touchinfo_t info);
+void grid_ui_touch_store_gesture(struct grid_ui_touch_state* state, struct gesture1info_t info);
 
 // clang-format off
 

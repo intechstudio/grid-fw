@@ -17,7 +17,6 @@
 
 #include "grid_maxtouch.h"
 #include "grid_ui_touch.h"
-#include "grid_utask.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,8 +38,6 @@ extern struct grid_esp32_touch_model grid_esp32_touch_state;
 void grid_esp32_touch_poll(struct grid_esp32_touch_model* touch);
 
 bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_port, gpio_num_t scl_gpio, gpio_num_t sda_gpio, gpio_num_t reset_gpio, gpio_num_t int_gpio, uint32_t i2c_freq_hz);
-
-void grid_esp32_utask_touch_t37(struct grid_utask_timer* timer);
 
 #ifdef __cplusplus
 }

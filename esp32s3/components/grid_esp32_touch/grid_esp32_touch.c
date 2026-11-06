@@ -17,7 +17,7 @@
 #include "grid_math.h"
 #include "grid_platform.h"
 
-DRAM_ATTR struct grid_esp32_touch_model grid_esp32_touch_state;
+GRID_DRAM_ATTR struct grid_esp32_touch_model grid_esp32_touch_state;
 
 i2c_master_dev_handle_t DEV_HNDL;
 
@@ -103,7 +103,7 @@ static void grid_esp32_touch_init_i2c(struct grid_esp32_touch_model* touch, i2c_
   ESP_ERROR_CHECK(i2c_master_bus_add_device(touch->bus_hndl, &dev_cfg, &DEV_HNDL));
 }
 
-GRID_IRAM_ATTR static void grid_rp2350_touch_chg_irq(void* user) {}
+// GRID_IRAM_ATTR static void grid_esp32_touch_chg_irq(void* user) {}
 
 void grid_esp32_touch_poll(struct grid_esp32_touch_model* touch) {
 
@@ -145,7 +145,7 @@ bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
   // Set up per-pin interrupt for CHG
   // ESP_ERROR_CHECK(gpio_install_isr_service(0));
   // ESP_ERROR_CHECK(gpio_set_intr_type(change, GPIO_INTR_NEGEDGE));
-  // ESP_ERROR_CHECK(gpio_isr_handler_add(change, grid_rp2350_touch_chg_irq, NULL));
+  // ESP_ERROR_CHECK(gpio_isr_handler_add(change, grid_esp32_touch_chg_irq, NULL));
   // ESP_ERROR_CHECK(gpio_intr_enable(change));
 
   return true;

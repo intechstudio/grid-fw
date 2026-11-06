@@ -24,6 +24,7 @@
 #define MXT_GEN_MESSAGE_T5 5
 #define MXT_GEN_COMMAND_T6 6
 #define MXT_GEN_POWER_T7 7
+#define MXT_PROCI_ONETOUCH_T24 24
 #define MXT_SPT_MESSAGECOUNT_T44 44
 #define MXT_GEN_DYNAMICCONFIGURATIONCONTAINER_T71 71
 #define MXT_TOUCH_MULTITOUCHSCREEN_T100 100
@@ -45,6 +46,8 @@
 
 #define MXT_RESET_VALUE 0x01
 #define MXT_BACKUP_VALUE 0x55
+
+#define MXT_T24_EVENT_MASK 0x0f
 
 #define MXT_T100_DETECT BIT(7)
 #define MXT_T100_TYPE_MASK 0x70
@@ -140,6 +143,8 @@ struct mxt_data {
   uint8_t T6_reportid;
   uint16_t T6_address;
   uint16_t T7_address;
+  uint8_t T24_rid_min;
+  uint8_t T24_rid_max;
   uint16_t T44_address;
   uint16_t T71_address;
   uint8_t T100_rid_min;
@@ -157,19 +162,21 @@ typedef void (*grid_maxtouch_chg_cb_t)(void* user);
 typedef void (*grid_maxtouch_async_cb_t)(bool success, void* user);
 
 typedef void (*grid_process_touch_t)(struct touchinfo_t*);
+typedef void (*grid_process_gesture1_t)(struct gesture1info_t*);
 
 struct grid_maxtouch_model {
 
   struct mxt_data data;
 
   grid_process_touch_t process_touch;
+  grid_process_gesture1_t process_gesture1;
 
   proto_pt_t touch_pt;
 };
 
 extern struct grid_maxtouch_model grid_maxtouch_state;
 
-void grid_maxtouch_init(struct grid_maxtouch_model* maxtouch, grid_process_touch_t process_touch);
+void grid_maxtouch_init(struct grid_maxtouch_model* maxtouch, grid_process_touch_t process_touch, grid_process_gesture1_t process_gesture1);
 
 uint32_t grid_maxtouch_calculate_crc(uint8_t* base, off_t start_off, off_t end_off);
 
