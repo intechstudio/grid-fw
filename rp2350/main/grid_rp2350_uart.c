@@ -6,6 +6,7 @@
 #include "hardware/dma.h"
 #include "hardware/irq.h"
 #include "hardware/pio.h"
+#include "hardware/structs/nvic.h"
 
 #include "uart_rx.pio.h"
 #include "uart_tx.pio.h"
@@ -40,8 +41,13 @@ void __not_in_flash_func(grid_rp2350_uart_port_stop_dma)(uint8_t dir) {
 
   // Disable DMA_IRQ_2 completely, as aborting a channel that is about to
   // complete is inherently race-prone if it has an IRQ handler registered.
-  bool irq2_was_enabled = irq_is_enabled(DMA_IRQ_2);
-  irq_set_enabled(DMA_IRQ_2, false);
+  //
+  // Uses raw NVIC registers instead of irq_is_enabled()/irq_set_enabled():
+  // this function runs while flash may be non-XIP (littlefs write in
+  // progress), and those SDK calls are flash-resident, unlike this function.
+  uint32_t irq2_bit = 1u << (DMA_IRQ_2 % 32);
+  bool irq2_was_enabled = (nvic_hw->iser[DMA_IRQ_2 / 32] & irq2_bit) != 0;
+  nvic_hw->icer[DMA_IRQ_2 / 32] = irq2_bit;
 
   // Due to errata RP2350-E5, the enable bit of the aborted channel and any
   // channel chained to it must be cleared before aborting to ensure that the
@@ -56,7 +62,10 @@ void __not_in_flash_func(grid_rp2350_uart_port_stop_dma)(uint8_t dir) {
   dma_hw->ints2 = 1u << chan;
 
   // Restore DMA_IRQ_2 to its previous state
-  irq_set_enabled(DMA_IRQ_2, irq2_was_enabled);
+  if (irq2_was_enabled) {
+    nvic_hw->icpr[DMA_IRQ_2 / 32] = irq2_bit;
+    nvic_hw->iser[DMA_IRQ_2 / 32] = irq2_bit;
+  }
 }
 
 void __not_in_flash_func(grid_rp2350_uart_port_reset_dma)(uint8_t dir) {
