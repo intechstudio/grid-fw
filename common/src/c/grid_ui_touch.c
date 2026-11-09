@@ -30,6 +30,8 @@ int touch_get(lua_State* L) {
     GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_EVENT_index, state->gesture1_info.event)
     GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_X_VALUE_index, state->gesture1_info.x)
     GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_Y_VALUE_index, state->gesture1_info.y)
+    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_DIR_index, state->gesture1_info.dir)
+    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_DIST_index, state->gesture1_info.dist)
   default:
     luaL_argcheck(L, false, 2, "inaccessible");
   }
@@ -68,6 +70,8 @@ const luaL_Reg GRID_LUA_T_INDEX_META[] = {{GRID_LUA_FNC_T_ELEMENT_INDEX_short, X
                                           {GRID_LUA_FNC_T_GESTURE1_EVENT_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_EVENT_index)},
                                           {GRID_LUA_FNC_T_GESTURE1_X_VALUE_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_X_VALUE_index)},
                                           {GRID_LUA_FNC_T_GESTURE1_Y_VALUE_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_Y_VALUE_index)},
+                                          {GRID_LUA_FNC_T_GESTURE1_DIR_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_DIR_index)},
+                                          {GRID_LUA_FNC_T_GESTURE1_DIST_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_DIST_index)},
                                           {GRID_LUA_FNC_G_TIMER_START_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtt)},
                                           {GRID_LUA_FNC_G_TIMER_STOP_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtp)},
                                           {GRID_LUA_FNC_G_EVENT_TRIGGER_short, XAFTERX(GRID_LUA_FNC_META_NAME, get)},

@@ -240,8 +240,6 @@ void grid_maxtouch_proc_t24(struct mxt_data* data, uint8_t* msg) {
 
   uint8_t status = msg[1];
   uint8_t event = status & MXT_T24_EVENT_MASK;
-  uint16_t x = msg[2] << 4 | (msg[4] & 0xf0) >> 4 | (msg[8] & 0xf0) << 8;
-  uint16_t y = msg[3] << 4 | (msg[4] & 0x0f) >> 4 | (msg[8] & 0x0f) << 8;
 
   // Ignore reserved event
   if (!event) {
@@ -251,8 +249,10 @@ void grid_maxtouch_proc_t24(struct mxt_data* data, uint8_t* msg) {
   struct gesture1info_t info = (struct gesture1info_t){
       .id = id,
       .event = event,
-      .x = x,
-      .y = y,
+      .x = msg[2] << 4 | (msg[4] & 0xf0) >> 4 | (msg[8] & 0xf0) << 8,
+      .y = msg[3] << 4 | (msg[4] & 0x0f) >> 4 | (msg[8] & 0x0f) << 8,
+      .dir = 255 - msg[5],
+      .dist = msg[7] << 8 | msg[6],
   };
   grid_maxtouch_state.process_gesture1(&info);
 }

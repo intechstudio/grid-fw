@@ -25,6 +25,8 @@ struct gesture1info_t {
   uint8_t event;
   uint16_t x;
   uint16_t y;
+  uint8_t dir;
+  uint16_t dist;
 };
 
 struct grid_ui_touch_state {

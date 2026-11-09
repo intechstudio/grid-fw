@@ -25,7 +25,9 @@ _events_process = function(eleidx, evestr)
           ele[i]:g1id(),
           ele[i]:g1ev(),
           ele[i]:g1xv(),
-          ele[i]:g1yv()
+          ele[i]:g1yv(),
+          ele[i]:g1dr(),
+          ele[i]:g1ds()
         )
       end
     end
