@@ -79,7 +79,7 @@ extern const luaL_Reg GRID_LUA_T_INDEX_META[];
   \
   "}}"
 
-#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]]for i=0,self:lwi()*self:lwi()-1 do gln(i,1,0,0,0)gld(i,1,128,128,128)glx(i,1,255,255,255)glp(i,1,0)end function laddr2to1(x,y)return glag(0,x+y*9)end xp={0,0}yp={0,0}self.touch_cb=function(self,id,evt,x,y)local tp={(x/127)*(self:lwi()-1),(y/127)*(self:lwi()-1)}local xs={math.floor(tp[1]),math.ceil(tp[1])}local ys={math.floor(tp[2]),math.ceil(tp[2])}for i=xp[1],xp[2]do for j=yp[1],yp[2]do glp(laddr2to1(i,j),1,0)end end for i=xs[1],xs[2]do for j=ys[1],ys[2]do local d={tp[1]-i,tp[2]-j}local dist=math.sqrt(d[1]*d[1]+d[2]*d[2])if dist<1 then local pha=255-math.tointeger((dist*255)//1)glp(laddr2to1(i,j),1,pha)end end end xp=xs yp=ys end"
+#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]] function laddr2to1(x,y)return glag(0,x+y*9)end for i=0,self:lwi()*self:lwi()-1 do gln(i,1,0,0,0)gld(i,1,128,128,128)glx(i,1,255,255,255)gls(i,1,1)glf(i,1,1)glp(i,1,255)end--[[@fst]] self.touch_cb = function(self, id, evt, x, y)--[[@cb]] local tp={(x/127)*(self:lwi()-1),(y/127)*(self:lwi()-1)}local xs={math.floor(tp[1]),math.ceil(tp[1])}local ys={math.floor(tp[2]),math.ceil(tp[2])}for i=xs[1],xs[2]do for j=ys[1],ys[2]do local d={tp[1]-i,tp[2]-j}local dist=math.sqrt(d[1]*d[1]+d[2]*d[2])if dist<1 then local pha=math.tointeger((dist*255)//1)glf(laddr2to1(i,j),1,1)glp(laddr2to1(i,j),1,pha)glt(laddr2to1(i,j),1,255-pha)end end end--[[@fen]] end--[[@fst]] self.gesture1_cb = function(self, id, evt, x, y, dir, dis)--[[@cb]] local g1n={[3]=\"single\",[4]=\"double\",[5]=\"flick\"}if g1n[evt]then print(id,g1n[evt],x,y,dir,dis)end--[[@fen]] end"
 
 // clang-format on
 
