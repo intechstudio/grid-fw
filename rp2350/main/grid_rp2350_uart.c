@@ -30,24 +30,18 @@ static uint grid_rp2350_uart_rx_sm[GRID_RP2350_UART_DIR_COUNT];
 static int grid_rp2350_uart_tx_dma_chan[GRID_RP2350_UART_DIR_COUNT];
 static int grid_rp2350_uart_rx_dma_chan[GRID_RP2350_UART_DIR_COUNT];
 
-// Shift-right without autopush leaves the byte left-justified in the FIFO
-// word's top byte -- same "+3" trick as uart_rx_program_getc, via DMA here.
-static inline volatile uint8_t* grid_rp2350_uart_rxf_byte(uint sm) { return (volatile uint8_t*)&GRID_RP2350_UART_RX_PIO->rxf[sm] + 3; }
-
-void __not_in_flash_func(grid_rp2350_uart_port_stop_dma)(uint8_t dir) {
+GRID_IRAM_ATTR void grid_rp2350_uart_port_stop_dma(uint8_t dir) {
 
   assert(dir < GRID_RP2350_UART_DIR_COUNT);
   int chan = grid_rp2350_uart_rx_dma_chan[dir];
 
   // Disable DMA_IRQ_2 completely, as aborting a channel that is about to
   // complete is inherently race-prone if it has an IRQ handler registered.
-  //
-  // Uses raw NVIC registers instead of irq_is_enabled()/irq_set_enabled():
-  // this function runs while flash may be non-XIP (littlefs write in
-  // progress), and those SDK calls are flash-resident, unlike this function.
-  uint32_t irq2_bit = 1u << (DMA_IRQ_2 % 32);
-  bool irq2_was_enabled = (nvic_hw->iser[DMA_IRQ_2 / 32] & irq2_bit) != 0;
-  nvic_hw->icer[DMA_IRQ_2 / 32] = irq2_bit;
+  // Manually inlined from irq_set_enabled to conform to GRID_IRAM_ATTR.
+  const uint32_t irq2_reg = DMA_IRQ_2 / 32;
+  const uint32_t irq2_bit = 1u << (DMA_IRQ_2 % 32);
+  bool irq2_was_enabled = nvic_hw->iser[irq2_reg] & irq2_bit;
+  nvic_hw->icer[irq2_reg] = irq2_bit;
 
   // Due to errata RP2350-E5, the enable bit of the aborted channel and any
   // channel chained to it must be cleared before aborting to ensure that the
@@ -62,13 +56,14 @@ void __not_in_flash_func(grid_rp2350_uart_port_stop_dma)(uint8_t dir) {
   dma_hw->ints2 = 1u << chan;
 
   // Restore DMA_IRQ_2 to its previous state
+  // Manually inlined from irq_set_enabled to conform to GRID_IRAM_ATTR.
   if (irq2_was_enabled) {
-    nvic_hw->icpr[DMA_IRQ_2 / 32] = irq2_bit;
-    nvic_hw->iser[DMA_IRQ_2 / 32] = irq2_bit;
+    nvic_hw->icpr[irq2_reg] = irq2_bit;
+    nvic_hw->iser[irq2_reg] = irq2_bit;
   }
 }
 
-void __not_in_flash_func(grid_rp2350_uart_port_reset_dma)(uint8_t dir) {
+GRID_IRAM_ATTR void grid_rp2350_uart_port_reset_dma(uint8_t dir) {
 
   grid_rp2350_uart_port_stop_dma(dir);
 
@@ -82,7 +77,7 @@ void __not_in_flash_func(grid_rp2350_uart_port_reset_dma)(uint8_t dir) {
   dma_channel_set_trans_count(chan, grid_rp2350_uart_uwsr[dir].capacity, true);
 }
 
-static void __not_in_flash_func(grid_rp2350_uart_rx_dma_irq)(void) {
+GRID_IRAM_ATTR static void grid_rp2350_uart_rx_dma_irq(void) {
 
   for (uint8_t dir = 0; dir < GRID_RP2350_UART_DIR_COUNT; ++dir) {
 
@@ -115,6 +110,10 @@ bool grid_rp2350_uart_tx_busy(uint8_t dir) {
 
   return dma_channel_is_busy(grid_rp2350_uart_tx_dma_chan[dir]);
 }
+
+// Shift-right without autopush leaves the byte left-justified in the FIFO
+// word's top byte -- same "+3" trick as uart_rx_program_getc, via DMA here.
+static inline volatile uint8_t* grid_rp2350_uart_rxf_byte(uint sm) { return (volatile uint8_t*)&GRID_RP2350_UART_RX_PIO->rxf[sm] + 3; }
 
 void grid_rp2350_uart_init(void) {
 
