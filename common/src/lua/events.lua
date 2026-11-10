@@ -20,6 +20,16 @@ _events_process = function(eleidx, evestr)
       while ele[i]:touch_pop() and ele[i].touch_cb do
         ele[i]:touch_cb(ele[i]:tid(), ele[i]:tev(), ele[i]:txv(), ele[i]:tyv())
       end
+      while ele[i]:gesture1_pop() and ele[i].gesture1_cb do
+        ele[i]:gesture1_cb(
+          ele[i]:g1id(),
+          ele[i]:g1ev(),
+          ele[i]:g1xv(),
+          ele[i]:g1yv(),
+          ele[i]:g1dr(),
+          ele[i]:g1ds()
+        )
+      end
     end
   end
   _events_clear()

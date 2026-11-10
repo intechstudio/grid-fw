@@ -10,7 +10,9 @@
 #include "grid_platform.h"
 #include "grid_ui_system.h"
 
-GRID_LUA_FNC_ELEMENT_POP(touch_pop, struct grid_ui_touch_state, swsr, value)
+GRID_LUA_FNC_ELEMENT_POP(touch_pop, struct grid_ui_touch_state, touch_swsr, touch_value)
+
+GRID_LUA_FNC_ELEMENT_POP(gesture1_pop, struct grid_ui_touch_state, gesture1_swsr, gesture1_info)
 
 int touch_get(lua_State* L) {
 
@@ -20,10 +22,16 @@ int touch_get(lua_State* L) {
     GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_ELEMENT_INDEX_index, state->parent->index)
     GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_LED_INDEX_index, state->parent->index)
     GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_LED_WIDTH_index, 9)
-    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_TOUCH_ID_index, state->value.id)
-    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_TOUCH_EVENT_index, state->value.event)
-    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_TOUCH_X_VALUE_index, state->value.x)
-    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_TOUCH_Y_VALUE_index, state->value.y)
+    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_TOUCH_ID_index, state->touch_value.id)
+    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_TOUCH_EVENT_index, state->touch_value.event)
+    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_TOUCH_X_VALUE_index, state->touch_value.x)
+    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_TOUCH_Y_VALUE_index, state->touch_value.y)
+    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_ID_index, state->gesture1_info.id)
+    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_EVENT_index, state->gesture1_info.event)
+    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_X_VALUE_index, state->gesture1_info.x)
+    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_Y_VALUE_index, state->gesture1_info.y)
+    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_DIR_index, state->gesture1_info.dir)
+    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_DIST_index, state->gesture1_info.dist)
   default:
     luaL_argcheck(L, false, 2, "inaccessible");
   }
@@ -58,17 +66,28 @@ const luaL_Reg GRID_LUA_T_INDEX_META[] = {{GRID_LUA_FNC_T_ELEMENT_INDEX_short, X
                                           {GRID_LUA_FNC_T_TOUCH_EVENT_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_TOUCH_EVENT_index)},
                                           {GRID_LUA_FNC_T_TOUCH_X_VALUE_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_TOUCH_X_VALUE_index)},
                                           {GRID_LUA_FNC_T_TOUCH_Y_VALUE_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_TOUCH_Y_VALUE_index)},
+                                          {GRID_LUA_FNC_T_GESTURE1_ID_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_ID_index)},
+                                          {GRID_LUA_FNC_T_GESTURE1_EVENT_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_EVENT_index)},
+                                          {GRID_LUA_FNC_T_GESTURE1_X_VALUE_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_X_VALUE_index)},
+                                          {GRID_LUA_FNC_T_GESTURE1_Y_VALUE_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_Y_VALUE_index)},
+                                          {GRID_LUA_FNC_T_GESTURE1_DIR_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_DIR_index)},
+                                          {GRID_LUA_FNC_T_GESTURE1_DIST_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_DIST_index)},
                                           {GRID_LUA_FNC_G_TIMER_START_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtt)},
                                           {GRID_LUA_FNC_G_TIMER_STOP_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtp)},
                                           {GRID_LUA_FNC_G_EVENT_TRIGGER_short, XAFTERX(GRID_LUA_FNC_META_NAME, get)},
                                           {GRID_LUA_FNC_G_ELEMENTNAME_SET_short, XAFTERX(GRID_LUA_FNC_META_NAME, gsen)},
                                           {GRID_LUA_FNC_G_ELEMENTNAME_GET_short, XAFTERX(GRID_LUA_FNC_META_NAME, ggen)},
                                           {"touch_pop", touch_pop},
+                                          {"gesture1_pop", gesture1_pop},
                                           {"getv", touch_get},
                                           {"setv", touch_set},
                                           {NULL, NULL}};
 
-void grid_ui_touch_state_alloc(struct grid_ui_touch_state* state) { assert(grid_swsr_malloc(&state->swsr, 10 * sizeof(struct touchvalue_t)) == 0); }
+void grid_ui_touch_state_alloc(struct grid_ui_touch_state* state) {
+
+  assert(grid_swsr_malloc(&state->touch_swsr, 10 * sizeof(state->touch_value)) == 0);
+  assert(grid_swsr_malloc(&state->gesture1_swsr, 8 * sizeof(state->gesture1_info)) == 0);
+}
 
 void grid_ui_touch_state_reset(struct grid_ui_touch_state* state) {
 
@@ -80,7 +99,13 @@ void grid_ui_touch_state_reset(struct grid_ui_touch_state* state) {
 
 void grid_ui_touch_state_init(struct grid_ui_touch_state* state, uint8_t adc_bit_depth) { state->adc_bit_depth = adc_bit_depth; }
 
-bool grid_ui_touch_state_any(struct grid_ui_touch_state* state) { return grid_swsr_readable(&state->swsr, sizeof(state->value)); }
+bool grid_ui_touch_state_any(struct grid_ui_touch_state* state) {
+
+  bool touch_any = grid_swsr_readable(&state->touch_swsr, sizeof(state->touch_value));
+  bool gesture1_any = grid_swsr_readable(&state->gesture1_swsr, sizeof(state->gesture1_info));
+
+  return touch_any || gesture1_any;
+}
 
 void grid_ui_element_touch_init(struct grid_ui_element* ele) {
 
@@ -136,8 +161,15 @@ void grid_ui_touch_store_input(struct grid_ui_touch_state* state, struct touchin
     uint8_t diff_res = state->adc_bit_depth - 7;
     // TODO write state to be read by event render
 
-    if (grid_swsr_writable(&state->swsr, sizeof(struct touchvalue_t))) {
-      grid_swsr_write(&state->swsr, &value, sizeof(struct touchvalue_t));
+    if (grid_swsr_writable(&state->touch_swsr, sizeof(state->touch_value))) {
+      grid_swsr_write(&state->touch_swsr, &value, sizeof(state->touch_value));
     }
+  }
+}
+
+void grid_ui_touch_store_gesture(struct grid_ui_touch_state* state, struct gesture1info_t info) {
+
+  if (grid_swsr_writable(&state->gesture1_swsr, sizeof(state->gesture1_info))) {
+    grid_swsr_write(&state->gesture1_swsr, &info, sizeof(state->gesture1_info));
   }
 }

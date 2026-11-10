@@ -867,7 +867,31 @@
 #define GRID_LUA_FNC_T_TOUCH_Y_VALUE_short "tyv"
 #define GRID_LUA_FNC_T_TOUCH_Y_VALUE_human "touch_y_value"
 
-#define GRID_LUA_FNC_T_LIST_length 11
+#define GRID_LUA_FNC_T_GESTURE1_ID_index 11
+#define GRID_LUA_FNC_T_GESTURE1_ID_short "g1id"
+#define GRID_LUA_FNC_T_GESTURE1_ID_human "gesture1_id"
+
+#define GRID_LUA_FNC_T_GESTURE1_EVENT_index 12
+#define GRID_LUA_FNC_T_GESTURE1_EVENT_short "g1ev"
+#define GRID_LUA_FNC_T_GESTURE1_EVENT_human "gesture1_event"
+
+#define GRID_LUA_FNC_T_GESTURE1_X_VALUE_index 13
+#define GRID_LUA_FNC_T_GESTURE1_X_VALUE_short "g1xv"
+#define GRID_LUA_FNC_T_GESTURE1_X_VALUE_human "gesture1_x_value"
+
+#define GRID_LUA_FNC_T_GESTURE1_Y_VALUE_index 14
+#define GRID_LUA_FNC_T_GESTURE1_Y_VALUE_short "g1yv"
+#define GRID_LUA_FNC_T_GESTURE1_Y_VALUE_human "gesture1_y_value"
+
+#define GRID_LUA_FNC_T_GESTURE1_DIR_index 15
+#define GRID_LUA_FNC_T_GESTURE1_DIR_short "g1dr"
+#define GRID_LUA_FNC_T_GESTURE1_DIR_human "gesture1_dir"
+
+#define GRID_LUA_FNC_T_GESTURE1_DIST_index 16
+#define GRID_LUA_FNC_T_GESTURE1_DIST_short "g1ds"
+#define GRID_LUA_FNC_T_GESTURE1_DIST_human "gesture1_dist"
+
+#define GRID_LUA_FNC_T_LIST_length 17
 
 // ========================= UI EVENT HANDLER FUNCTIONS =========================== //
 

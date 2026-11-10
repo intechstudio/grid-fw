@@ -22,7 +22,7 @@
 #define ZONA_SENSOR_RESET_GPIO 39
 #define ZONA_SENSOR_INT_GPIO 42
 
-void grid_esp32_module_zona_process_touch(struct touchinfo_t* info) {
+void zona_process_touch(struct touchinfo_t* info) {
 
   struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, 0);
   if (!ele) {
@@ -32,11 +32,21 @@ void grid_esp32_module_zona_process_touch(struct touchinfo_t* info) {
   grid_ui_touch_store_input(grid_ui_touch_get_state(ele), *info);
 }
 
+void zona_process_gesture1(struct gesture1info_t* info) {
+
+  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, 0);
+  if (!ele) {
+    return;
+  }
+
+  grid_ui_touch_store_gesture(grid_ui_touch_get_state(ele), *info);
+}
+
 void grid_esp32_module_zona_init(struct grid_sys_model* sys, struct grid_ui_model* ui) {
 
   grid_esp32_touch_init(&grid_esp32_touch_state, ZONA_I2C_PORT, ZONA_I2C_SCL_GPIO, ZONA_I2C_SDA_GPIO, ZONA_SENSOR_RESET_GPIO, ZONA_SENSOR_INT_GPIO, ZONA_I2C_FREQ_HZ);
 
-  grid_maxtouch_init(&grid_maxtouch_state, grid_esp32_module_zona_process_touch);
+  grid_maxtouch_init(&grid_maxtouch_state, zona_process_touch, zona_process_gesture1);
   grid_maxtouch_update(&grid_esp32_touch_state.data);
 
   for (int i = 0; i < ui->element_list_length; ++i) {

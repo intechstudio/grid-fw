@@ -12,11 +12,13 @@
 
 GRID_DRAM_ATTR struct grid_maxtouch_model grid_maxtouch_state;
 
-void grid_maxtouch_init(struct grid_maxtouch_model* maxtouch, grid_process_touch_t process_touch) {
+void grid_maxtouch_init(struct grid_maxtouch_model* maxtouch, grid_process_touch_t process_touch, grid_process_gesture1_t process_gesture1) {
 
   assert(process_touch);
+  assert(process_gesture1);
 
   maxtouch->process_touch = process_touch;
+  maxtouch->process_gesture1 = process_gesture1;
 
   PT_INIT(&maxtouch->touch_pt);
 }
@@ -127,6 +129,12 @@ void grid_maxtouch_parse_info_block(struct mxt_data* data, const uint8_t* iblk) 
       data->T7_address = object->start_addr;
 
     } break;
+    case MXT_PROCI_ONETOUCH_T24: {
+
+      data->T24_rid_min = min_id;
+      data->T24_rid_max = max_id;
+
+    } break;
     case MXT_SPT_MESSAGECOUNT_T44: {
 
       data->T44_address = object->start_addr;
@@ -226,6 +234,29 @@ void grid_maxtouch_proc_t6(struct mxt_data* data, uint8_t* msg) {
   data->T6_status = status;
 }
 
+void grid_maxtouch_proc_t24(struct mxt_data* data, uint8_t* msg) {
+
+  int id = msg[0] - data->T24_rid_min;
+
+  uint8_t status = msg[1];
+  uint8_t event = status & MXT_T24_EVENT_MASK;
+
+  // Ignore reserved event
+  if (!event) {
+    return;
+  }
+
+  struct gesture1info_t info = (struct gesture1info_t){
+      .id = id,
+      .event = event,
+      .x = msg[2] << 4 | (msg[4] & 0xf0) >> 4 | (msg[8] & 0xf0) << 8,
+      .y = msg[3] << 4 | (msg[4] & 0x0f) >> 4 | (msg[8] & 0x0f) << 8,
+      .dir = 255 - msg[5],
+      .dist = msg[7] << 8 | msg[6],
+  };
+  grid_maxtouch_state.process_gesture1(&info);
+}
+
 void grid_maxtouch_proc_t100(struct mxt_data* data, uint8_t* msg) {
 
   int id = msg[0] - data->T100_rid_min - 2;
@@ -274,6 +305,8 @@ void grid_maxtouch_proc_message(struct mxt_data* data, uint8_t* msg) {
 
   if (report_id == data->T6_reportid) {
     grid_maxtouch_proc_t6(data, msg);
+  } else if (report_id >= data->T24_rid_min && report_id <= data->T24_rid_max) {
+    grid_maxtouch_proc_t24(data, msg);
   } else if (report_id >= data->T100_rid_min && report_id <= data->T100_rid_max) {
     grid_maxtouch_proc_t100(data, msg);
   }

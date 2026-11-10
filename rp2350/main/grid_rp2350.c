@@ -246,7 +246,7 @@ int main() {
 
   grid_rp2350_checkpoint("LED INIT");
   if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
-    grid_rp2350_led_init(&grid_rp2350_led_state, 3);
+    grid_rp2350_led_init(&grid_rp2350_led_state, 4);
   } else {
     grid_rp2350_led_init(&grid_rp2350_led_state, 1);
   }
