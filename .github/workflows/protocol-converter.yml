@@ -35,6 +35,12 @@ jobs:
           grid-protocol/src/grid_protocol_bot.json \
           grid-protocol/grid-protocol/lists.py"
 
+      - name: Validate generated protocol file
+        run: |
+          cd grid-protocol
+          npm ci
+          npm test
+
       - name: Push file to protocol repository
         if: github.ref_name == 'main' || github.ref_name == 'master'
         run: |
