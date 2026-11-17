@@ -108,6 +108,8 @@ int GRID_LUA_FNC_GSV_NAME(14)(lua_State*);
 int GRID_LUA_FNC_GSV_NAME(15)(lua_State*);
 int GRID_LUA_FNC_GSV_NAME(16)(lua_State*);
 int GRID_LUA_FNC_GSV_NAME(17)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(18)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(19)(lua_State*);
 
 int GRID_LUA_FNC_GTV_NAME(0)(lua_State*);
 int GRID_LUA_FNC_GTV_NAME(1)(lua_State*);
@@ -127,6 +129,8 @@ int GRID_LUA_FNC_GTV_NAME(14)(lua_State*);
 int GRID_LUA_FNC_GTV_NAME(15)(lua_State*);
 int GRID_LUA_FNC_GTV_NAME(16)(lua_State*);
 int GRID_LUA_FNC_GTV_NAME(17)(lua_State*);
+int GRID_LUA_FNC_GTV_NAME(18)(lua_State*);
+int GRID_LUA_FNC_GTV_NAME(19)(lua_State*);
 
 int GRID_LUA_FNC_META_NAME(gtt)(lua_State*);
 int GRID_LUA_FNC_META_NAME(gtp)(lua_State*);

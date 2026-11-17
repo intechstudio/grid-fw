@@ -11,6 +11,7 @@ struct touchinfo_t {
   uint8_t event;
   uint16_t x;
   uint16_t y;
+  uint8_t a;
 };
 
 struct touchvalue_t {
@@ -18,6 +19,7 @@ struct touchvalue_t {
   uint8_t event;
   int32_t x;
   int32_t y;
+  int32_t a;
 };
 
 struct gesture1info_t {
@@ -34,11 +36,14 @@ struct grid_ui_touch_state {
   uint8_t adc_bit_depth;
   int32_t prev_x[5];
   int32_t prev_y[5];
+  int32_t prev_a[5];
   uint8_t prev_event[5];
   int32_t x_min;
   int32_t y_min;
+  int32_t a_min;
   int32_t x_max;
   int32_t y_max;
+  int32_t a_max;
   struct touchvalue_t touch_value;
   struct grid_swsr_t touch_swsr;
   struct gesture1info_t gesture1_info;
@@ -79,7 +84,7 @@ extern const luaL_Reg GRID_LUA_T_INDEX_META[];
   \
   "}}"
 
-#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]] function laddr2to1(x,y)return glag(0,x+y*9)end for i=0,self:lwi()*self:lwi()-1 do gln(i,1,0,0,0)gld(i,1,128,128,128)glx(i,1,255,255,255)gls(i,1,1)glf(i,1,1)glp(i,1,255)end--[[@fst]] self.touch_cb=function(self,id,evt,x,y)--[[@cb]] local tp={(x/127)*(self:lwi()-1),(y/127)*(self:lwi()-1)}local xs={math.floor(tp[1]),math.ceil(tp[1])}local ys={math.floor(tp[2]),math.ceil(tp[2])}for i=xs[1],xs[2]do for j=ys[1],ys[2]do local d={tp[1]-i,tp[2]-j}local dist=math.sqrt(d[1]*d[1]+d[2]*d[2])if dist<1 then local pha=math.tointeger((dist*255)//1)glf(laddr2to1(i,j),1,1)glp(laddr2to1(i,j),1,pha)glt(laddr2to1(i,j),1,255-pha)end end end--[[@fen]] end--[[@fst]] self.gesture1_cb=function(self,id,evt,x,y,dir,dis)--[[@cb]] local g1n={[1]=\"press\",[2]=\"release\",[3]=\"single\",[4]=\"double\",[5]=\"flick\",[8]=\"long\",[10]=\"tapnpress\"}if g1n[evt]then print(id,g1n[evt],x,y,dir,dis)end--[[@fen]] end"
+#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]] function laddr2to1(x,y)return glag(0,x+y*9)end for i=0,self:lwi()*self:lwi()-1 do gln(i,1,0,0,0)gld(i,1,128,128,128)glx(i,1,255,255,255)gls(i,1,1)glf(i,1,1)glp(i,1,255)end--[[@fst]] self.touch_cb=function(self,id,evt,x,y,a)--[[@cb]] local tp={(x/127)*(self:lwi()-1),(y/127)*(self:lwi()-1)}local xs={math.floor(tp[1]),math.ceil(tp[1])}local ys={math.floor(tp[2]),math.ceil(tp[2])}for i=xs[1],xs[2]do for j=ys[1],ys[2]do local d={tp[1]-i,tp[2]-j}local dist=math.sqrt(d[1]*d[1]+d[2]*d[2])if dist<1 then local pha=math.tointeger((dist*255)//1)glf(laddr2to1(i,j),1,1)glp(laddr2to1(i,j),1,pha)glt(laddr2to1(i,j),1,255-pha)end end end--[[@fen]] end--[[@fst]] self.gesture1_cb=function(self,id,evt,x,y,dir,dis)--[[@cb]] local g1n={[1]=\"press\",[2]=\"release\",[3]=\"single\",[4]=\"double\",[5]=\"flick\",[8]=\"long\",[10]=\"tapnpress\"}if g1n[evt]then print(id,g1n[evt],x,y,dir,dis)end--[[@fen]] end"
 
 // clang-format on
 
