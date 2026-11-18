@@ -170,7 +170,6 @@ void grid_ui_touch_store_input(struct grid_ui_touch_state* state, struct touchin
     state->prev_a[value.id] = value.a;
     state->prev_event[value.id] = value.event;
 
-    uint8_t diff_res = state->adc_bit_depth - 7;
     // TODO write state to be read by event render
 
     if (grid_swsr_writable(&state->touch_swsr, sizeof(state->touch_value))) {
