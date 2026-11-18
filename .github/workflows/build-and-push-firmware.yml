@@ -5,28 +5,18 @@ on:
     outputs:
       timestamp:
         description: "Build date timestamp"
-        value: ${{ jobs.build-and-push.outputs.timestamp }}
+        value: ${{ jobs.collect.outputs.timestamp }}
 
 jobs:
-  build-and-push:
+  prepare-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    env:
-      image: ghcr.io/${{ github.repository_owner }}/grid-fw:latest
-      d51-path: d51n20a
-      esp-path: esp32s3
-      rp2350-path: rp2350
-    outputs:
-      timestamp: ${{ steps.set_out.outputs.timestamp }}
     steps:
 
       - name: Checkout code
         uses: actions/checkout@v6
-        with:
-          ref: ${{ github.ref }}
-          submodules: recursive
 
       - name: Prepare image
         uses: ./.github/actions/prepare-image
@@ -35,25 +25,96 @@ jobs:
           image-name: "grid-fw"
           dockerfile: "Dockerfile"
 
-      - name: Build ESP32 firmware
-        run: |
-          docker run -v $PWD:/project -w /project ${{ env.image }} \
-          sh -c "./lua_build.sh && ./pico_build.sh && ./mxt_config.sh && ./esp_build.sh"
+  build-target:
+    needs: prepare-image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      image: ghcr.io/${{ github.repository_owner }}/grid-fw:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: esp32
+            build_cmd: "./lua_build.sh && ./mxt_config.sh && ./pico_build.sh && ./esp_build.sh"
+            artifact_paths: esp32s3/build/grid_esp32s3.uf2
+          - target: d51
+            build_cmd: "./lua_build.sh && ./d51_build.sh"
+            artifact_paths: d51n20a/gcc/build/grid_d51n20a.uf2
+          - target: rp2350
+            build_cmd: "./lua_build.sh && ./mxt_config.sh && ./rp2350_build.sh"
+            artifact_paths: rp2350/build/main/grid_rp2350.uf2
+          - target: wasm
+            build_cmd: "./lua_build.sh && ./wasm_build.sh"
+            artifact_paths: |
+              wasm/build/index.html
+              wasm/build/index.js
+              wasm/build/index.wasm
+    steps:
 
-      - name: Build D51 firmware
-        run: |
-          docker run -v $PWD:/project -w /project ${{ env.image }} \
-          sh -c "./lua_build.sh && ./d51_build.sh"
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          submodules: recursive
 
-      - name: Build RP2350 firmware
-        run: |
-          docker run -v $PWD:/project -w /project ${{ env.image }} \
-          sh -c "./rp2350_build.sh"
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build wasm gui
+      - name: Pull image
+        run: docker pull ${{ env.image }}
+
+      - name: Build ${{ matrix.target }} firmware
         run: |
           docker run -v $PWD:/project -w /project ${{ env.image }} \
-          sh -c "./wasm_build.sh"
+          sh -c "${{ matrix.build_cmd }}"
+
+      - name: Upload ${{ matrix.target }} artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: fw-${{ matrix.target }}
+          path: ${{ matrix.artifact_paths }}
+
+  collect:
+    needs: build-target
+    runs-on: ubuntu-latest
+    env:
+      d51-path: d51n20a
+      esp-path: esp32s3
+      rp2350-path: rp2350
+    outputs:
+      timestamp: ${{ steps.set_out.outputs.timestamp }}
+    steps:
+
+      - name: Download esp32 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fw-esp32
+          path: ${{ env.esp-path }}/build
+
+      - name: Download d51 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fw-d51
+          path: ${{ env.d51-path }}/gcc/build
+
+      - name: Download rp2350 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fw-rp2350
+          path: ${{ env.rp2350-path }}/build/main
+
+      - name: Download wasm artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fw-wasm
+          path: wasm/build
 
       - name: Set timestamp in environment and output
         id: set_out
