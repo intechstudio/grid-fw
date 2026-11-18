@@ -11,6 +11,7 @@ struct touchinfo_t {
   uint8_t event;
   uint16_t x;
   uint16_t y;
+  uint8_t a;
 };
 
 struct touchvalue_t {
@@ -18,6 +19,7 @@ struct touchvalue_t {
   uint8_t event;
   int32_t x;
   int32_t y;
+  int32_t a;
 };
 
 struct gesture1info_t {
@@ -34,11 +36,14 @@ struct grid_ui_touch_state {
   uint8_t adc_bit_depth;
   int32_t prev_x[5];
   int32_t prev_y[5];
+  int32_t prev_a[5];
   uint8_t prev_event[5];
   int32_t x_min;
   int32_t y_min;
+  int32_t a_min;
   int32_t x_max;
   int32_t y_max;
+  int32_t a_max;
   struct touchvalue_t touch_value;
   struct grid_swsr_t touch_swsr;
   struct gesture1info_t gesture1_info;

@@ -18,7 +18,13 @@ _events_process = function(eleidx, evestr)
   for i = 0, #ele do
     if ele[i].type == "touch" then
       while ele[i]:touch_pop() and ele[i].touch_cb do
-        ele[i]:touch_cb(ele[i]:tid(), ele[i]:tev(), ele[i]:txv(), ele[i]:tyv())
+        ele[i]:touch_cb(
+          ele[i]:tid(),
+          ele[i]:tev(),
+          ele[i]:txv(),
+          ele[i]:tyv(),
+          ele[i]:tav()
+        )
       end
       while ele[i]:gesture1_pop() and ele[i].gesture1_cb do
         ele[i]:gesture1_cb(

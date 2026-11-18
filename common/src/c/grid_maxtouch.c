@@ -269,6 +269,7 @@ void grid_maxtouch_proc_t100(struct mxt_data* data, uint8_t* msg) {
   uint8_t status = msg[1];
   uint16_t x = msg[2] + (msg[3] << 8);
   uint16_t y = msg[4] + (msg[5] << 8);
+  uint8_t amplitude = msg[6];
   uint8_t distance = 0;
 
   uint8_t type = (status & MXT_T100_TYPE_MASK) >> 4;
@@ -284,6 +285,7 @@ void grid_maxtouch_proc_t100(struct mxt_data* data, uint8_t* msg) {
         .event = status & MXT_T100_EVENT_MASK,
         .x = x,
         .y = y,
+        .a = amplitude,
     };
     grid_maxtouch_state.process_touch(&info);
 

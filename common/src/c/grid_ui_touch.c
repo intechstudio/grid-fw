@@ -32,6 +32,7 @@ int touch_get(lua_State* L) {
     GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_Y_VALUE_index, state->gesture1_info.y)
     GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_DIR_index, state->gesture1_info.dir)
     GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_GESTURE1_DIST_index, state->gesture1_info.dist)
+    GRID_LUA_GETV_CASE(GRID_LUA_FNC_T_TOUCH_A_VALUE_index, state->touch_value.a)
   default:
     luaL_argcheck(L, false, 2, "inaccessible");
   }
@@ -48,6 +49,8 @@ int touch_set(lua_State* L) {
     GRID_LUA_SETV_CASE(GRID_LUA_FNC_T_TOUCH_Y_MIN_index, state->y_min)
     GRID_LUA_SETV_CASE(GRID_LUA_FNC_T_TOUCH_X_MAX_index, state->x_max)
     GRID_LUA_SETV_CASE(GRID_LUA_FNC_T_TOUCH_Y_MAX_index, state->y_max)
+    GRID_LUA_SETV_CASE(GRID_LUA_FNC_T_TOUCH_A_MIN_index, state->a_min)
+    GRID_LUA_SETV_CASE(GRID_LUA_FNC_T_TOUCH_A_MAX_index, state->a_max)
   default:
     luaL_argcheck(L, false, 2, "inaccessible");
   }
@@ -72,6 +75,9 @@ const luaL_Reg GRID_LUA_T_INDEX_META[] = {{GRID_LUA_FNC_T_ELEMENT_INDEX_short, X
                                           {GRID_LUA_FNC_T_GESTURE1_Y_VALUE_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_Y_VALUE_index)},
                                           {GRID_LUA_FNC_T_GESTURE1_DIR_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_DIR_index)},
                                           {GRID_LUA_FNC_T_GESTURE1_DIST_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_GESTURE1_DIST_index)},
+                                          {GRID_LUA_FNC_T_TOUCH_A_MIN_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_TOUCH_A_MIN_index)},
+                                          {GRID_LUA_FNC_T_TOUCH_A_MAX_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_TOUCH_A_MAX_index)},
+                                          {GRID_LUA_FNC_T_TOUCH_A_VALUE_short, XAFTERX(GRID_LUA_FNC_GSV_NAME, GRID_LUA_FNC_T_TOUCH_A_VALUE_index)},
                                           {GRID_LUA_FNC_G_TIMER_START_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtt)},
                                           {GRID_LUA_FNC_G_TIMER_STOP_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtp)},
                                           {GRID_LUA_FNC_G_EVENT_TRIGGER_short, XAFTERX(GRID_LUA_FNC_META_NAME, get)},
@@ -93,8 +99,10 @@ void grid_ui_touch_state_reset(struct grid_ui_touch_state* state) {
 
   state->x_min = 0;
   state->y_min = 0;
+  state->a_min = 0;
   state->x_max = 127;
   state->y_max = 127;
+  state->a_max = 127;
 }
 
 void grid_ui_touch_state_init(struct grid_ui_touch_state* state, uint8_t adc_bit_depth) { state->adc_bit_depth = adc_bit_depth; }
@@ -127,38 +135,41 @@ void grid_ui_touch_store_input(struct grid_ui_touch_state* state, struct touchin
 
   struct grid_ui_element* ele = state->parent;
 
-  int32_t tmin[2] = {state->x_min, state->y_min};
-  int32_t tmax[2] = {state->x_max, state->y_max};
-  int32_t min[2] = {MIN(tmin[0], tmax[0]), MIN(tmin[1], tmax[1])};
-  int32_t max[2] = {MAX(tmin[0], tmax[0]), MAX(tmin[1], tmax[1])};
+  int32_t tmin[3] = {state->x_min, state->y_min, state->a_min};
+  int32_t tmax[3] = {state->x_max, state->y_max, state->a_max};
+  uint8_t bits[3] = {state->adc_bit_depth, state->adc_bit_depth, 8};
 
-  int32_t new[2] = {info.x, info.y};
-  for (int i = 0; i < 2; ++i) {
+  int32_t new[3] = {info.x, info.y, info.a};
+  for (int i = 0; i < 3; ++i) {
 
-    new[i] = lerp(min[i], max[i] + 1, new[i] / (double)(1 << state->adc_bit_depth));
+    int32_t min = MIN(tmin[i], tmax[i]);
+    int32_t max = MAX(tmin[i], tmax[i]);
 
-    new[i] = clampi32(new[i], min[i], max[i]);
+    new[i] = lerp(min, max + 1, new[i] / (double)(1 << bits[i]));
+
+    new[i] = clampi32(new[i], min, max);
 
     if (tmin[i] > tmax[i]) {
-      new[i] = mirrori32(new[i], min[i], max[i]);
+      new[i] = mirrori32(new[i], min, max);
     }
   }
 
-  struct touchvalue_t value = {info.id, info.event, new[0], new[1]};
+  struct touchvalue_t value = {info.id, info.event, new[0], new[1], new[2]};
 
   assert(value.id < 5);
 
   bool delta_x = value.x != state->prev_x[value.id];
   bool delta_y = value.y != state->prev_y[value.id];
+  bool delta_a = value.a != state->prev_a[value.id];
   bool delta_event = value.event != state->prev_event[value.id];
 
-  if (delta_x || delta_y || delta_event) {
+  if (delta_x || delta_y || delta_a || delta_event) {
 
     state->prev_x[value.id] = value.x;
     state->prev_y[value.id] = value.y;
+    state->prev_a[value.id] = value.a;
     state->prev_event[value.id] = value.event;
 
-    uint8_t diff_res = state->adc_bit_depth - 7;
     // TODO write state to be read by event render
 
     if (grid_swsr_writable(&state->touch_swsr, sizeof(state->touch_value))) {

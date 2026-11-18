@@ -891,7 +891,19 @@
 #define GRID_LUA_FNC_T_GESTURE1_DIST_short "g1ds"
 #define GRID_LUA_FNC_T_GESTURE1_DIST_human "gesture1_dist"
 
-#define GRID_LUA_FNC_T_LIST_length 17
+#define GRID_LUA_FNC_T_TOUCH_A_MIN_index 17
+#define GRID_LUA_FNC_T_TOUCH_A_MIN_short "tami"
+#define GRID_LUA_FNC_T_TOUCH_A_MIN_human "touch_a_min"
+
+#define GRID_LUA_FNC_T_TOUCH_A_MAX_index 18
+#define GRID_LUA_FNC_T_TOUCH_A_MAX_short "tama"
+#define GRID_LUA_FNC_T_TOUCH_A_MAX_human "touch_a_max"
+
+#define GRID_LUA_FNC_T_TOUCH_A_VALUE_index 19
+#define GRID_LUA_FNC_T_TOUCH_A_VALUE_short "tav"
+#define GRID_LUA_FNC_T_TOUCH_A_VALUE_human "touch_a_value"
+
+#define GRID_LUA_FNC_T_LIST_length 20
 
 // ========================= UI EVENT HANDLER FUNCTIONS =========================== //
 
